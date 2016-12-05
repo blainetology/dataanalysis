@@ -18,9 +18,12 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->integer('client_id')->default(0);
+            $table->integer('admin')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
+        \App\User::create(['name'=>'Blaine Jones','email'=>'blainecjones@gmail.com','password'=>\Hash::make('temp123'),'admin'=>1]);
     }
 
     /**
