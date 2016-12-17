@@ -19,32 +19,8 @@ class CreateSpreadsheetContentsTable extends Migration
             $table->integer('added_by')->index();
             $table->integer('year')->year('0')->index();
             $table->integer('month')->year('0')->index();
-            $table->text('A');
-            $table->text('B');
-            $table->text('C');
-            $table->text('D');
-            $table->text('E');
-            $table->text('F');
-            $table->text('G');
-            $table->text('H');
-            $table->text('I');
-            $table->text('J');
-            $table->text('K');
-            $table->text('L');
-            $table->text('M');
-            $table->text('N');
-            $table->text('O');
-            $table->text('P');
-            $table->text('Q');
-            $table->text('R');
-            $table->text('S');
-            $table->text('T');
-            $table->text('U');
-            $table->text('V');
-            $table->text('W');
-            $table->text('X');
-            $table->text('Y');
-            $table->text('Z');
+            for($x=1;$x<=26;$x++)
+                $table->text('col'.$x);
             $table->timestamps();
         });
     }

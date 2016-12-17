@@ -3,43 +3,44 @@
 @section('content')
 <div class="container">
     <div class="row">
+        <div class="col-md-12">
+            <h2>Client Dashboard</h2>
+        </div>
         <div class="col-md-6">
             <div class="panel panel-default">
-                <div class="panel-heading"><strong>Clients <span class="label label-default">{{ $clients->count() }}</span></strong></div>
+                <div class="panel-heading"><strong>My Spreadsheets <span class="label label-default">{{ $spreadsheets->count() }}</span></strong></div>
 
                 <div class="panel-body">
-                    @if($clients->count()==0)
-                        No clients
+                    @if($spreadsheets->count()==0)
+                        No spreadsheets
                     @else
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Business Name</th>
+                                    <th>Name</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($clients as $client)
+                                @foreach($spreadsheets as $spreadsheet)
                                     <tr>
-                                        <td>{{ $client->business_name }}</td>
+                                        <td>{{ $spreadsheet->name }}</td>
                                         <td class="no-stretch">
-                                            <a href="{{ route('clients.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                            <a href="{{ route('clients.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                            <a href="{{ route('spreadsheets.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
+                                            <a href="{{ route('spreadsheets.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     @endif
-                    <br/>
-                    <a href="{{ route('clients.create') }}" class="btn btn-primary">Create Client</a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6">
             <div class="panel panel-default">
-                <div class="panel-heading"><strong>Users <span class="label label-default">{{ $clients->count() }}</span></strong></div>
+                <div class="panel-heading"><strong>Account Users <span class="label label-default">{{ $users->count() }}</span></strong></div>
 
                 <div class="panel-body">
                     @if($users->count()==0)

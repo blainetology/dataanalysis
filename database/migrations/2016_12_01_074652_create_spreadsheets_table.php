@@ -15,10 +15,14 @@ class CreateSpreadsheetsTable extends Migration
     {
         Schema::create('spreadsheets', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('client_id');
+            $table->integer('client_id')->index();
             $table->string('name');
+            $table->integer('active')->default(1);
             $table->timestamps();
         });
+        \DB::update("ALTER TABLE spreadsheets AUTO_INCREMENT = 3000;");
+
+        \App\Spreadsheet::create(['name'=>'Sales Tracking','client_id'=>2000]);
     }
 
     /**

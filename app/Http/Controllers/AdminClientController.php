@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 
-class ClientController extends Controller
+class AdminClientController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -25,7 +25,7 @@ class ClientController extends Controller
     public function create()
     {
         //
-        return view('clients.create');
+        return view('admin.clients.create');
     }
 
     /**
@@ -39,7 +39,7 @@ class ClientController extends Controller
         //
         $input = \Request::all();
         Client::create($input);
-        return redirect('/home');
+        return redirect('/');
 
     }
 
@@ -51,7 +51,6 @@ class ClientController extends Controller
      */
     public function show($id)
     {
-        //
     }
 
     /**

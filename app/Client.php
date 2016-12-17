@@ -8,4 +8,14 @@ class Client extends Model
 {
     //
     protected $fillable = ['business_name'];
+
+
+
+    public function users(){
+        return $this->hasMany('\App\User','client_id');
+    }
+    public function spreadsheets(){
+        return $this->hasMany('\App\Spreadsheet','client_id');
+    }
+
 }

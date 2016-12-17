@@ -11,13 +11,11 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Auth::routes();
 
-Route::get('/home', 'HomeController@index');
-Route::resource('users', 'UserController');
-Route::resource('clients', 'ClientController');
-Route::resource('spreadsheets', 'SpreadsheetController');
+Route::get('/', 'HomeController@index');
+	Route::group(['prefix'=>'admin'],function(){
+	Route::resource('users', 'AdminUserController');
+	Route::resource('clients', 'AdminClientController');
+	Route::resource('spreadsheets', 'AdminSpreadsheetController');	
+});

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Client;
-use App\User;
+use App\User;   
 
-class UserController extends Controller
+class AdminUserController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -26,7 +26,11 @@ class UserController extends Controller
     public function create()
     {
         //
-        return view('clients.create');
+        $data = [
+            'input' => \Request::old(),
+            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray()
+        ];
+        return view('admin.users.create',$data);
     }
 
     /**
@@ -39,8 +43,10 @@ class UserController extends Controller
     {
         //
         $input = \Request::all();
-        Client::create($input);
-        return redirect('/home');
+        $input['password'] = \Hash::make('temp123');
+        $input['admin'] = 0;
+        User::create($input);
+        return redirect('/');
 
     }
 
@@ -64,6 +70,11 @@ class UserController extends Controller
     public function edit($id)
     {
         //
+        $data = [
+            'input' => User::find($id)->toArray(),
+            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray()
+        ];
+        return view('admin.users.create',$data);
     }
 
     /**
@@ -76,6 +87,9 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $input = \Request::all();
+        User::find($id)->update($input);
+        return redirect('/');
     }
 
     /**

@@ -18,6 +18,8 @@ class CreateClientsTable extends Migration
             $table->string('business_name');
             $table->timestamps();
         });
+        \DB::update("ALTER TABLE clients AUTO_INCREMENT = 2000;");
+        \App\Client::create(['business_name'=>'Test Company, LLC','admin'=>1,'editor'=>1]);
     }
 
     /**

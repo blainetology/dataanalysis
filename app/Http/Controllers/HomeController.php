@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 use App\User;
+use App\Spreadsheet;
 
 class HomeController extends Controller
 {
@@ -25,15 +26,20 @@ class HomeController extends Controller
      */
     public function index()
     {
-        if(\Auth::user()->admin == 1){
+        if(\Auth::user()->isEditor()){
             $data = [
                 'clients'   => Client::all(),
-                'users'     => User::all()
+                'users'     => User::all(),
+                'spreadsheets'  => Spreadsheet::all()
             ];
-            return view('adminhome',$data);
+            return view('admin.home',$data);
         }
         else{
-            return view('clienthome');
+            $data = [
+                'spreadsheets'  => Spreadsheet::where('client_id',\Auth::user()->client_id)->get(),
+                'users'         => User::where('client_id',\Auth::user()->client_id)->get()
+            ];
+            return view('client.home',$data);
         }
     }
 }

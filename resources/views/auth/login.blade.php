@@ -1,13 +1,30 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-@section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">Login</div>
-                <div class="panel-body">
-                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
+    <title>{{ config('app.name') }}</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+    <link href="/css/app.css" rel="stylesheet">
+    <style type="text/css">
+    html,body{background: #FFF;}
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 text-center">
+                <br/><br/><br/>
+                <img src="/images/trackthatlogo.jpg" alt="{{ config('app.name') }}" />
+                <br/><br/><br/>
+                    <form class="form-horizontal text-left" role="form" method="POST" action="{{ url('/login') }}">
+
                         {{ csrf_field() }}
 
                         <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
@@ -63,6 +80,7 @@
                 </div>
             </div>
         </div>
+
     </div>
-</div>
-@endsection
+</body>
+</html>
