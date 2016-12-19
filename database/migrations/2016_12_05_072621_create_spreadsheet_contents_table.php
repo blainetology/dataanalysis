@@ -16,13 +16,16 @@ class CreateSpreadsheetContentsTable extends Migration
         Schema::create('spreadsheet_contents', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('spreadsheet_id')->index();
-            $table->integer('added_by')->index();
-            $table->integer('year')->year('0')->index();
-            $table->integer('month')->year('0')->index();
+            $table->integer('added_by')->default(0)->index();
+            $table->integer('year')->default(0)->index();
+            $table->integer('month')->default(0)->index();
             for($x=1;$x<=26;$x++)
-                $table->text('col'.$x);
+                $table->text('col'.$x)->nullable();
             $table->timestamps();
         });
+
+        \DB::update("ALTER TABLE spreadsheet_contents AUTO_INCREMENT = 10000;");
+        \App\SpreadsheetContent::create(['spreadsheet_id'=>3000,'added_by'=>1000,'year'=>date('Y'),'month'=>date('n'),'col1'=>'KEZ99','col2'=>'John Doe','col3'=>'radio','col4'=>'1000','col5'=>'3400']);
     }
 
     /**

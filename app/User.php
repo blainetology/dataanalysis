@@ -15,7 +15,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','admin','client_id','admin','editor','last_login','login_count'
+        'first_name', 'last_name', 'email', 'password', 'title', 'client_id', 'admin', 'editor', 'last_login', 'login_count'
     ];
 
     /**
@@ -28,12 +28,21 @@ class User extends Authenticatable
     ];
 
 
+    // relationships
+
     public function client(){
         return $this->belongsTo('\App\Client','client_id');
     }
 
 
     // other methods
+
+    public function displayname(){
+      $name = trim($this->first_name);
+      if(!empty($this->last_name))
+        $name .= ' '.$this->last_name;
+      return trim($name);
+    }
 
     public function isEditor(){
         return (!empty($this->editor) || !empty($this->admin));

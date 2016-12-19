@@ -22,11 +22,13 @@ class CreateSpreadsheetColumnsTable extends Migration
             $table->timestamps();
         });
         \DB::update("ALTER TABLE spreadsheet_columns AUTO_INCREMENT = 5000;");
-        \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>1,'label'=>'Name']);
-        \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>2,'label'=>'Advisor']);
-        \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>3,'label'=>'Source']);
-        \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>4,'label'=>'Cost']);
-        \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>5,'label'=>'Generated Income']);
+        $labels = [1=>"Name", 2=>"Advisor", 3=>"Source", 4=>"Cost", 5=>"Generated Income"];
+        foreach($labels as $column=>$label)
+          \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>$column,'label'=>$label]);
+
+        $labels = [1=>"Name", 2=>"Marketing Source", 3=>"Type", 4=>"Advisor Name", 5=>"Location", 6=>"Seminar Date", 7=>"Notes", 8=>"Set", 9=>"Kept"];
+        foreach($labels as $column=>$label)
+          \App\SpreadsheetColumn::create(['spreadsheet_id'=>3001,'column'=>$column,'label'=>$label]);
     }
 
     /**

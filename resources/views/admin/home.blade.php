@@ -76,12 +76,12 @@
                                 <tbody>
                                     @foreach($users as $user)
                                         <tr>
-                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->displayname() }}</td>
                                             <td>
                                                 @if($user->admin == 1)
-                                                <div class="label label-success">admin</div> 
+                                                <div class="label label-success">admin</div>
                                                 @elseif($user->editor == 1)
-                                                <div class="label label-warning">editor</div> 
+                                                <div class="label label-warning">editor</div>
                                                 @else
                                                 {{ $user->client ? $user->client->business_name : '---' }}
                                                 @endif

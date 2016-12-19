@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Client;
-use App\User;   
+use App\User;
 
 class AdminUserController extends Controller
 {
@@ -28,7 +28,7 @@ class AdminUserController extends Controller
         //
         $data = [
             'input' => \Request::old(),
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray()
+            'clients' => [0=>'--choose client--'] + Client::all()->pluck('business_name','id')->toArray()
         ];
         return view('admin.users.create',$data);
     }
@@ -44,8 +44,15 @@ class AdminUserController extends Controller
         //
         $input = \Request::all();
         $input['password'] = \Hash::make('temp123');
+        if($input['type']=='editor')
+            $input['client_id'] = 0;
         $input['admin'] = 0;
-        User::create($input);
+        $user = User::create($input);
+        if($input['type']=='editor')
+            $user->editor = 1;
+        else
+            $user->editor = 0;
+        $user->save();
         return redirect('/');
 
     }
@@ -88,7 +95,15 @@ class AdminUserController extends Controller
     {
         //
         $input = \Request::all();
-        User::find($id)->update($input);
+        if($input['type']=='editor')
+            $input['client_id'] = 0;
+        $user = User::find($id);
+        $user->fill($input);
+        if($input['type']=='editor')
+            $user->editor = 1;
+        else
+            $user->editor = 0;
+        $user->save();
         return redirect('/');
     }
 

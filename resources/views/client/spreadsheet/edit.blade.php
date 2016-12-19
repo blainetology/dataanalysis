@@ -10,34 +10,40 @@
                 <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/admin/spreadsheets/{{ $sheet->id }}">{{$sheet->name}}</a></li>
                 @endforeach
             </ul>
-                <div style="overflow:auto; width:100%;">
-                    <table id="spreadsheet" class="table table-bordered table-condensed">
-                        <thead>
-                            <tr>
-                                <td></td>
-                                @for($x=1; $x<=$max; $x++)
-                                <th class="bg-info">{{$letters[$x]}}</th>
-                                @endfor
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th width="20" class="nostretch no-stretch bg-info">1</th>
-                                @for($y=1; $y<=$max; $y++)
-                                    <th class="bg-warning">{{ isset($columns[$y]) ? $columns[$y]['label'] : '' }}</th>
-                                @endfor
-                            </tr>
-                            @for($x=2; $x<=20; $x++)
-                                <tr>
-                                    <th class="nostretch no-stretch bg-info">{{$x}}</th>
-                                    @for($y=1; $y<=$max; $y++)
-                                        <td style="padding:0;"><input class="sheet_cell" type="text" name="content[{{$x}}][{{$y}}]"></td>
-                                    @endfor
-                                </tr>
-                            @endfor
-                       </tbody>
-                    </table>
+            {{ Form::open(['action'=>'AdminSpreadsheetController@store']) }}
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="bg-success" style="padding:10px;">
+                        {{ Form::submit('save changes',['class'=>'btn btn-success btn-sm']) }}
+                    </div>
                 </div>
+            </div>
+            <div style="overflow:auto; width:100%;">
+                <table id="spreadsheet" class="table table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <td></td>
+                            @for($x=1; $x<=$max; $x++)
+                              <th class="bg-info">
+                                <small><em class="text-info" style="font-weight:100;">Column {{$letters[$x]}}</em></small><br/>
+                                {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
+                              </th>
+                            @endfor
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for($y=1; $y<=20; $y++)
+                            <tr>
+                                <th class="nostretch no-stretch bg-info">{{$y}}</th>
+                                @for($x=1; $x<=$max; $x++)
+                                    <td style="padding:0;"><input class="sheet_cell" type="text" id="content_{{$y}}_{{$x}}" name="content[{{$y}}][{{$x}}]"></td>
+                                @endfor
+                            </tr>
+                        @endfor
+                   </tbody>
+                </table>
+            </div>
+            {{ Form::close() }}
         </div>
     </div>
 </div>
