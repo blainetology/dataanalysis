@@ -10,9 +10,9 @@
                 <div class="panel-body">
 
                     @if(!empty($input['id']))
-                        {{ Form::open(['route'=>['users.update',$input['id']], 'method'=>'PUT']) }}
+                        {{ Form::open(['route'=>['adminusers.update',$input['id']], 'method'=>'PUT']) }}
                     @else
-                        {{ Form::open(['route'=>'users.store', 'method'=>'POST']) }}
+                        {{ Form::open(['route'=>'adminusers.store', 'method'=>'POST']) }}
                     @endif
                     <div class="row">
                         <div class="col-md-6">

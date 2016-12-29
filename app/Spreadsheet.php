@@ -15,5 +15,8 @@ class Spreadsheet extends Model
     public function columns(){
         return $this->hasMany('\App\SpreadsheetColumn','spreadsheet_id');
     }
+    public function content(){
+        return $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0)->orderBy('year','asc')->orderBy('month','asc');
+    }
 
 }

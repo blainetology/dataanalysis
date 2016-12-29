@@ -11,9 +11,9 @@
                 <div class="panel-body">
 
                 @if(!empty($input['id']))
-                {{ Form::open(['route'=>['spreadsheets.update',$input['id']], 'method'=>'PUT']) }}
+                {{ Form::open(['route'=>['adminspreadsheets.update',$input['id']], 'method'=>'PUT']) }}
                 @else
-                {{ Form::open(['route'=>'spreadsheets.store', 'method'=>'POST']) }}
+                {{ Form::open(['route'=>'adminspreadsheets.store', 'method'=>'POST']) }}
                 @endif
                 <div class="row"> 
                     <div class="col-md-5" >

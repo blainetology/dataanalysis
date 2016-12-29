@@ -16,7 +16,7 @@
                     {{-- clients --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('clients.create') }}" class="btn btn-sm btn-primary pull-right">Create Client</a>
+                            <a href="{{ route('adminclients.create') }}" class="btn btn-sm btn-primary pull-right">Create Client</a>
                             <strong style="font-size:1.3em;" class="text-info">Clients <span class="label label-success">{{ $clients->count() }}</span></strong>
                         </div>
 
@@ -41,9 +41,9 @@
                                             <td>{{ $client->users->count() }}</td>
                                             <td>{{ $client->spreadsheets->count() }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('clients.show',$client->id) }}" class="btn btn-xs btn-info">view</a>
-                                                <a href="{{ route('clients.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('clients.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('adminclients.show',$client->id) }}" class="btn btn-xs btn-info">view</a>
+                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
+                                                <a href="{{ route('adminclients.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -55,7 +55,7 @@
                     {{-- users --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('users.create') }}" class="btn btn-sm btn-primary pull-right">Create User</a>
+                            <a href="{{ route('adminusers.create') }}" class="btn btn-sm btn-primary pull-right">Create User</a>
                             <strong style="font-size:1.3em;" class="text-info">Users <span class="label label-success">{{ $users->count() }}</span></strong>
                         </div>
 
@@ -88,8 +88,8 @@
                                             </td>
                                             <td>{{ $user->last_login }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('users.edit',$user->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('users.destroy',$user->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning">edit</a>
+                                                <a href="{{ route('adminusers.destroy',$user->id) }}" class="btn btn-xs btn-danger">delete</a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -101,7 +101,7 @@
                     {{-- spreadsheets --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('spreadsheets.create') }}" class="btn btn-sm btn-primary pull-right">Create Spreadsheet</a>
+                            <a href="{{ route('adminspreadsheets.create') }}" class="btn btn-sm btn-primary pull-right">Create Spreadsheet</a>
                             <strong style="font-size:1.3em;" class="text-info">Spreadsheets <span class="label label-success">{{ $spreadsheets->count() }}</span></strong>
                         </div>
 
@@ -126,9 +126,9 @@
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('spreadsheets.show',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
-                                                <a href="{{ route('spreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('spreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
+                                                <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning">edit</a>
+                                                <a href="{{ route('adminspreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger">delete</a>
                                             </td>
                                         </tr>
                                     @endforeach

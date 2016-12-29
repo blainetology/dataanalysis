@@ -7703,12 +7703,13 @@ button.close {
 
 .sheet_cell {
   margin: 0;
-  padding: 0;
+  padding: 0 3px;
   width: 100%;
   min-width: 100px;
   height: 100%;
-  border: 1px solid #FFF;
+  border: 1px solid transparent;
   outline: none;
+  background: transparent;
 }
 
 .sheet_cell:focus {

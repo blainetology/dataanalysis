@@ -9,11 +9,9 @@ class SpreadsheetContent extends Model
     //
 
 
-    protected $fillable = ['spreadsheet_id','added_by','year','month'];
+    protected $guarded = ['id','created_at','updated_at'];
 
-    public function __construct(){
-        print_r($this->fillable);
-        #for($x=1;$x<=26;$x++)
-        #    $this->fillable[] = 'col'.$x;
+    public function user(){
+    	return $this->belongsTo('\App\User','added_by');
     }
 }

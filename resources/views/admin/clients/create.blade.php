@@ -9,7 +9,7 @@
 
                 <div class="panel-body">
 
-                {{ Form::open(['route'=>'clients.store', 'method'=>'POST']) }}
+                {{ Form::open(['route'=>'adminclients.store', 'method'=>'POST']) }}
                     <div class="form-group"> 
                     {{ Form::text('business_name',null,['id'=>'business_name', 'class'=>'form-control', 'placeholder'=>'Business Name'])}}
                     </div>

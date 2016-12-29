@@ -10,7 +10,7 @@
                 <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/admin/spreadsheets/{{ $sheet->id }}">{{$sheet->name}}</a></li>
                 @endforeach
             </ul>
-            {{ Form::open(['action'=>'AdminSpreadsheetController@store']) }}
+            {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT']) }}
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bg-success" style="padding:10px;">
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <div style="overflow:auto; width:100%;">
-                <table id="spreadsheet" class="table table-bordered table-condensed">
+                <table id="spreadsheet" class="table table-bordered table-striped table-condensed">
                     <thead>
                         <tr>
                             <td></td>
@@ -33,10 +33,17 @@
                     </thead>
                     <tbody>
                         @for($y=1; $y<=20; $y++)
+                            <?php
+                            $content = null;
+                            if(isset($spreadsheet->content[($y-1)]))
+                                $content = $spreadsheet->content[($y-1)];
+                            ?>
                             <tr>
-                                <th class="nostretch no-stretch bg-info">{{$y}}</th>
+                                <th class="nostretch no-stretch bg-info" {!! $content ? 'title="Added by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
                                 @for($x=1; $x<=$max; $x++)
-                                    <td style="padding:0;"><input class="sheet_cell" type="text" id="content_{{$y}}_{{$x}}" name="content[{{$y}}][{{$x}}]"></td>
+                                    <td style="padding:0;">
+                                        <input class="sheet_cell" type="text" id="content_{{$y}}_{{$x}}" value="{{ $content ? $content['col'.$x] : ''}}" name="content[{{$y}}][col{{$x}}]">
+                                    </td>
                                 @endfor
                             </tr>
                         @endfor

@@ -14,8 +14,11 @@
 Auth::routes();
 
 Route::get('/', 'HomeController@index');
-	Route::group(['prefix'=>'admin'],function(){
-	Route::resource('users', 'AdminUserController');
-	Route::resource('clients', 'AdminClientController');
-	Route::resource('spreadsheets', 'AdminSpreadsheetController');	
+Route::group(['prefix'=>'admin'],function(){
+	Route::resource('users','AdminUserController',['names'=>'adminusers']);
+	Route::resource('clients', 'AdminClientController',['names'=>'adminclients']);
+	Route::resource('spreadsheets', 'AdminSpreadsheetController',['names'=>'adminspreadsheets']);	
+});
+Route::group(['prefix'=>'client'],function(){
+	Route::resource('spreadsheets','ClientSpreadsheetController',['names'=>'clientspreadsheets']);	
 });
