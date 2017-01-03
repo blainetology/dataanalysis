@@ -7688,6 +7688,16 @@ button.close {
   }
 }
 
+.col-validation-label {
+  width: 85px;
+  text-align: left;
+  font-size: 12px;
+}
+
+#column-list .input-group {
+  margin: 2px 0;
+}
+
 .no-stretch {
   white-space: nowrap;
   width: 1%;
@@ -7702,11 +7712,12 @@ button.close {
 }
 
 .sheet_cell {
+  font-family: arial;
   margin: 0;
   padding: 0 3px;
   width: 100%;
   min-width: 100px;
-  height: 100%;
+  height: 32px;
   border: 1px solid transparent;
   outline: none;
   background: transparent;
@@ -7714,6 +7725,10 @@ button.close {
 
 .sheet_cell:focus {
   border: 1px solid #999;
+}
+
+.form-control {
+  font-family: Arial, sans-serif;
 }
 
 /*# sourceMappingURL=app.css.map */

@@ -30,7 +30,8 @@ class AdminSpreadsheetController extends Controller
         //
         $data = [
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'letters' => SpreadsheetColumn::$columnLetters
+            'letters' => SpreadsheetColumn::$columnLetters,
+            'input'   => ['column'=>[]]
         ];
         return view('admin.spreadsheets.create',$data);
     }
@@ -49,6 +50,7 @@ class AdminSpreadsheetController extends Controller
         foreach($input['column'] as $key => $column){
             $column['spreadsheet_id'] = $id;
             $column['column'] = $key;
+            $column['validation'] = json_encode($column['validation']);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
@@ -90,8 +92,10 @@ class AdminSpreadsheetController extends Controller
         //
         $spreadsheet = Spreadsheet::find($id);
         $input = $spreadsheet->toArray();
-        foreach($spreadsheet->columns as $column)
+        foreach($spreadsheet->columns as $column){
+            $column->validation = json_decode($column->validation);
             $input['column'][$column->column] = $column->toArray();
+        }
         $data = [
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
@@ -118,6 +122,7 @@ class AdminSpreadsheetController extends Controller
         foreach($input['column'] as $key => $column){
             $column['spreadsheet_id'] = $id;
             $column['column'] = $key;
+            $column['validation'] = json_encode($column['validation']);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }

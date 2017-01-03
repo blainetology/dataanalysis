@@ -72,16 +72,27 @@ class ClientSpreadsheetController extends Controller
         //
         $spreadsheet = Spreadsheet::find($id);
         $columns = [];
-        foreach($spreadsheet->columns as $column)
+        foreach($spreadsheet->columns as $column){
+            $column->validation = json_decode($column->validation,true);
+/*            $distincts = SpreadsheetContent::select('col'.$column->column.' AS col', \DB::raw('COUNT(id) AS qty'))->where('spreadsheet_id',$spreadsheet->id)->groupBy('col'.$column->column)->get();
+            $temp = [];
+            foreach($distincts as $distinct)
+                $temp[$distinct->col] = $distinct->col." (".$distinct->qty.")";
+            $column->distincts = $temp;
+*/            
+            $column->distincts = SpreadsheetContent::distinct('col'.$column->column)->where('spreadsheet_id',$spreadsheet->id)->pluck('col'.$column->column,'col'.$column->column);
             $columns[$column->column] = $column;
+        }
         $data = [
             'client' => Client::find($spreadsheet->client_id),
             'spreadsheet' => $spreadsheet,
             'columns' => $columns,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
-            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get()
+            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get(),
+            'counts' => []
         ];
+        #return $data;
         return view('client.spreadsheet.edit',$data);
      }
 

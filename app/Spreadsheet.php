@@ -16,7 +16,10 @@ class Spreadsheet extends Model
         return $this->hasMany('\App\SpreadsheetColumn','spreadsheet_id');
     }
     public function content(){
-        return $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0)->orderBy('year','asc')->orderBy('month','asc');
+        $content = $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0);
+        foreach(\Request::input('filter',[]) as $col=>$filter)
+            $content = $content->where($col,$filter);
+        return $content->orderBy('year','asc')->orderBy('month','asc');
     }
 
 }

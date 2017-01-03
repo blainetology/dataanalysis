@@ -26,8 +26,7 @@
                                     <tr>
                                         <td>{{ $spreadsheet->name }}</td>
                                         <td class="no-stretch">
-                                            <a href="{{ route('spreadsheets.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                            <a href="{{ route('spreadsheets.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                            <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -51,25 +50,19 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Email</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($users as $user)
                                     <tr>
-                                        <td>{{ $user->name }}</td>
+                                        <td>{{ $user->displayname() }}</td>
                                         <td>{{ $user->email }}</td>
-                                        <td class="no-stretch">
-                                            <a href="{{ route('users.edit',$user->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                            <a href="{{ route('users.destroy',$user->id) }}" class="btn btn-xs btn-danger">delete</a>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     @endif
                     <br/>
-                    <a href="{{ route('users.create') }}" class="btn btn-primary">Create User</a>
                 </div>
             </div>
         </div>

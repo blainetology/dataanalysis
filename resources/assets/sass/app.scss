@@ -9,8 +9,11 @@
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
 
 
+.col-validation-label{width:85px; text-align:left; font-size:12px;}
+#column-list .input-group{margin:2px 0;}
 .no-stretch{white-space: nowrap; width: 1%;}
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{background:#FFF;}
 .nav-tabs{margin-bottom:5px;}
-.sheet_cell{margin:0; padding:0 3px; width: 100%; min-width: 100px; height: 100%; border:1px solid transparent; outline: none; background:transparent;}
+.sheet_cell{font-family:arial; margin:0; padding:0 3px; width: 100%; min-width: 100px; height: 32px; border:1px solid transparent; outline: none; background:transparent;}
 .sheet_cell:focus{border:1px solid #999;}
+.form-control{font-family:Arial, sans-serif;}
