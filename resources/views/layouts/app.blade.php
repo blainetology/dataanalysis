@@ -9,6 +9,7 @@
 
     <!-- Styles -->
     <link href="/css/app.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Scripts -->
     <script src="/js/app.js"></script>

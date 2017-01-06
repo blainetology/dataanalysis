@@ -18,11 +18,12 @@ class CreateSpreadsheetColumnsTable extends Migration
             $table->integer('spreadsheet_id')->index();
             $table->string('column');
             $table->string('label');
+            $table->string('type')->default('string');
             $table->text('validation')->nullable();
             $table->timestamps();
         });
         \DB::update("ALTER TABLE spreadsheet_columns AUTO_INCREMENT = 5000;");
-        $labels = [1=>"Name", 2=>"Advisor", 3=>"Source", 4=>"Cost", 5=>"Generated Income"];
+        $labels = [1=>"Name", 2=>"Advisor", 3=>"Run Date", 4=>"Source", 5=>"Cost", 6=>"Generated Income"];
         foreach($labels as $column=>$label)
           \App\SpreadsheetColumn::create(['spreadsheet_id'=>3000,'column'=>$column,'label'=>$label]);
 

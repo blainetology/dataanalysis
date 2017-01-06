@@ -17,8 +17,18 @@ class Spreadsheet extends Model
     }
     public function content(){
         $content = $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0);
-        foreach(\Request::input('filter',[]) as $col=>$filter)
-            $content = $content->where($col,$filter);
+        foreach(\Request::input('filter',[]) as $col=>$filter){
+            if(is_array($filter)){
+                if(!empty($filter['start']) && !empty($filter['end']))
+                    $content = $content->whereBetween($col,[$filter['start'],$filter['end']]);
+                elseif(!empty($filter['start']))
+                    $content = $content->where($col,'>=',$filter['start']);
+                elseif(!empty($filter['end']))
+                    $content = $content->where($col,'<=',$filter['end']);
+            }
+            else
+                $content = $content->where($col,$filter);
+        }
         return $content->orderBy('year','asc')->orderBy('month','asc');
     }
 

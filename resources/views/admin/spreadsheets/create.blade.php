@@ -45,29 +45,30 @@
                                 </div>
                                 <div class="col-lg-11 col-lg-offset-1">
                                     <div class="input-group">
+                                        <span class="input-group-addon" id="basic-addon{{$x}}1"><div class="col-validation-label">Data Type</div></span>
+                                        {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,(!empty($input['column'][$x]) && !empty($input['column'][$x]['type']) ? $input['column'][$x]['type'] : null),['name'=>"column[$x][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'1'])}}
+                                    </div>
+                                </div>
+                                <div class="col-lg-10 col-lg-offset-2"><h5>Validations</h5></div>
+                                <div class="col-lg-10 col-lg-offset-2">
+                                    <div class="input-group">
                                         <span class="input-group-addon " id="basic-addon{{$x}}0"><div class="col-validation-label">Required</div></span>
                                         {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->required) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'0'])}}
                                     </div>
                                 </div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}1"><div class="col-validation-label">Data Type</div></span>
-                                        {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->type) ? $input['column'][$x]['validation']->type : null),['name'=>"column[$x][validation][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'1'])}}
-                                    </div>
-                                </div>
-                                <div class="col-lg-11 col-lg-offset-1">
+                                <div class="col-lg-10 col-lg-offset-2">
                                     <div class="input-group">
                                         <span class="input-group-addon" id="basic-addon{{$x}}2"><div class="col-validation-label">Select from List</div></span>
                                         {{ Form::text('select',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->in) ? $input['column'][$x]['validation']->in : null),['name'=>"column[$x][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon'.$x.'2'])}}
                                     </div>
                                 </div>
-                                <div class="col-lg-11 col-lg-offset-1">
+                                <div class="col-lg-10 col-lg-offset-2">
                                     <div class="input-group">
                                         <span class="input-group-addon" id="basic-addon{{$x}}3"><div class="col-validation-label">Min Value</div></span>
                                         {{ Form::text('min',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->min) ? $input['column'][$x]['validation']->min : null),['name'=>"column[$x][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'3'])}}
                                     </div>
                                 </div>
-                                <div class="col-lg-11 col-lg-offset-1">
+                                <div class="col-lg-10 col-lg-offset-2">
                                     <div class="input-group">
                                         <span class="input-group-addon" id="basic-addon{{$x}}4"><div class="col-validation-label">Max Value</div></span>
                                         {{ Form::text('max',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->max) ? $input['column'][$x]['validation']->max : null),['name'=>"column[$x][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'4'])}}
@@ -93,29 +94,30 @@
                             </div>
                             <div class="col-lg-11 col-lg-offset-1">
                                 <div class="input-group">
+                                    <span class="input-group-addon" id="basic-addon||x||1"><div class="col-validation-label">Data Type</div></span>
+                                    {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,null,['name'=>"column[||x||][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||1'])}}
+                                </div>
+                            </div>
+                                <div class="col-lg-10 col-lg-offset-2"><h5>Validations</h5></div>
+                            <div class="col-lg-10 col-lg-offset-2">
+                                <div class="input-group">
                                     <span class="input-group-addon" id="basic-addon||x||0"><div class="col-validation-label">Required</div></span>
                                     {{ Form::select('type',['1'=>'Yes','0'=>'No'],null,['name'=>"column[||x||][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||0'])}}
                                 </div>
                             </div>
-                            <div class="col-lg-11 col-lg-offset-1">
+                            <div class="col-lg-10 col-lg-offset-2">
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||1"><div class="col-validation-label">Type</div></span>
-                                    {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,null,['name'=>"column[||x||][validation][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||1'])}}
-                                </div>
-                            </div>
-                            <div class="col-lg-11 col-lg-offset-1">
-                                <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||2"><div class="col-validation-label">Select</div></span>
+                                    <span class="input-group-addon" id="basic-addon||x||2"><div class="col-validation-label">Select from List</div></span>
                                     {{ Form::text('select',null,['name'=>"column[||x||][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon||x||2'])}}
                                 </div>
                             </div>
-                            <div class="col-lg-11 col-lg-offset-1">
+                            <div class="col-lg-10 col-lg-offset-2">
                                 <div class="input-group">
                                     <span class="input-group-addon" id="basic-addon||x||3"><div class="col-validation-label">Min Value</div></span>
                                     {{ Form::text('min',null,['name'=>"column[||x||][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||3'])}}
                                 </div>
                             </div>
-                            <div class="col-lg-11 col-lg-offset-1">
+                            <div class="col-lg-10 col-lg-offset-2">
                                 <div class="input-group">
                                     <span class="input-group-addon" id="basic-addon||x||4"><div class="col-validation-label">Max Value</div></span>
                                     {{ Form::text('max',null,['name'=>"column[||x||][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||4'])}}

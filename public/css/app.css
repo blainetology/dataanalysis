@@ -7731,4 +7731,10 @@ button.close {
   font-family: Arial, sans-serif;
 }
 
+#spreadsheet tbody td .input-group-addon {
+  border: none !important;
+  border-radius: 0 !important;
+  color: #777 !important;
+}
+
 /*# sourceMappingURL=app.css.map */
