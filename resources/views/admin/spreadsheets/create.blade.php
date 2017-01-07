@@ -6,7 +6,7 @@
 
         <div class="col-md-12">
             <div class="panel panel-default">
-                <div class="panel-heading"><h2 class="panel-title">{{ !empty($input['id']) ? 'Update' : 'Create' }} Spreadsheet</h2></div>
+                <div class="panel-heading"><h2 class="panel-title">{{ !empty($duplicate) ? 'Duplicate' : (!empty($input['id']) ? 'Update' : 'Create') }} Spreadsheet</h2></div>
 
                 <div class="panel-body">
 
