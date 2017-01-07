@@ -128,6 +128,7 @@
                                             <td class="no-stretch">
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
                                                 <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning">edit</a>
+                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" class="btn btn-xs btn-info">duplicate</a>
                                                 <a href="{{ route('adminspreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger">delete</a>
                                             </td>
                                         </tr>

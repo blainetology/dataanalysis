@@ -7,7 +7,7 @@
             <p>Client: <strong>{{ $client->business_name }}</strong></p>
             <ul class="nav nav-tabs">
                 @foreach($client_spreadsheets as $sheet)
-                <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/admin/spreadsheets/{{ $sheet->id }}">{{$sheet->name}}</a></li>
+                <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/client/spreadsheets/{{ $sheet->id }}/edit">{{$sheet->name}}</a></li>
                 @endforeach
             </ul>
             {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
@@ -21,28 +21,28 @@
                 </div>
             </div>
             <div style="overflow:auto; width:100%;">
-                <table id="spreadsheet" class="table table-bordered table-striped table-condensed">
+                <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
                     <thead>
                         <tr>
                             <td></td>
                             @for($x=1; $x<=$max; $x++)
-                                <th class="bg-info" style="width:{{round(100/$max)}}%; vertical-align:top;">
+                                <th class="bg-info no-stretch" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
                                     @if(\Auth::user()->isEditor())
-                                    <small><em class="text-info" style="font-weight:100;">Column {{$letters[$x]}}</em></small><br/>
+                                    <div class="small"><em class="text-info" style="font-weight:100;">Column {{$letters[$x]}}</em></div>
                                     @endif
                                     {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
                                     @if(\Auth::user()->isEditor())
                                         <br/>
                                         @if($columns[$x]->type=='date')
-                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min date" style="width:48%; display:inline-block;">
-                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max date" style="width:48%; display:inline-block;">
+                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min date" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max date" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
                                         @elseif($columns[$x]->type!='notes')
-                                            <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()">
+                                            <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="font-size: 11px; min-width: 110px; padding:2px 4px; height:24px; margin-top:2px;">
                                                 <option value="0">--no filter--</option>
                                                 @if(count($columns[$x]->distincts))
                                                 <optgroup label="filters"> 
                                                 @foreach($columns[$x]->distincts as $key => $value)
-                                                <option value="{{$key}}" {{\Request::input('filter.col'.$x) == $key ? 'selected' : ''}}>{{$value}}</option> 
+                                                <option value="{{$key}}" {{\Request::input('filter.col'.$x) == $key && $key != "" ? 'selected' : ''}}>{{$value}}</option> 
                                                 @endforeach
                                                 </optgroup>
                                                 @endif
@@ -52,7 +52,7 @@
                                 </th>
                                 <?php
                                 if(in_array($columns[$x]->type, ['numeric','integer','currency']))
-                                    $counts[$x]=0;
+                                    $counts[$x]=null;
                                 else  
                                     $counts[$x]=[];
                                 ?>
@@ -81,7 +81,10 @@
                                     <?php
                                     if(isset($content['col'.$x])){
                                         if(in_array($columns[$x]->type, ['numeric','integer','currency'])){
-                                            $counts[$x] += (int)$content['col'.$x];
+                                            if(!$counts[$x])
+                                                $counts[$x] = (int)$content['col'.$x];
+                                            else 
+                                                $counts[$x] += (int)$content['col'.$x];
                                         }
                                         elseif($content['col'.$x] != ""){
                                             if(isset($counts[$x][$content['col'.$x]]))
@@ -101,9 +104,13 @@
                             @for($x=1; $x<=$max; $x++)
                               <td class="small">
                                 @if(in_array($columns[$x]->type, ['numeric','integer']))
-                                    {{ $counts[$x] }}
+                                    @if($counts[$x])
+                                        {{ $counts[$x] }}
+                                    @endif
                                 @elseif($columns[$x]->type == 'currency')
-                                    ${{ number_format($counts[$x],2) }}
+                                    @if($counts[$x])
+                                        ${{ number_format($counts[$x],2) }}
+                                    @endif
                                 @else
                                     @foreach($counts[$x] as $key=>$value)
                                     ({{$value}}) {{$key}}<br/>
@@ -150,6 +157,7 @@
 <link href="/css/datepicker.css" rel="stylesheet" >
 <style>
 #spreadsheet{background:#FFF;}
+#spreadsheet thead th{font-size:13px; line-height: 16px;}
 #spreadsheet tbody td{}
 #spreadsheet tfoot td{font-family: Arial, sans-serif;}
 </style>
@@ -191,7 +199,8 @@
                 var val = $(this).val();
                 val = val*1;
                 console.log(val);
-                $(this).val(val.toFixed(2));
+                if(val!="")
+                    $(this).val(val.toFixed(2));
             })
         }
         bindcells();

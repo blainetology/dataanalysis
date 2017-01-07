@@ -29,7 +29,7 @@ class Spreadsheet extends Model
             else
                 $content = $content->where($col,$filter);
         }
-        return $content->orderBy('year','asc')->orderBy('month','asc');
+        return $content;
     }
 
 }

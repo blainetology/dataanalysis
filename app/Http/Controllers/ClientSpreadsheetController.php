@@ -115,8 +115,6 @@ class ClientSpreadsheetController extends Controller
             $content['spreadsheet_id'] = $id;
             $content['added_by'] = \Auth::user()->id;
             $content['revision_id'] = 0;
-            $content['year'] = date('Y');
-            $content['month'] = date('n');
             if(!empty($content['col1']))
                 SpreadsheetContent::create($content);
         }

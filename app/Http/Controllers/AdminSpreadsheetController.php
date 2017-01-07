@@ -139,4 +139,30 @@ class AdminSpreadsheetController extends Controller
     {
         //
     }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function duplicate($id)
+    {
+        //
+        $spreadsheet = Spreadsheet::find($id);
+        $input = $spreadsheet->toArray();
+        foreach($spreadsheet->columns as $column){
+            $column->validation = json_decode($column->validation);
+            $input['column'][$column->column] = $column->toArray();
+        }
+        $data = [
+            'input' => $input,
+            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'letters' => SpreadsheetColumn::$columnLetters,
+            'duplicate' => true
+        ];
+        return view('admin.spreadsheets.create',$data);
+    }
+
+
 }

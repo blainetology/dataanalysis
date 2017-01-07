@@ -18,6 +18,7 @@ Route::group(['middleware'=>['auth']],function(){
 	Route::group(['prefix'=>'admin'],function(){
 		Route::resource('users','AdminUserController',['names'=>'adminusers']);
 		Route::resource('clients', 'AdminClientController',['names'=>'adminclients']);
+		Route::get('spreadsheets/{id}/duplicate',['as'=>'adminspreadsheetduplicate', 'uses'=>'AdminSpreadsheetController@duplicate']);	
 		Route::resource('spreadsheets', 'AdminSpreadsheetController',['names'=>'adminspreadsheets']);	
 	});
 	Route::group(['prefix'=>'client'],function(){

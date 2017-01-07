@@ -7716,11 +7716,12 @@ button.close {
   margin: 0;
   padding: 0 3px;
   width: 100%;
-  min-width: 100px;
+  min-width: 110px;
   height: 32px;
   border: 1px solid transparent;
   outline: none;
   background: transparent;
+  font-size: 12px;
 }
 
 .sheet_cell:focus {

@@ -22,8 +22,9 @@ class CreateSpreadsheetsTable extends Migration
         });
         \DB::update("ALTER TABLE spreadsheets AUTO_INCREMENT = 3000;");
 
-        \App\Spreadsheet::create(['name'=>'Sales Tracking','client_id'=>2000]);
-        \App\Spreadsheet::create(['name'=>'Team Tracking','client_id'=>2000]);
+        \App\Spreadsheet::create(['name'=>'Seminar Tracker','client_id'=>2000]);
+        \App\Spreadsheet::create(['name'=>'Marketing Tracker','client_id'=>2000]);
+        \App\Spreadsheet::create(['name'=>'Production Tracker','client_id'=>2000]);
     }
 
     /**
