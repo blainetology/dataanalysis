@@ -7,6 +7,8 @@
 
     <title>{{ config('app.name') }}</title>
 
+    <link href="/images/favicon.png" rel="shortcut icon">
+
     <!-- Styles -->
     <link href="/css/app.css" rel="stylesheet">
     <link href="/css/font-awesome.min.css" rel="stylesheet">

@@ -11,6 +11,7 @@
                 @endforeach
             </ul>
             {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
+            <input type="hidden" name="sort_col" id="sort_col" value="{{\Request::get('sort_col',$spreadsheet->sorting_col)}}">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="" id="action_bar" style="padding:10px;">
@@ -24,18 +25,21 @@
                 <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
                     <thead>
                         <tr>
-                            <td></td>
+                            <td class="bg-info"></td>
                             @for($x=1; $x<=$max; $x++)
                                 <th class="bg-info no-stretch" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
                                     @if(\Auth::user()->isEditor())
-                                    <div class="small"><em class="text-info" style="font-weight:100;">Column {{$letters[$x]}}</em></div>
+                                    <div class="small text-info" style="font-weight:100;"><a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a></div>
                                     @endif
                                     {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
                                     @if(\Auth::user()->isEditor())
                                         <br/>
                                         @if($columns[$x]->type=='date')
-                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min date" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max date" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                        @elseif($columns[$x]->type=='currency')
+                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_currency" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_currency" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
                                         @elseif($columns[$x]->type!='notes')
                                             <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="font-size: 11px; min-width: 110px; padding:2px 4px; height:24px; margin-top:2px;">
                                                 <option value="0">--no filter--</option>
@@ -66,7 +70,7 @@
                             if(isset($spreadsheet->content[($y-1)]))
                                 $content = $spreadsheet->content[($y-1)];
                             ?>
-                            <tr>
+                            <tr id="row{{$y}}">
                                 <th class="nostretch no-stretch bg-info" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
                                 @for($x=1; $x<=$max; $x++)
                                     <td style="padding:0;">
@@ -80,11 +84,17 @@
                                     </td>
                                     <?php
                                     if(isset($content['col'.$x])){
-                                        if(in_array($columns[$x]->type, ['numeric','integer','currency'])){
+                                        if(in_array($columns[$x]->type, ['integer'])){
                                             if(!$counts[$x])
                                                 $counts[$x] = (int)$content['col'.$x];
                                             else 
                                                 $counts[$x] += (int)$content['col'.$x];
+                                        }
+                                        elseif(in_array($columns[$x]->type, ['currency','numeric'])){
+                                            if(!$counts[$x])
+                                                $counts[$x] = $content['col'.$x];
+                                            else 
+                                                $counts[$x] += $content['col'.$x];
                                         }
                                         elseif($content['col'.$x] != ""){
                                             if(isset($counts[$x][$content['col'.$x]]))
@@ -95,14 +105,22 @@
                                     }
                                     ?>
                                 @endfor
+                                <td>
+                                @if($y == ($spreadsheet->content ? $spreadsheet->content->count()+1 : 1))
+                                <a href="javascript:newRow({{$y}})" class="text-success new-row" id="newRow{{$y}}"><i class="fa fa-plus" aria-hidden="true"></i></a>
+                                <a href="javascript:delRow({{$y}})" class="text-danger del-row hidden" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
+                                @else
+                                <a href="javascript:delRow({{$y}})" class="text-danger del-row" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
+                                @endif
+                                </td>
                             </tr>
                         @endfor
                    </tbody>
                     <tfoot>
-                        <tr class="bg-warning">
-                            <td></td>
+                        <tr>
+                            <td class="bg-info"></td>
                             @for($x=1; $x<=$max; $x++)
-                              <td class="small">
+                              <td class="small bg-warning">
                                 @if(in_array($columns[$x]->type, ['numeric','integer']))
                                     @if($counts[$x])
                                         {{ $counts[$x] }}
@@ -127,7 +145,7 @@
     </div>
 </div>
 <table id="newrow" style="display:none;">
-    <tr>
+    <tr id="row||row||">
         <th class="nostretch no-stretch bg-info" id="th||row||" {!! $content ? 'title="Entered by '.\Auth::user()->displayname().' on '.date('Y-m-d @ h:ia').'"' : '' !!} >||row||</th>
         @for($x=1; $x<=$max; $x++)
         <td style="padding:0;">
@@ -149,6 +167,7 @@
         }
         ?>
         @endfor
+        <td><a href="javascript:delRow(||row||)" class="text-danger hidden del-row" id="delRow||row||"><i class="fa fa-ban" aria-hidden="true"></i></a><a href="javascript:newRow(||row||)" class="text-success new-row" id="newRow||row||"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
     </tr>
 </table>
 @endsection
@@ -156,7 +175,7 @@
 @section('styles')
 <link href="/css/datepicker.css" rel="stylesheet" >
 <style>
-#spreadsheet{background:#FFF;}
+#spreadsheet{background:transparent;}
 #spreadsheet thead th{font-size:13px; line-height: 16px;}
 #spreadsheet tbody td{}
 #spreadsheet tfoot td{font-family: Arial, sans-serif;}
@@ -168,8 +187,12 @@
 <script type="text/javascript">
     var sheetupdated = false;
     var lastrow = "{{($spreadsheet->content ? $spreadsheet->content->count()+1 : 1)}}";
+    var lastCellValue = "";
     $(document).ready(function(){
         function bindcells(){
+            $('.sheet_cell').not($('.bound')).on('focus',function(){
+                lastCellValue = $(this).val();
+            });
             $('.sheet_cell').not($('.bound')).on('change',function(){
                 var cell = this;
                 var val = $(cell).val();
@@ -181,24 +204,25 @@
                 $('#exportbutton').addClass('hidden');
                 sheetupdated=true;
                 if(row==lastrow){
-                    console.log('lastrow');
+                    console.log('yes');
+                    $('#spreadsheet .new-row').addClass('hidden');
+                    $('#spreadsheet .del-row').removeClass('hidden');
                     lastrow++;
                     var content = $('#newrow tr').html();
                     content = content.replace(/\|\|row\|\|/g,lastrow);
-                    console.log(content);
                     $('#spreadsheet tbody').append('<tr>'+content+'</tr>');
                     bindcells();
                 }
                 $(cell).attr('bound','true');
                 if($(cell).hasClass('type_currency'))
                     $(cell).val((val*1).toFixed(2));
+                console.log(lastrow);
             });            
             $('.sheet_cell').not($('.bound')).attr('bound','true');
             $('.type_date').not($('.bound')).datepicker({format: 'yyyy-mm-dd'});
             $('.sheet_cell.type_currency').each(function(){
                 var val = $(this).val();
                 val = val*1;
-                console.log(val);
                 if(val!="")
                     $(this).val(val.toFixed(2));
             })
@@ -220,8 +244,11 @@
                 params=params+$(this).attr('name')+"="+$(this).val();
             }
         });
-        console.log(params);
+        params=params+"&sort_col="+$('#sort_col').val();
         location.href="?"+params;
+    }
+    function delRow(id){
+        $('#row'+id).remove();
     }
 </script>
 @append

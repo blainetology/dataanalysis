@@ -50,7 +50,12 @@ class AdminSpreadsheetController extends Controller
         foreach($input['column'] as $key => $column){
             $column['spreadsheet_id'] = $id;
             $column['column'] = $key;
-            $column['validation'] = json_encode($column['validation']);
+            $validation = [];
+            foreach($column['validation'] as $key=>$value){
+                if(trim($value) != "")
+                    $validation[$key]=trim($value);
+            }
+            $column['validation'] = json_encode($validation);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
@@ -122,7 +127,25 @@ class AdminSpreadsheetController extends Controller
         foreach($input['column'] as $key => $column){
             $column['spreadsheet_id'] = $id;
             $column['column'] = $key;
-            $column['validation'] = json_encode($column['validation']);
+            $validation = [];
+            foreach($column['validation'] as $key=>$value){
+                if($key=='in'){
+                    $value = trim($value);
+                    if($value != ""){
+                        $values = explode(',',$value);
+                        $temp = [];
+                        foreach($values as $val){
+                            $temp[] = trim($val);
+                        }
+                        $validation[$key]=implode(',',$temp);
+                    }
+                }
+                else{
+                    if(trim($value) != "")
+                        $validation[$key]=trim($value);
+                }
+            }
+            $column['validation'] = json_encode($validation);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }

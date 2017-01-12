@@ -18,7 +18,7 @@ class CreateSpreadsheetContentsTable extends Migration
             $table->integer('spreadsheet_id')->index();
             $table->integer('added_by')->default(0)->index();
             $table->integer('revision_id')->default(0)->index();
-            for($x=1;$x<=26;$x++)
+            for($x=1;$x<=52;$x++)
                 $table->text('col'.$x)->nullable();
             $table->timestamps();
         });

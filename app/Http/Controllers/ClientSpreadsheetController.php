@@ -16,6 +16,8 @@ class ClientSpreadsheetController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public $keyOnly = ['required'];
+
     public function index()
     {
         //
@@ -72,6 +74,14 @@ class ClientSpreadsheetController extends Controller
         //
         $spreadsheet = Spreadsheet::find($id);
         $columns = [];
+        $validations = [];
+        $queryvars = explode('&',$_SERVER['QUERY_STRING']);
+        $temp = [];
+        foreach($queryvars as $queryvar){
+            if(!empty($queryvar) && !strstr($queryvar, 'sort_col='))
+                $temp[] = $queryvar;
+        }
+        $queryvars = implode('&',$temp);
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation,true);
 /*            $distincts = SpreadsheetContent::select('col'.$column->column.' AS col', \DB::raw('COUNT(id) AS qty'))->where('spreadsheet_id',$spreadsheet->id)->groupBy('col'.$column->column)->get();
@@ -79,7 +89,16 @@ class ClientSpreadsheetController extends Controller
             foreach($distincts as $distinct)
                 $temp[$distinct->col] = $distinct->col." (".$distinct->qty.")";
             $column->distincts = $temp;
-*/            
+*/          
+            $temp=[];
+            $temp[] = str_replace('currency', 'numeric', $column->type);
+            foreach($column->validation as $key=>$value){
+                if(in_array($key, $this->keyOnly))
+                    $temp[]=$key;
+                else
+                    $temp[]=$key.":".$value;
+            }
+            $validations['col'.$column->column] = implode('|',$temp);
             $column->distincts = SpreadsheetContent::distinct('col'.$column->column)->where('spreadsheet_id',$spreadsheet->id)->pluck('col'.$column->column,'col'.$column->column);
             $columns[$column->column] = $column;
         }
@@ -87,10 +106,12 @@ class ClientSpreadsheetController extends Controller
             'client' => Client::find($spreadsheet->client_id),
             'spreadsheet' => $spreadsheet,
             'columns' => $columns,
+            'validations' => $validations,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get(),
-            'counts' => []
+            'counts' => [],
+            'queryvars' => $queryvars
         ];
         #return $data;
         return view('client.spreadsheet.edit',$data);

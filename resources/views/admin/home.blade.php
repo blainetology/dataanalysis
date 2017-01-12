@@ -41,9 +41,8 @@
                                             <td>{{ $client->users->count() }}</td>
                                             <td>{{ $client->spreadsheets->count() }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('adminclients.show',$client->id) }}" class="btn btn-xs btn-info">view</a>
-                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('adminclients.destroy',$client->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminclients.destroy',$client->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -88,8 +87,8 @@
                                             </td>
                                             <td>{{ $user->last_login }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('adminusers.destroy',$user->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminusers.destroy',$user->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -127,9 +126,9 @@
                                             </td>
                                             <td class="no-stretch">
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
-                                                <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning">edit</a>
-                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" class="btn btn-xs btn-info">duplicate</a>
-                                                <a href="{{ route('adminspreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger">delete</a>
+                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminspreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
                                             </td>
                                         </tr>
                                     @endforeach

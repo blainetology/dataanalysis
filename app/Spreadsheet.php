@@ -16,7 +16,7 @@ class Spreadsheet extends Model
         return $this->hasMany('\App\SpreadsheetColumn','spreadsheet_id');
     }
     public function content(){
-        $content = $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0);
+        $content = $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0)->orderBy('col'.\Request::get('sort_col',$this->sorting_col),'asc');
         foreach(\Request::input('filter',[]) as $col=>$filter){
             if(is_array($filter)){
                 if(!empty($filter['start']) && !empty($filter['end']))
