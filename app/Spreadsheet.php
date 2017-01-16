@@ -19,12 +19,12 @@ class Spreadsheet extends Model
         $content = $this->hasMany('\App\SpreadsheetContent','spreadsheet_id')->where('revision_id',0)->orderBy('col'.\Request::get('sort_col',$this->sorting_col),'asc');
         foreach(\Request::input('filter',[]) as $col=>$filter){
             if(is_array($filter)){
-                if(!empty($filter['start']) && !empty($filter['end']))
-                    $content = $content->whereBetween($col,[$filter['start'],$filter['end']]);
-                elseif(!empty($filter['start']))
-                    $content = $content->where($col,'>=',$filter['start']);
-                elseif(!empty($filter['end']))
-                    $content = $content->where($col,'<=',$filter['end']);
+                if(!empty($filter['min']) && !empty($filter['max']))
+                    $content = $content->whereBetween($col,[$filter['min'],$filter['max']]);
+                elseif(!empty($filter['min']))
+                    $content = $content->where($col,'>=',$filter['min']);
+                elseif(!empty($filter['max']))
+                    $content = $content->where($col,'<=',$filter['max']);
             }
             else
                 $content = $content->where($col,$filter);

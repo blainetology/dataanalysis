@@ -18,6 +18,8 @@ class CreateSpreadsheetsTable extends Migration
             $table->integer('client_id')->index();
             $table->string('name');
             $table->integer('active')->default(1);
+            $table->integer('list_order')->default(1);
+            $table->integer('sorting_col')->default(1);
             $table->timestamps();
         });
         \DB::update("ALTER TABLE spreadsheets AUTO_INCREMENT = 3000;");

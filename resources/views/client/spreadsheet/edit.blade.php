@@ -11,7 +11,7 @@
                 @endforeach
             </ul>
             {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
-            <input type="hidden" name="sort_col" id="sort_col" value="{{\Request::get('sort_col',$spreadsheet->sorting_col)}}">
+            <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="" id="action_bar" style="padding:10px;">
@@ -28,18 +28,16 @@
                             <td class="bg-info"></td>
                             @for($x=1; $x<=$max; $x++)
                                 <th class="bg-info no-stretch" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
-                                    @if(\Auth::user()->isEditor())
-                                    <div class="small text-info" style="font-weight:100;"><a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a></div>
-                                    @endif
+                                    <div class="small text-info" style="font-weight:100;{{ $sort_col==$x ? ' text-decoration:underline;' : ''}}"><a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a></div>
                                     {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
                                     @if(\Auth::user()->isEditor())
                                         <br/>
                                         @if($columns[$x]->type=='date')
-                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                        @elseif($columns[$x]->type=='currency')
-                                            <input name="filter[col{{$x}}][start]" class="form-control input-sm filter-input type_currency" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.start')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                            <input name="filter[col{{$x}}][end]" class="form-control input-sm filter-input type_currency" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.end')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                        @elseif($columns[$x]->type=='numeric' || $columns[$x]->type=='integer' || $columns[$x]->type=='currency')
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="width:48%; min-width:50px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                             <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="width:48%; min-width:50px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
                                         @elseif($columns[$x]->type!='notes')
                                             <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="font-size: 11px; min-width: 110px; padding:2px 4px; height:24px; margin-top:2px;">
                                                 <option value="0">--no filter--</option>
