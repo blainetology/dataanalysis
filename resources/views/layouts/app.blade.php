@@ -36,14 +36,16 @@
 
                     <!-- Branding Image -->
                     <a class="navbar-brand" href="{{ url('/') }}">
-                        <img src="/images/trackthatlogo.jpg" alt="{{ config('app.name', 'Laravel') }}" style="height:42px; width:auto; margin-top:-10px;" />
+                        <img src="/images/trackthatlogo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" style="height:42px; width:auto; margin-top:-10px;" />
                     </a>
                 </div>
 
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
                     <!-- Left Side Of Navbar -->
                     <ul class="nav navbar-nav">
-                        &nbsp;
+                        @if(isset($client))
+                        <li style="padding-top:15px;"> &nbsp; &nbsp; Client: <strong>{{ $client->business_name }}</strong></li>
+                        @endif
                     </ul>
 
                     <!-- Right Side Of Navbar -->

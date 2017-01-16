@@ -116,7 +116,7 @@ class ClientSpreadsheetController extends Controller
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->orderBy('list_order','asc')->get(),
             'counts' => [],
             'queryvars' => $queryvars,
-            'field_ids' => implode(',',$field_ids)
+            'field_ids' => implode(',',$field_ids),
             'sort_col' => \Request::get('sort_col',$spreadsheet->sorting_col)
         ];
         #return $data;

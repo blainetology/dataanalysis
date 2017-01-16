@@ -4,7 +4,13 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <p>Client: <strong>{{ $client->business_name }}</strong></p>
+            <span class="pull-right" id="action_bar">
+                <a href="/client/spreadsheets/{{$spreadsheet->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> export to csv</a>
+                @if(!empty(\Request::input('filter',[])))
+                <a href="/client/spreadsheets/{{$spreadsheet->id}}/edit" class="btn btn-warning btn-sm" id="clearfilters"><i class="fa fa-refresh" aria-hidden="true"></i> reset filters</a>
+                @endif
+                <button class="btn btn-success btn-sm hidden" id="savebutton" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> save changes</button>
+            </span>
             <ul class="nav nav-tabs">
                 @foreach($client_spreadsheets as $sheet)
                 <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/client/spreadsheets/{{ $sheet->id }}/edit">{{$sheet->name}}</a></li>
@@ -13,19 +19,9 @@
             {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
             <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
             <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="" id="action_bar" style="padding:10px;">
-                        <a href="/client/spreadsheets/{{$spreadsheet->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton">export data</a>
-                        @if(!empty(\Request::input('filter',[])))
-                        <a href="/client/spreadsheets/{{$spreadsheet->id}}/edit" class="btn btn-warning btn-sm" id="clearfilters">clear filters</a>
-                        @endif
-                        {{ Form::submit('save changes',['class'=>'btn btn-success btn-sm hidden','id'=>'savebutton']) }}
-                    </div>
-                </div>
-            </div>
+
         </div>
-        <div class="col-md-12">
+        <div class="col-md-12" style="padding:3px;">
             <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
                 <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
                     <thead style="">
@@ -38,13 +34,13 @@
                                     @if(\Auth::user()->isEditor())
                                         <br/>
                                         @if($columns[$x]->type=='date')
-                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                            <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="width:48%; min-width:70px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min">
+                                            <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max">
                                         @elseif($columns[$x]->type=='numeric' || $columns[$x]->type=='integer' || $columns[$x]->type=='currency')
-                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="width:48%; min-width:50px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
-                                             <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="width:48%; min-width:50px; display:inline-block; font-size: 11px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="min-width:40px;">
+                                             <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="min-width:40px;">
                                         @elseif($columns[$x]->type!='notes')
-                                            <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="font-size: 11px; min-width: 110px; padding:2px 4px; height:24px; margin-top:2px;">
+                                            <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="height:24px; min-width: 110px;">
                                                 <option value="0">--no filter--</option>
                                                 @if(count($columns[$x]->distincts))
                                                 <optgroup label="filters"> 
@@ -132,7 +128,7 @@
                                     @if($counts[$x])
                                         ${{ number_format($counts[$x],2) }}
                                     @endif
-                                @else
+                                @elseif($columns[$x]->type != 'notes')
                                     @foreach($counts[$x] as $key=>$value)
                                     ({{$value}}) {{$key}}<br/>
                                     @endforeach
@@ -157,7 +153,7 @@
             @elseif($columns[$x]->type=='date')
             <div class="input-group"><div class="input-group-addon "><i class="fa fa-calendar" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,'||row||') !!}</div>
             @else
-            {!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}
+            {!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,'||row||') !!}
             @endif
         </td>
         <?php
@@ -179,9 +175,14 @@
 <link href="/css/datepicker.css" rel="stylesheet" >
 <style>
 #spreadsheet{background:transparent;}
-#spreadsheet thead th{font-size:13px; line-height: 16px;}
-#spreadsheet tbody td{}
+#spreadsheet thead th{font-size:12px; line-height: 16px;}
+#spreadsheet tbody td{ font-size:10px !important;}
+#spreadsheet tbody td .input-group-addon{border:none !important; border-radius:0 !important; color:#777 !important; padding:6px 6px; background: transparent; font-size:12px !important;}
+#spreadsheet tbody th{padding:4px !important; font-size:11px;}
 #spreadsheet tfoot td{font-family: Arial, sans-serif;}
+.sheet_cell{font-family:arial; margin:0; padding:0 3px; width: 100%; min-width: 125px; height: 26px; border:1px solid transparent; outline: none; background:transparent; font-size:12px !important;}
+.sheet_cell:focus{border:1px solid #999;}
+.filter-input{font-weight: 100; width:48%; min-width:55px; display:inline-block; font-size: 10px; padding:2px 4px; height:24px; margin-top:2px;}
 </style>
 @append
 
@@ -192,7 +193,7 @@
     var lastrow = "{{($spreadsheet->content ? $spreadsheet->content->count()+1 : 1)}}";
     var lastCellValue = "";
     $(document).ready(function(){
-        $('#spreadsheetContainer').height($(window).height()-230);
+        $('#spreadsheetContainer').height($(window).height()-150);
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){
                 lastCellValue = $(this).val();
@@ -217,6 +218,7 @@
                     $('#spreadsheet .del-row').removeClass('hidden');
                     lastrow++;
                     var content = $('#newrow tr').html();
+                    console.log(content);
                     content = content.replace(/\|\|row\|\|/g,lastrow);
                     $('#spreadsheet tbody').append('<tr id="tr'+lastrow+'">'+content+'</tr>');
                     bindcells();
@@ -226,7 +228,6 @@
                     var parsedval = (parseFloat(val) ? parseFloat(val) : 0 ).toFixed(2);
                     $(cell).val(parsedval);
                 }
-                console.log(lastrow);
                 var totals = {};
                 $('tbody td.col'+col+' .sheet_cell').each(function(){
                     var cell = this;
@@ -238,7 +239,7 @@
                             else
                                 totals[1]=parseFloat(val);
                         }
-                        else{
+                        else if(type != 'notes'){
                             if(totals[val])
                                 totals[val]++;
                             else
@@ -255,7 +256,7 @@
                     else
                         $('#totals'+col).append(totals[1].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
                 }
-                else{
+                else if(type != 'notes'){
                     $.each(totals,function(key,value){
                         $('#totals'+col).append('('+value+') '+key+'<br/>');
                     });
