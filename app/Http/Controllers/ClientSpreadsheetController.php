@@ -91,7 +91,7 @@ class ClientSpreadsheetController extends Controller
             $column->distincts = $temp;
 */          
             $temp=[];
-            $temp[] = str_replace('currency', 'numeric', $column->type);
+            $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
             foreach($column->validation as $key=>$value){
                 if(in_array($key, $this->keyOnly))
                     $temp[]=$key;
@@ -102,6 +102,10 @@ class ClientSpreadsheetController extends Controller
             $column->distincts = SpreadsheetContent::distinct('col'.$column->column)->where('spreadsheet_id',$spreadsheet->id)->pluck('col'.$column->column,'col'.$column->column);
             $columns[$column->column] = $column;
         }
+        $field_ids = [];
+        foreach($spreadsheet->content as $content){
+            $field_ids[] = $content->id;
+        }
         $data = [
             'client' => Client::find($spreadsheet->client_id),
             'spreadsheet' => $spreadsheet,
@@ -111,7 +115,8 @@ class ClientSpreadsheetController extends Controller
             'letters' => SpreadsheetColumn::$columnLetters,
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get(),
             'counts' => [],
-            'queryvars' => $queryvars
+            'queryvars' => $queryvars,
+            'field_ids' => implode(',',$field_ids)
         ];
         #return $data;
         return view('client.spreadsheet.edit',$data);
@@ -130,8 +135,11 @@ class ClientSpreadsheetController extends Controller
         $input = \Request::all();
         #print_r($input);
         #exit;
+        $field_ids=[];
+        foreach(explode(',',$input['field_ids']) as $field_id)
+            $field_ids[] = $field_id;
         $spreadsheet = Spreadsheet::find($id)->update($input);
-        SpreadsheetContent::where('spreadsheet_id',$id)->delete();
+        SpreadsheetContent::where('spreadsheet_id',$id)->whereIn('id',$field_ids)->delete();
         foreach($input['content'] as $key => $content){
             $content['spreadsheet_id'] = $id;
             $content['added_by'] = \Auth::user()->id;

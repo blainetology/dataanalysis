@@ -12,22 +12,27 @@
             </ul>
             {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
             <input type="hidden" name="sort_col" id="sort_col" value="{{\Request::get('sort_col',$spreadsheet->sorting_col)}}">
+            <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="" id="action_bar" style="padding:10px;">
                         <a href="/client/spreadsheets/{{$spreadsheet->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton">export data</a>
+                        @if(!empty(\Request::input('filter',[])))
                         <a href="/client/spreadsheets/{{$spreadsheet->id}}/edit" class="btn btn-warning btn-sm" id="clearfilters">clear filters</a>
+                        @endif
                         {{ Form::submit('save changes',['class'=>'btn btn-success btn-sm hidden','id'=>'savebutton']) }}
                     </div>
                 </div>
             </div>
-            <div style="overflow:auto; width:100%;">
+        </div>
+        <div class="col-md-12">
+            <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
                 <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
-                    <thead>
+                    <thead style="">
                         <tr>
-                            <td class="bg-info"></td>
+                            <td class="bg-info0"></td>
                             @for($x=1; $x<=$max; $x++)
-                                <th class="bg-info no-stretch" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
+                                <th class="bg-info no-stretch col{{$x}}" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
                                     @if(\Auth::user()->isEditor())
                                     <div class="small text-info" style="font-weight:100;"><a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a></div>
                                     @endif
@@ -70,10 +75,10 @@
                             if(isset($spreadsheet->content[($y-1)]))
                                 $content = $spreadsheet->content[($y-1)];
                             ?>
-                            <tr id="row{{$y}}">
-                                <th class="nostretch no-stretch bg-info" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
+                            <tr id="tr{{$y}}">
+                                <th class="nostretch no-stretch bg-info row{{$y}} col0" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
                                 @for($x=1; $x<=$max; $x++)
-                                    <td style="padding:0;">
+                                    <td style="padding:0;" class="row{{$y}} col{{$x}}">
                                         @if($columns[$x]->type=='currency')
                                         <div class="input-group"><div class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
                                         @elseif($columns[$x]->type=='date')
@@ -120,7 +125,7 @@
                         <tr>
                             <td class="bg-info"></td>
                             @for($x=1; $x<=$max; $x++)
-                              <td class="small bg-warning">
+                              <td class="small bg-warning col{{$x}}" id="totals{{$x}}">
                                 @if(in_array($columns[$x]->type, ['numeric','integer']))
                                     @if($counts[$x])
                                         {{ $counts[$x] }}
@@ -146,9 +151,9 @@
 </div>
 <table id="newrow" style="display:none;">
     <tr id="row||row||">
-        <th class="nostretch no-stretch bg-info" id="th||row||" {!! $content ? 'title="Entered by '.\Auth::user()->displayname().' on '.date('Y-m-d @ h:ia').'"' : '' !!} >||row||</th>
+        <th class="nostretch no-stretch bg-info row||row|| col0" id="th||row||" {!! $content ? 'title="Entered by '.\Auth::user()->displayname().' on '.date('Y-m-d @ h:ia').'"' : '' !!} >||row||</th>
         @for($x=1; $x<=$max; $x++)
-        <td style="padding:0;">
+        <td style="padding:0;" class="row||row|| col{{$x}}">
             @if($columns[$x]->type=='currency')
             <div class="input-group"><div class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,'||row||') !!}</div>
             @elseif($columns[$x]->type=='date')
@@ -189,20 +194,25 @@
     var lastrow = "{{($spreadsheet->content ? $spreadsheet->content->count()+1 : 1)}}";
     var lastCellValue = "";
     $(document).ready(function(){
+        $('#spreadsheetContainer').height($(window).height()-230);
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){
                 lastCellValue = $(this).val();
+                console.log(lastCellValue);
             });
             $('.sheet_cell').not($('.bound')).on('change',function(){
                 var cell = this;
                 var val = $(cell).val();
                 var row = $(cell).data('row-id');
                 var col = $(cell).data('col-id');
+                var type = $(cell).data('type');
                 $('#th'+row).removeClass('bg-info').addClass('bg-danger');
                 $('#action_bar').removeClass('bg-warning').addClass('bg-success');
                 $('#savebutton').removeClass('hidden');
                 $('#exportbutton').addClass('hidden');
+
                 sheetupdated=true;
+                console.log(row,lastrow);
                 if(row==lastrow){
                     console.log('yes');
                     $('#spreadsheet .new-row').addClass('hidden');
@@ -210,22 +220,53 @@
                     lastrow++;
                     var content = $('#newrow tr').html();
                     content = content.replace(/\|\|row\|\|/g,lastrow);
-                    $('#spreadsheet tbody').append('<tr>'+content+'</tr>');
+                    $('#spreadsheet tbody').append('<tr id="tr'+lastrow+'">'+content+'</tr>');
                     bindcells();
                 }
                 $(cell).attr('bound','true');
-                if($(cell).hasClass('type_currency'))
-                    $(cell).val((val*1).toFixed(2));
+                if($(cell).hasClass('type_currency')){
+                    var parsedval = (parseFloat(val) ? parseFloat(val) : 0 ).toFixed(2);
+                    $(cell).val(parsedval);
+                }
                 console.log(lastrow);
+                var totals = {};
+                $('tbody td.col'+col+' .sheet_cell').each(function(){
+                    var cell = this;
+                    var val = $(cell).val();
+                    if(val != ""){
+                        if(type=='currency' || type=='numeric'){
+                            if(totals[1])
+                                totals[1]+=parseFloat(val);
+                            else
+                                totals[1]=parseFloat(val);
+                        }
+                        else{
+                            if(totals[val])
+                                totals[val]++;
+                            else
+                                totals[val]=1;
+                        }
+                    }
+                });
+                console.log(totals);
+            
+                $('#totals'+col).html('');
+                if(type=='currency' || type=='numeric'){
+                    if(type=='currency')
+                        $('#totals'+col).append("$"+totals[1].toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    else
+                        $('#totals'+col).append(totals[1].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
+                else{
+                    $.each(totals,function(key,value){
+                        $('#totals'+col).append('('+value+') '+key+'<br/>');
+                    });
+                }
+
+
             });            
             $('.sheet_cell').not($('.bound')).attr('bound','true');
             $('.type_date').not($('.bound')).datepicker({format: 'yyyy-mm-dd'});
-            $('.sheet_cell.type_currency').each(function(){
-                var val = $(this).val();
-                val = val*1;
-                if(val!="")
-                    $(this).val(val.toFixed(2));
-            })
         }
         bindcells();
         $(window).bind('beforeunload', function(){ 
@@ -234,6 +275,17 @@
             else
                 return undefined;  
         });
+
+        $('.sheet_cell.type_currency').each(function(){
+            var val = $(this).val();
+            var row = $(this).data('row-id');
+            var col = $(this).data('col-id');
+            if(val != ""){
+                var parsedval = (parseFloat(val) ? parseFloat(val) : 0 ).toFixed(2);
+                $(this).val(parsedval);
+            }
+        })
+
     });
     function applyFilter(){
         var params = "";
