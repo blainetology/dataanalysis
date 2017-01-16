@@ -16,26 +16,56 @@
                 {{ Form::open(['route'=>'adminspreadsheets.store', 'method'=>'POST']) }}
                 @endif
                 <div class="row"> 
-                    <div class="col-md-5" >
-                        <h5>Spreadsheet Name</h5>
-                        <div class="form-group"> 
-                        {{ Form::text('name',(!empty($input['name']) ? $input['name'] : null),['id'=>'name', 'class'=>'form-control', 'placeholder'=>'Name'])}}
+                    <div class="col-md-6" >
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h5>Spreadsheet Name</h5>
+                                <div class="form-group"> 
+                                {{ Form::text('name',(!empty($input['name']) ? $input['name'] : null),['id'=>'name', 'class'=>'form-control', 'placeholder'=>'Name'])}}
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <h5>Client</h5>
+                                <div class="form-group"> 
+                                {{ Form::select('client',$clients,(!empty($input['client_id']) ? $input['client_id'] : null),['name'=>'client_id', 'id'=>'client_id', 'class'=>'form-control'])}}
+                                </div>
+                            </div>
                         </div>
-                        <h5>Client</h5>
-                        <div class="form-group"> 
-                        {{ Form::select('client',$clients,(!empty($input['client_id']) ? $input['client_id'] : null),['name'=>'client_id', 'id'=>'client_id', 'class'=>'form-control'])}}
+                    </div>
+                    <div class="col-md-6" >
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>List Order</h5>
+                                <div class="form-group"> 
+                                {{ Form::text('list_order',$input['list_order'],['name'=>'list_order', 'id'=>'list_order', 'class'=>'form-control'])}}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Default Sort Column</h5>
+                                <div class="form-group"> 
+                                {{ Form::select('sorting_col',$letters,$input['sorting_col'],['name'=>'sorting_col', 'id'=>'sorting_col', 'class'=>'form-control'])}}
+                                </div>
+                            </div>
                         </div>
                         <h5>Status</h5>
                         <div class="form-group"> 
                         {{ Form::select('active',['1'=>'Active','0'=>'Inactive'],(!empty($input['active']) ? 1 : 0),['name'=>'active', 'id'=>'active', 'class'=>'form-control'])}}
                         </div>
-                        {{ Form::submit('Save Spreadsheet',['class'=>'btn btn-primary']) }}
                     </div>
-                    <div class="col-md-6 col-md-offset-1">
-                        <h5>Column Labels</h5>
-                        <div id="column-list">
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        {{ Form::submit('Save Spreadsheet',['class'=>'btn btn-primary']) }}
+                        <br/><br/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h4>Column Labels</h4>
+                        <div class="row" id="column-list">
                         @for($x=1; $x<=(count($input['column']) > 0 ? count($input['column']) : 2); $x++)
                             <?php $letter = $letters[$x]; ?>
+                            <div class="col-lg-6">
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="input-group">
@@ -75,16 +105,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <br/>
+                            <br/><br/>
+                            </div>
                         @endfor
                         </div>
                         <div class="row">
-                            <div class="col-lg-12 text-right"><a href="javascript:newcolumn()" class="btn btn-success btn-sm">Add Column</a></div>
+                            <div class="col-xs-6 text-left">{{ Form::submit('Save Spreadsheet',['class'=>'btn btn-primary']) }}</div>
+                            <div class="col-xs-6 text-right"><a href="javascript:newcolumn()" class="btn btn-success btn-sm">Add Column</a></div>
                         </div>
                     </div>
                 </div>
                 {{ Form::close() }}
                 <div id="nextcolumnbase" style="display:none;">
+                    <div class="col-lg-6">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="input-group">
@@ -124,7 +157,7 @@
                                 </div>
                             </div>
                         </div>
-                        <br/>
+                        <br/><br/>
                     </div>
                 </div>
             </div>

@@ -113,10 +113,11 @@ class ClientSpreadsheetController extends Controller
             'validations' => $validations,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
-            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get(),
+            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->orderBy('list_order','asc')->get(),
             'counts' => [],
             'queryvars' => $queryvars,
             'field_ids' => implode(',',$field_ids)
+            'sort_col' => \Request::get('sort_col',$spreadsheet->sorting_col)
         ];
         #return $data;
         return view('client.spreadsheet.edit',$data);
@@ -189,7 +190,7 @@ class ClientSpreadsheetController extends Controller
         #return $data;
 
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=data.csv');
+        header('Content-Disposition: attachment; filename='.str_slug($spreadsheet->name,'_').'.csv');
 
         // create a file pointer connected to the output stream
         $output = fopen('php://output', 'w');
