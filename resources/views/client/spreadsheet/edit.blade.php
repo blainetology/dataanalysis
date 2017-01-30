@@ -203,6 +203,7 @@
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){
                 lastCellValue = $(this).val();
+                $(this).select();
                 console.log(lastCellValue);
             });
             $('.sheet_cell').not($('.bound')).on('change',function(){
