@@ -12,7 +12,7 @@ class SpreadsheetColumn extends Model
 
     public $fillable = ['spreadsheet_id','column','label','validation','type'];
 
-    public static $fieldtypes = ['string'=>'text','numeric'=>'numeric','date'=>'date','currency'=>'currency','email'=>'email','notes'=>'notes','alpha'=>'alpha','alpha_num'=>'alphanumeric','alpha_dash'=>'alphanumeric w/ dashes'];
+    public static $fieldtypes = ['string'=>'text','numeric'=>'numeric','date'=>'date','currency'=>'currency','email'=>'email','notes'=>'notes (not sortable)','alpha'=>'alpha','alpha_num'=>'alphanumeric','alpha_dash'=>'alphanumeric w/ dashes'];
 
     public static function sheetCell($column,$content,$x,$y){
     	$output="";

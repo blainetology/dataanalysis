@@ -28,16 +28,16 @@ class HomeController extends Controller
     {
         if(\Auth::user()->isEditor()){
             $data = [
-                'clients'   => Client::all(),
-                'users'     => User::all(),
+                'clients'   => Client::withTrashed()->get(),
+                'users'     => User::withTrashed()->get(),
                 'spreadsheets'  => Spreadsheet::all()
             ];
             return view('admin.home',$data);
         }
         else{
             $data = [
-                'spreadsheets'  => Spreadsheet::where('client_id',\Auth::user()->client_id)->get(),
-                'users'         => User::where('client_id',\Auth::user()->client_id)->get()
+                'spreadsheets'  => Spreadsheet::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->get(),
+                'users'         => User::where('client_id',\Auth::user()->client_id)->where('client_id','!=',0)->where('admin',0)->where('editor',0)->get()
             ];
             return view('client.home',$data);
         }

@@ -3,6 +3,27 @@
 @section('content')
 <div class="container">
     <div class="row">
+        @if(!\Auth::user()->client)
+        <div class="col-md-12 text-center">
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4 class="text-danger">This account is not associated with any client</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+            <h4>&nbsp;</h4>
+        </div>
+        @else
         <div class="col-md-12">
             <h2>Client Dashboard</h2>
         </div>
@@ -66,6 +87,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
     </div>
 </div>

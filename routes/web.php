@@ -18,6 +18,8 @@ Route::group(['middleware'=>['auth']],function(){
 	Route::group(['prefix'=>'admin'],function(){
 		Route::resource('users','AdminUserController',['names'=>'adminusers']);
 		Route::resource('clients', 'AdminClientController',['names'=>'adminclients']);
+		Route::get('spreadsheets/{id}/import',['as'=>'adminspreadsheetimport', 'uses'=>'AdminSpreadsheetController@import']);	
+		Route::post('spreadsheets/{id}/import',['as'=>'adminspreadsheetimport', 'uses'=>'AdminSpreadsheetController@importupload']);	
 		Route::get('spreadsheets/{id}/duplicate',['as'=>'adminspreadsheetduplicate', 'uses'=>'AdminSpreadsheetController@duplicate']);	
 		Route::resource('spreadsheets', 'AdminSpreadsheetController',['names'=>'adminspreadsheets']);	
 	});

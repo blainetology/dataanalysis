@@ -3,6 +3,9 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
+        {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
+        <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
+        <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
         <div class="col-md-12">
             <span class="pull-right" id="action_bar">
                 <a href="/client/spreadsheets/{{$spreadsheet->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> export to csv</a>
@@ -16,15 +19,15 @@
                 <li role="presentation" {!! ($spreadsheet->id == $sheet->id) ? 'class="active"' : '' !!}><a href="/client/spreadsheets/{{ $sheet->id }}/edit">{{$sheet->name}}</a></li>
                 @endforeach
             </ul>
-            {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
-            <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
-            <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
 
         </div>
         <div class="col-md-12" style="padding:3px;">
+            <pre class="hidden">
+            {{ print_r($validations,true) }}
+            </pre>
             <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
                 <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
-                    <thead style="">
+                    <thead>
                         <tr>
                             <td class="bg-info0"></td>
                             @for($x=1; $x<=$max; $x++)
@@ -70,9 +73,9 @@
                                 $content = $spreadsheet->content[($y-1)];
                             ?>
                             <tr id="tr{{$y}}">
-                                <th class="nostretch no-stretch bg-info row{{$y}} col0" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
+                                <th class="nostretch no-stretch bg-info row{{$y}} col0 {{$content && $content->validated==0 ? 'bg-danger' : ''}}" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
                                 @for($x=1; $x<=$max; $x++)
-                                    <td style="padding:0;" class="row{{$y}} col{{$x}}">
+                                    <td style="padding:0;" class="row{{$y}} col{{$x}} {{$content && $content->validated==0 ? 'bg-danger' : ''}}">
                                         @if($columns[$x]->type=='currency')
                                         <div class="input-group"><div class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
                                         @elseif($columns[$x]->type=='date')
@@ -139,8 +142,8 @@
                     </tfoot>
                 </table>
             </div>
-            {{ Form::close() }}
         </div>
+        {{ Form::close() }}
     </div>
 </div>
 <table id="newrow" style="display:none;">
@@ -194,6 +197,9 @@
     var lastCellValue = "";
     $(document).ready(function(){
         $('#spreadsheetContainer').height($(window).height()-150);
+        $(window).on('resize',function(){
+            $('#spreadsheetContainer').height($(window).height()-150);
+        })
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){
                 lastCellValue = $(this).val();
@@ -205,8 +211,7 @@
                 var row = $(cell).data('row-id');
                 var col = $(cell).data('col-id');
                 var type = $(cell).data('type');
-                $('#th'+row).removeClass('bg-info').addClass('bg-danger');
-                $('#action_bar').removeClass('bg-warning').addClass('bg-success');
+                $('#th'+row).removeClass('bg-info').removeClass('bg-danger').addClass('bg-warning');
                 $('#savebutton').removeClass('hidden');
                 $('#exportbutton').addClass('hidden');
 
@@ -225,6 +230,7 @@
                 }
                 $(cell).attr('bound','true');
                 if($(cell).hasClass('type_currency')){
+                    val = val.replace(/\$/g,'');
                     var parsedval = (parseFloat(val) ? parseFloat(val) : 0 ).toFixed(2);
                     $(cell).val(parsedval);
                 }

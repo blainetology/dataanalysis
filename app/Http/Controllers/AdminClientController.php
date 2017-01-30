@@ -25,7 +25,10 @@ class AdminClientController extends Controller
     public function create()
     {
         //
-        return view('admin.clients.create');
+        $data = [
+            'input' => \Request::old()
+        ];
+        return view('admin.clients.create',$data);
     }
 
     /**
@@ -62,6 +65,10 @@ class AdminClientController extends Controller
     public function edit($id)
     {
         //
+        $data = [
+            'input' => Client::find($id)->toArray()
+        ];
+        return view('admin.clients.create',$data);
     }
 
     /**
@@ -74,6 +81,11 @@ class AdminClientController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $input = \Request::all();
+        $client = Client::find($id);
+        $client->fill($input);
+        $client->save();
+        return redirect('/');
     }
 
     /**
@@ -85,5 +97,7 @@ class AdminClientController extends Controller
     public function destroy($id)
     {
         //
+        Client::find($id)->delete();
+        return redirect('/');
     }
 }

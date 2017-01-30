@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewUser;
 use App\Client;
 use App\User;
 
@@ -43,7 +45,8 @@ class AdminUserController extends Controller
     {
         //
         $input = \Request::all();
-        $input['password'] = \Hash::make('temp123');
+        $password = substr(md5(time()), rand(1,10),10);
+        $input['password'] = \Hash::make($password);
         if($input['type']=='editor')
             $input['client_id'] = 0;
         $input['admin'] = 0;
@@ -53,6 +56,13 @@ class AdminUserController extends Controller
         else
             $user->editor = 0;
         $user->save();
+
+        $data = [];
+        $data['password'] = $password;
+        $data['email'] = $input['email'];
+        $data['name'] = $input['first_name'];
+        Mail::to($input['email'])->send(new NewUser($data));
+
         return redirect('/');
 
     }

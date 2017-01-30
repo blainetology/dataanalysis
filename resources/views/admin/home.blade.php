@@ -41,8 +41,14 @@
                                             <td>{{ $client->users->count() }}</td>
                                             <td>{{ $client->spreadsheets->count() }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                                <a href="{{ route('adminclients.destroy',$client->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning" title="edit client"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                @if($client->trashed())
+                                                    <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-success" title="restore client"><i class="fa fa-reply" aria-hidden="true"></i></a>
+                                                @else
+                                                    {{ Form::open(['route'=>['adminclients.destroy',$client->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete client \"".addslashes($client->business_name)."\"?');" ]) }}
+                                                    <button title="delete client" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                    {{ Form::close() }}
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -82,13 +88,15 @@
                                                 @elseif($user->editor == 1)
                                                 <div class="label label-warning">editor</div>
                                                 @else
-                                                {{ $user->client ? $user->client->business_name : '---' }}
+                                                {!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}
                                                 @endif
                                             </td>
                                             <td>{{ $user->last_login }}</td>
                                             <td class="no-stretch">
                                                 <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                                <a href="{{ route('adminusers.destroy',$user->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                                {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
+                                                <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                {{ Form::close() }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -114,6 +122,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
+                                        <th>Rows</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -124,11 +133,15 @@
                                             <td>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
+                                            <td>{{ $spreadsheet->content->count() }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
-                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
-                                                <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                                <a href="{{ route('adminspreadsheets.destroy',$spreadsheet->id) }}" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                                <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
+                                                <a href="{{ route('adminspreadsheetimport',$spreadsheet->id) }}" title="upload csv file" class="btn btn-xs btn-primary"><i class="fa fa-upload" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" title="duplicate spreadsheet" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" title="edit spreadsheet settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                {{ Form::open(['route'=>['adminspreadsheets.destroy',$spreadsheet->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($spreadsheet->name)."\" spreadsheet?');" ]) }}
+                                                <button title="delete spreadsheet" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                {{ Form::close() }}
                                             </td>
                                         </tr>
                                     @endforeach

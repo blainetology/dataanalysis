@@ -17,6 +17,7 @@ class CreateClientsTable extends Migration
             $table->increments('id');
             $table->string('business_name');
             $table->timestamps();
+            $table->softDeletes();
         });
         \DB::update("ALTER TABLE clients AUTO_INCREMENT = 2000;");
         \App\Client::create(['business_name'=>'Test Company, LLC','admin'=>1,'editor'=>1]);
