@@ -65,7 +65,9 @@
                         <div class="row" id="column-list">
                         @for($x=1; $x<=(count($input['column']) > 0 ? count($input['column']) : 2); $x++)
                             <?php $letter = $letters[$x]; ?>
-                            <div class="col-lg-6">
+                            <div class="col-lg-6 sortable" data-col="{{ $x }}" style="background:#FFF;">
+                            <input type="hidden" name="column[{{$x}}][orig_val]" id="orig_val_{{ $x }}" value="{{ $x }}">
+                            <input type="hidden" name="column[{{$x}}][new_val]" id="new_val_{{ $x }}" value="{{ $x }}">
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="input-group">
@@ -117,7 +119,8 @@
                 </div>
                 {{ Form::close() }}
                 <div id="nextcolumnbase" style="display:none;">
-                    <div class="col-lg-6">
+                    <div class="col-lg-6 sortable" data-col="||x||">
+                        <input type="hidden" name="column[||x||][orig_val]" value="||x||">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="input-group">
@@ -167,8 +170,16 @@
 </div>
 @endsection
 
+@section('styles')
+<link href="/css/jquery-ui.theme.min.css" rel="stylesheet" >
+@append
+
 @section('scripts')
+<script src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#column-list').sortable({placeholder: "sortable-placeholder"});
+    });
     var letters = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
     var columnnext = {{(count($input['column']) > 0 ? count($input['column'])+1 : 3)}};
     function newcolumn(){
