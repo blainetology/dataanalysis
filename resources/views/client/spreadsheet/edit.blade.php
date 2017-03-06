@@ -192,6 +192,26 @@
 @section('scripts')
 <script src="/js/datepicker.js"></script>
 <script type="text/javascript">
+    function checkConditionals(rowNum){
+        <?php
+            foreach($conditionals as $col=>$conditional){
+                $col=trim(str_replace('col', '', $col));
+                $ifs = explode(',',$conditional['if']);
+                echo 'if(';
+                $first=true;
+                foreach($ifs as $if){
+                    $if=trim($if);
+                    $check=explode('=',$if);
+                    if(!$first)
+                        echo ' && ';
+                    echo '$("#content_"+rowNum+"_'.array_search(strtoupper($check[0]),\app\SpreadsheetColumn::$columnLetters).'").val()=="'.addslashes($check[1]).'"';
+                    $first=false;
+                }
+                echo '){ $("#content_"+rowNum+"_'.$col.'").val("'.$conditional['then'].'"); } else{ $("#content_"+rowNum+"_'.$col.'").val("'.$conditional['else'].'"); }'."\n";
+            }
+        ?>
+    }
+
     var sheetupdated = false;
     var lastrow = "{{($spreadsheet->content ? $spreadsheet->content->count()+1 : 1)}}";
     var lastCellValue = "";
@@ -268,7 +288,7 @@
                         $('#totals'+col).append('('+value+') '+key+'<br/>');
                     });
                 }
-
+                checkConditionals(row);
 
             });            
             $('.sheet_cell').not($('.bound')).attr('bound','true');

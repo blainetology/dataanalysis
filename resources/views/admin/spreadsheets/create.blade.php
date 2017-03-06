@@ -65,49 +65,68 @@
                         <div class="row" id="column-list">
                         @for($x=1; $x<=(count($input['column']) > 0 ? count($input['column']) : 2); $x++)
                             <?php $letter = $letters[$x]; ?>
-                            <div class="col-lg-6 sortable" data-col="{{ $x }}" style="background:#FFF;">
-                            <input type="hidden" name="column[{{$x}}][orig_val]" id="orig_val_{{ $x }}" value="{{ $x }}">
-                            <input type="hidden" name="column[{{$x}}][new_val]" id="new_val_{{ $x }}" value="{{ $x }}">
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}">{{ $letter }}</span>
-                                        {{ Form::text('label',(!empty($input['column'][$x]) ? $input['column'][$x]['label'] : null),['name'=>"column[$x][label]", 'class'=>'form-control', 'placeholder'=>'Column Label','aria-describedby'=>'basic-addon'.$x])}}
+                            <div class="col-lg-6 sortable" data-col="{{ $x }}">
+                                <div class="well well-sm">
+                                    <input type="hidden" name="column[{{$x}}][col_val]" id="col_val_{{ $x }}" value="{{ $x }}">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="input-group">
+                                                <span class="input-group-addon" id="basic-addon{{$x}}">{{ $letter }}</span>
+                                                {{ Form::text('label',(!empty($input['column'][$x]) ? $input['column'][$x]['label'] : null),['name'=>"column[$x][label]", 'class'=>'form-control', 'placeholder'=>'Column Label','aria-describedby'=>'basic-addon'.$x])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon" id="basic-addon{{$x}}1"><div class="col-validation-label">Data Type</div></span>
+                                                {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,(!empty($input['column'][$x]) && !empty($input['column'][$x]['type']) ? $input['column'][$x]['type'] : null),['name'=>"column[$x][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'1'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1"><h5>Conditional</h5></div>
+                                        <div class="col-lg-10 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon " id="basic-addon{{$x}}2">If</span>
+                                                {{ Form::text('if',(!empty($input['column'][$x]) && !empty($input['column'][$x]['conditional']->if) ? $input['column'][$x]['conditional']->if : null),['name'=>"column[$x][conditional][if]", 'class'=>'form-control input-sm', 'placeholder'=>'a=yes, b=yes','aria-describedby'=>'basic-addon'.$x.'2'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-5 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon " id="basic-addon{{$x}}3">Then</span>
+                                                {{ Form::text('then',(!empty($input['column'][$x]) && !empty($input['column'][$x]['conditional']->then) ? $input['column'][$x]['conditional']->then : null),['name'=>"column[$x][conditional][then]", 'class'=>'form-control input-sm', 'placeholder'=>'value if true','aria-describedby'=>'basic-addon'.$x.'3'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-5">
+                                            <div class="input-group">
+                                                <span class="input-group-addon " id="basic-addon{{$x}}4">Else</span>
+                                                {{ Form::text('else',(!empty($input['column'][$x]) && !empty($input['column'][$x]['conditional']->else) ? $input['column'][$x]['conditional']->else : null),['name'=>"column[$x][conditional][else]", 'class'=>'form-control input-sm', 'placeholder'=>'value if false','aria-describedby'=>'basic-addon'.$x.'4'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1"><h5>Validations</h5></div>
+                                        <div class="col-lg-11 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon " id="basic-addon{{$x}}5"><div class="col-validation-label">Required</div></span>
+                                                {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->required) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'5'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon" id="basic-addon{{$x}}6"><div class="col-validation-label">Select from List</div></span>
+                                                {{ Form::text('select',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->in) ? $input['column'][$x]['validation']->in : null),['name'=>"column[$x][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon'.$x.'6'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon" id="basic-addon{{$x}}7"><div class="col-validation-label">Min Value</div></span>
+                                                {{ Form::text('min',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->min) ? $input['column'][$x]['validation']->min : null),['name'=>"column[$x][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'7'])}}
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-11 col-lg-offset-1">
+                                            <div class="input-group">
+                                                <span class="input-group-addon" id="basic-addon{{$x}}8"><div class="col-validation-label">Max Value</div></span>
+                                                {{ Form::text('max',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->max) ? $input['column'][$x]['validation']->max : null),['name'=>"column[$x][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'8'])}}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}1"><div class="col-validation-label">Data Type</div></span>
-                                        {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,(!empty($input['column'][$x]) && !empty($input['column'][$x]['type']) ? $input['column'][$x]['type'] : null),['name'=>"column[$x][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'1'])}}
-                                    </div>
-                                </div>
-                                <div class="col-lg-11 col-lg-offset-1"><h5>Validations</h5></div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon " id="basic-addon{{$x}}0"><div class="col-validation-label">Required</div></span>
-                                        {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->required) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'0'])}}
-                                    </div>
-                                </div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}2"><div class="col-validation-label">Select from List</div></span>
-                                        {{ Form::text('select',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->in) ? $input['column'][$x]['validation']->in : null),['name'=>"column[$x][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon'.$x.'2'])}}
-                                    </div>
-                                </div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}3"><div class="col-validation-label">Min Value</div></span>
-                                        {{ Form::text('min',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->min) ? $input['column'][$x]['validation']->min : null),['name'=>"column[$x][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'3'])}}
-                                    </div>
-                                </div>
-                                <div class="col-lg-11 col-lg-offset-1">
-                                    <div class="input-group">
-                                        <span class="input-group-addon" id="basic-addon{{$x}}4"><div class="col-validation-label">Max Value</div></span>
-                                        {{ Form::text('max',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->max) ? $input['column'][$x]['validation']->max : null),['name'=>"column[$x][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'4'])}}
-                                    </div>
-                                </div>
-                            </div>
-                            <br/><br/>
                             </div>
                         @endfor
                         </div>
@@ -120,7 +139,8 @@
                 {{ Form::close() }}
                 <div id="nextcolumnbase" style="display:none;">
                     <div class="col-lg-6 sortable" data-col="||x||">
-                        <input type="hidden" name="column[||x||][orig_val]" value="||x||">
+                        <div class="well well-sm">
+                        <input type="hidden" name="column[||x||][col_val]" id="col_val_||x||" value="||x||">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="input-group">
@@ -134,33 +154,52 @@
                                     {{ Form::select('type',\App\SpreadsheetColumn::$fieldtypes,null,['name'=>"column[||x||][type]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||1'])}}
                                 </div>
                             </div>
-                                <div class="col-lg-11 col-lg-offset-1"><h5>Validations</h5></div>
+                            <div class="col-lg-11 col-lg-offset-1"><h5>Conditional</h5></div>
+                            <div class="col-lg-10 col-lg-offset-1">
+                                <div class="input-group">
+                                    <span class="input-group-addon " id="basic-addon||x||2">If</span>
+                                    {{ Form::text('if',null,['name'=>"column[||x||][conditional][if]", 'class'=>'form-control input-sm', 'placeholder'=>'a=yes, b=yes','aria-describedby'=>'basic-addon||x||2'])}}
+                                </div>
+                            </div>
+                            <div class="col-lg-5 col-lg-offset-1">
+                                <div class="input-group">
+                                    <span class="input-group-addon " id="basic-addon||x||3">Then</span>
+                                    {{ Form::text('then',null,['name'=>"column||x||][conditional][then]", 'class'=>'form-control input-sm', 'placeholder'=>'value if true','aria-describedby'=>'basic-addon||x||3'])}}
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="input-group">
+                                    <span class="input-group-addon " id="basic-addon||x||4">Else</span>
+                                    {{ Form::text('else',null,['name'=>"column[||x||][conditional][else]", 'class'=>'form-control input-sm', 'placeholder'=>'value if false','aria-describedby'=>'basic-addon||x||4'])}}
+                                </div>
+                            </div>
+                         <div class="col-lg-11 col-lg-offset-1"><h5>Validations</h5></div>
                             <div class="col-lg-11 col-lg-offset-1">
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||0"><div class="col-validation-label">Required</div></span>
-                                    {{ Form::select('type',['1'=>'Yes','0'=>'No'],null,['name'=>"column[||x||][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||0'])}}
+                                    <span class="input-group-addon" id="basic-addon||x||5"><div class="col-validation-label">Required</div></span>
+                                    {{ Form::select('type',['1'=>'Yes','0'=>'No'],null,['name'=>"column[||x||][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||5'])}}
                                 </div>
                             </div>
                             <div class="col-lg-11 col-lg-offset-1">
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||2"><div class="col-validation-label">Select from List</div></span>
-                                    {{ Form::text('select',null,['name'=>"column[||x||][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon||x||2'])}}
+                                    <span class="input-group-addon" id="basic-addon||x||6"><div class="col-validation-label">Select from List</div></span>
+                                    {{ Form::text('select',null,['name'=>"column[||x||][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon||x||6'])}}
                                 </div>
                             </div>
                             <div class="col-lg-11 col-lg-offset-1">
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||3"><div class="col-validation-label">Min Value</div></span>
-                                    {{ Form::text('min',null,['name'=>"column[||x||][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||3'])}}
+                                    <span class="input-group-addon" id="basic-addon||x||7"><div class="col-validation-label">Min Value</div></span>
+                                    {{ Form::text('min',null,['name'=>"column[||x||][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||7'])}}
                                 </div>
                             </div>
                             <div class="col-lg-11 col-lg-offset-1">
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="basic-addon||x||4"><div class="col-validation-label">Max Value</div></span>
-                                    {{ Form::text('max',null,['name'=>"column[||x||][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||4'])}}
+                                    <span class="input-group-addon" id="basic-addon||x||8"><div class="col-validation-label">Max Value</div></span>
+                                    {{ Form::text('max',null,['name'=>"column[||x||][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon||x||8'])}}
                                 </div>
                             </div>
                         </div>
-                        <br/><br/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,7 +217,20 @@
 <script src="/js/jquery-ui.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#column-list').sortable({placeholder: "sortable-placeholder"});
+        $('#column-list').sortable({
+            placeholder: "sortable-placeholder",
+            stop: function( event, ui ){
+                var x=1;
+                $('#column-list .sortable').each(function(index,value){
+                    var col = $(this).data('col');
+                    var letter = letters[x];
+                    console.log(x,col);
+                    $('#col_val_'+col).val(x);
+                    $('#basic-addon'+col).html(letter);
+                    x++;
+                });
+            }
+        });
     });
     var letters = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
     var columnnext = {{(count($input['column']) > 0 ? count($input['column'])+1 : 3)}};

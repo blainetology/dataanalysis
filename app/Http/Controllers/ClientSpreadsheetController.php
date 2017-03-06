@@ -75,6 +75,7 @@ class ClientSpreadsheetController extends Controller
         $spreadsheet = Spreadsheet::find($id);
         $columns = [];
         $validations = [];
+        $conditionals = [];
         $queryvars = explode('&',$_SERVER['QUERY_STRING']);
         $temp = [];
         foreach($queryvars as $queryvar){
@@ -84,6 +85,7 @@ class ClientSpreadsheetController extends Controller
         $queryvars = implode('&',$temp);
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation,true);
+            $column->conditional = json_decode($column->conditional,true);
 /*            $distincts = SpreadsheetContent::select('col'.$column->column.' AS col', \DB::raw('COUNT(id) AS qty'))->where('spreadsheet_id',$spreadsheet->id)->groupBy('col'.$column->column)->get();
             $temp = [];
             foreach($distincts as $distinct)
@@ -99,6 +101,8 @@ class ClientSpreadsheetController extends Controller
                     $temp[]=$key.":".$value;
             }
             $validations['col'.$column->column] = implode('|',$temp);
+            if(!empty($column->conditional))
+                $conditionals['col'.$column->column] = $column->conditional;
             $column->distincts = SpreadsheetContent::distinct('col'.$column->column)->where('spreadsheet_id',$spreadsheet->id)->pluck('col'.$column->column,'col'.$column->column);
             $columns[$column->column] = $column;
         }
@@ -111,6 +115,7 @@ class ClientSpreadsheetController extends Controller
             'spreadsheet' => $spreadsheet,
             'columns' => $columns,
             'validations' => $validations,
+            'conditionals' => $conditionals,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->orderBy('list_order','asc')->get(),

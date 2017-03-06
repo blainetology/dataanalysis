@@ -10,7 +10,7 @@ class SpreadsheetColumn extends Model
 
     public static $columnLetters = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ'];
 
-    public $fillable = ['spreadsheet_id','column','label','validation','type'];
+    public $fillable = ['spreadsheet_id','column','label','validation','conditional','type'];
 
     public static $fieldtypes = ['string'=>'text','numeric'=>'numeric','date'=>'date','currency'=>'currency','email'=>'email','notes'=>'notes (not sortable)','alpha'=>'alpha','alpha_num'=>'alphanumeric','alpha_dash'=>'alphanumeric w/ dashes'];
 

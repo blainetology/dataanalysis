@@ -20,6 +20,7 @@ class CreateSpreadsheetColumnsTable extends Migration
             $table->string('label');
             $table->string('type')->default('text');
             $table->text('validation')->nullable();
+            $table->text('conditional')->nullable();
             $table->timestamps();
         });
         \DB::update("ALTER TABLE spreadsheet_columns AUTO_INCREMENT = 5000;");
@@ -67,7 +68,9 @@ class CreateSpreadsheetColumnsTable extends Migration
         foreach($labels as $index=>$column){
             if(!isset($column[2]))
                 $column[2]=[];
-            \App\SpreadsheetColumn::create(['spreadsheet_id'=>3001,'column'=>($index+1),'label'=>$column[0],'type'=>$column[1],'validation'=>json_encode($column[2])]);
+            if(!isset($column[3]))
+                $column[3]=[];
+            \App\SpreadsheetColumn::create(['spreadsheet_id'=>3001,'column'=>($index+1),'label'=>$column[0],'type'=>$column[1],'validation'=>json_encode($column[2]),'conditional'=>json_encode($column[3])]);
         }
 
         $labels = [

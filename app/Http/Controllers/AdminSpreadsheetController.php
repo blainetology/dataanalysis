@@ -99,6 +99,7 @@ class AdminSpreadsheetController extends Controller
         $input = $spreadsheet->toArray();
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation);
+            $column->conditional = json_decode($column->conditional);
             $input['column'][$column->column] = $column->toArray();
         }
         $data = [
@@ -147,6 +148,12 @@ class AdminSpreadsheetController extends Controller
                 }
             }
             $column['validation'] = json_encode($validation);
+            $conditional = [];
+            foreach($column['conditional'] as $key=>$value){
+                if(trim($value) != "")
+                    $conditional[$key]=trim($value);
+            }
+            $column['conditional'] = json_encode($conditional);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
