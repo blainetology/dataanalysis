@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Client;
 use App\User;
 use App\Spreadsheet;
+use App\Report;
 
 class HomeController extends Controller
 {
@@ -30,6 +31,7 @@ class HomeController extends Controller
             $data = [
                 'clients'   => Client::withTrashed()->get(),
                 'users'     => User::withTrashed()->get(),
+                'reports'     => Report::withTrashed()->get(),
                 'spreadsheets'  => Spreadsheet::all()
             ];
             return view('admin.home',$data);

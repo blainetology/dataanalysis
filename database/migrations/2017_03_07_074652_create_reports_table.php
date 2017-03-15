@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSpreadsheetsTable extends Migration
+class CreateReportsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,21 +13,19 @@ class CreateSpreadsheetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('spreadsheets', function (Blueprint $table) {
+        Schema::create('reports', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('client_id')->index();
             $table->string('name');
             $table->integer('active')->default(1);
-            $table->integer('list_order')->default(1);
-            $table->integer('sorting_col')->default(1);
             $table->timestamps();
             $table->softDeletes();
         });
-        \DB::update("ALTER TABLE spreadsheets AUTO_INCREMENT = 3000;");
+        \DB::update("ALTER TABLE reports AUTO_INCREMENT = 4000;");
 
-        \App\Spreadsheet::create(['name'=>'Seminar Tracker','client_id'=>2000]);
-        \App\Spreadsheet::create(['name'=>'Marketing Tracker','client_id'=>2000]);
-        \App\Spreadsheet::create(['name'=>'Production Tracker','client_id'=>2000]);
+        \App\Report::create(['name'=>'Number of People Who Have Set an Aptmt','client_id'=>2000]);
+        \App\Report::create(['name'=>'Total Amount Written','client_id'=>2000]);
+        \App\Report::create(['name'=>'Total Amount Pending','client_id'=>2000]);
     }
 
     /**
@@ -37,6 +35,6 @@ class CreateSpreadsheetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('spreadsheets');
+        Schema::dropIfExists('reports');
     }
 }

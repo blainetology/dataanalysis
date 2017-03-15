@@ -27,4 +27,5 @@ Route::group(['middleware'=>['auth']],function(){
 		Route::get('spreadsheets/{id}/export',['as'=>'clientspreadsheetexport', 'uses'=>'ClientSpreadsheetController@export']);	
 		Route::resource('spreadsheets','ClientSpreadsheetController',['names'=>'clientspreadsheets']);	
 	});
+	Route::resource('reports', 'ReportsController');	
 });

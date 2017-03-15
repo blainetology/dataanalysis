@@ -95,8 +95,10 @@ class ClientSpreadsheetController extends Controller
             $temp=[];
             $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
             foreach($column->validation as $key=>$value){
-                if(in_array($key, $this->keyOnly))
-                    $temp[]=$key;
+                if(in_array($key, $this->keyOnly)){
+                    if($value != 0)
+                        $temp[]=$key;
+                }
                 else
                     $temp[]=$key.":".$value;
             }
@@ -144,12 +146,39 @@ class ClientSpreadsheetController extends Controller
         $field_ids=[];
         foreach(explode(',',$input['field_ids']) as $field_id)
             $field_ids[] = $field_id;
-        $spreadsheet = Spreadsheet::find($id)->update($input);
+        $spreadsheet = Spreadsheet::find($id);
+        $spreadsheet->update($input);
         SpreadsheetContent::where('spreadsheet_id',$id)->whereIn('id',$field_ids)->delete();
+
+        $validations = [];
+        foreach($spreadsheet->columns as $column){
+            $column->validation = json_decode($column->validation,true);
+            $temp=[];
+            $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
+            foreach($column->validation as $key=>$value){
+                if(in_array($key, $this->keyOnly)){
+                    if($value != 0)
+                        $temp[]=$key;
+                }
+                else
+                    $temp[]=$key.":".$value;
+            }
+            $validations['col'.$column->column] = implode('|',$temp);
+        }
+
         foreach($input['content'] as $key => $content){
             $content['spreadsheet_id'] = $id;
             $content['added_by'] = \Auth::user()->id;
             $content['revision_id'] = 0;
+            $validator = \Validator::make($content, $validations);
+            if ($validator->fails()){
+                print_r($validator->errors());
+                exit;
+                $content['validated']=0;
+            }
+            else
+                $content['validated']=1;
+
             if(!empty($content['col1']))
                 SpreadsheetContent::create($content);
         }

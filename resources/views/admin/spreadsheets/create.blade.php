@@ -104,7 +104,7 @@
                                         <div class="col-lg-11 col-lg-offset-1">
                                             <div class="input-group">
                                                 <span class="input-group-addon " id="basic-addon{{$x}}5"><div class="col-validation-label">Required</div></span>
-                                                {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->required) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'5'])}}
+                                                {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'5'])}}
                                             </div>
                                         </div>
                                         <div class="col-lg-11 col-lg-offset-1">

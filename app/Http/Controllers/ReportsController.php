@@ -5,15 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
+use App\Report;   
 use App\Spreadsheet;   
 use App\SpreadsheetColumn;   
 use App\SpreadsheetContent;   
 
-class AdminSpreadsheetController extends Controller
+class ReportsController extends Controller
 {
-
-    public $keyOnly = ['required'];
-
     /**
      * Display a listing of the resource.
      *
@@ -74,19 +72,32 @@ class AdminSpreadsheetController extends Controller
     public function show($id)
     {
         //
-        $spreadsheet = Spreadsheet::find($id);
-        $columns = [];
-        foreach($spreadsheet->columns as $column)
-            $columns[$column->column] = $column;
+        $report = Report::find($id);
+        $report->rules = json_decode($report->rules);
+        $distinct = 'col'.array_search(strtoupper($report->rules->distinct),SpreadsheetColumn::$columnLetters);
+        $content = SpreadsheetContent::where('spreadsheet_id',$report->rules->spreadsheet);
+        $content->addSelect($distinct);
+        foreach($report->rules->columns as $col) {
+            $content->addSelect('col'.array_search(strtoupper($col),SpreadsheetColumn::$columnLetters));
+        }
+        $contents = $content->get();
+        $temp = [];
+        foreach($contents as $row){
+            print_r($row->toArray());
+            foreach($row->toArray() as $key=>$value){
+                if(empty($temp[$row->$distinct][$key]))
+                    $temp[$row->$distinct][$key] = 0;
+                else
+                    $temp[$row->$distinct][$key] += $value;
+            }
+        }
         $data = [
-            'client' => Client::find($spreadsheet->client_id),
-            'spreadsheet' => $spreadsheet,
-            'columns' => $columns,
-            'max' => $spreadsheet->columns->max()->column,
-            'letters' => SpreadsheetColumn::$columnLetters,
-            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get()
+            'client' => Client::find($report->client_id),
+            'report' => $report,
+            'content' => $temp,
+            'client_reports' => Report::where('client_id',$report->client_id)->get()
         ];
-        return view('client.spreadsheet.edit',$data);
+        return view('client.reports.show',$data);
     }
 
     /**
@@ -135,8 +146,8 @@ class AdminSpreadsheetController extends Controller
             $column['spreadsheet_id'] = $spreadsheet->id;
             $column['column'] = $column['col_val'];
             $validation = [];
-            foreach($column['validation'] as $key2=>$value){
-                if($key2=='in'){
+            foreach($column['validation'] as $key=>$value){
+                if($key=='in'){
                     $value = trim($value);
                     if($value != ""){
                         $values = explode(',',$value);
@@ -144,12 +155,12 @@ class AdminSpreadsheetController extends Controller
                         foreach($values as $val){
                             $temp[] = trim($val);
                         }
-                        $validation[$key2]=implode(',',$temp);
+                        $validation[$key]=implode(',',$temp);
                     }
                 }
                 else{
-                    if(trim($value) != "" || $value=0)
-                        $validation[$key2]=trim($value);
+                    if(trim($value) != "")
+                        $validation[$key]=trim($value);
                 }
             }
             $column['validation'] = json_encode($validation);
@@ -247,23 +258,6 @@ class AdminSpreadsheetController extends Controller
     public function importupload(Request $request, $id)
     {
         $spreadsheet = Spreadsheet::find($id);
-
-        $validations = [];
-        foreach($spreadsheet->columns as $column){
-            $column->validation = json_decode($column->validation,true);
-            $temp=[];
-            $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
-            foreach($column->validation as $key=>$value){
-                if(in_array($key, $this->keyOnly)){
-                    if($value != 0)
-                        $temp[]=$key;
-                }
-                else
-                    $temp[]=$key.":".$value;
-            }
-            $validations['col'.$column->column] = implode('|',$temp);
-        }
-
         $file = $request->file('csv');
         if($request->get('replace') == 1)
             SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->where('revision_id',0)->delete();
@@ -279,11 +273,6 @@ class AdminSpreadsheetController extends Controller
                         $content['col'.$col]=$field;
                         $col++;
                     }
-                    $validator = \Validator::make($content, $validations);
-                    if ($validator->fails())
-                        $content['validated']=0;
-                    else
-                        $content['validated']=1;
                     SpreadsheetContent::create($content);
                 }
                 $row++;

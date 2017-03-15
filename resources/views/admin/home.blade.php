@@ -150,6 +150,48 @@
                         @endif
                     </div>
 
+                    {{-- reports --}}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a href="{{ route('reports.create') }}" class="btn btn-sm btn-primary pull-right">Create Report</a>
+                            <strong style="font-size:1.3em;" class="text-info">Reports <span class="label label-success">{{ $reports->count() }}</span></strong>
+                        </div>
+
+                        @if($reports->count()==0)
+                            <div class="panel-body">
+                                <h4>No reports</h4>
+                            </div>
+                        @else
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Client</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($reports as $report)
+                                        <tr>
+                                            <td>{{ $report->name }}</td>
+                                            <td>
+                                                {{ $report->client ? $report->client->business_name : '---' }}
+                                            </td>
+                                            <td class="no-stretch">
+                                                <a href="{{ route('reports.show',$report->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">view</a>
+                                                <a href="{{ route('adminspreadsheetduplicate',$report->id) }}" title="duplicate spreadsheet" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                                                <a href="{{ route('adminspreadsheets.edit',$report->id) }}" title="edit spreadsheet settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                {{ Form::open(['route'=>['adminspreadsheets.destroy',$report->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($spreadsheet->name)."\" report?');" ]) }}
+                                                <button title="delete spreadsheet" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                {{ Form::close() }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    </div>
+
                 </div>
             </div>
         </div>

@@ -109,7 +109,7 @@
                                 @endfor
                                 <td>
                                 @if($y == ($spreadsheet->content ? $spreadsheet->content->count()+1 : 1))
-                                <a href="javascript:newRow({{$y}})" class="text-success new-row" id="newRow{{$y}}"><i class="fa fa-plus" aria-hidden="true"></i></a>
+                                <a href="javascript:newRow({{$y}})" class="text-success new-row hidden" id="newRow{{$y}}"><i class="fa fa-plus" aria-hidden="true"></i></a>
                                 <a href="javascript:delRow({{$y}})" class="text-danger del-row hidden" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
                                 @else
                                 <a href="javascript:delRow({{$y}})" class="text-danger del-row" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
@@ -169,7 +169,7 @@
         }
         ?>
         @endfor
-        <td><a href="javascript:delRow(||row||)" class="text-danger hidden del-row" id="delRow||row||"><i class="fa fa-ban" aria-hidden="true"></i></a><a href="javascript:newRow(||row||)" class="text-success new-row" id="newRow||row||"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
+        <td><a href="javascript:delRow(||row||)" class="text-danger hidden del-row" id="delRow||row||"><i class="fa fa-ban" aria-hidden="true"></i></a><a href="javascript:newRow(||row||)" class="text-success new-row hidden" id="newRow||row||"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
     </tr>
 </table>
 @endsection
@@ -224,7 +224,6 @@
             $('.sheet_cell').not($('.bound')).on('focus',function(){
                 lastCellValue = $(this).val();
                 $(this).select();
-                console.log(lastCellValue);
             });
             $('.sheet_cell').not($('.bound')).on('change',function(){
                 var cell = this;
@@ -232,19 +231,16 @@
                 var row = $(cell).data('row-id');
                 var col = $(cell).data('col-id');
                 var type = $(cell).data('type');
-                $('#th'+row).removeClass('bg-info').removeClass('bg-danger').addClass('bg-warning');
+                $('#th'+row).removeClass('bg-info').removeClass('bg-danger').addClass('bg-success');
                 $('#savebutton').removeClass('hidden');
                 $('#exportbutton').addClass('hidden');
 
                 sheetupdated=true;
-                console.log(row,lastrow);
                 if(row==lastrow){
-                    console.log('yes');
                     $('#spreadsheet .new-row').addClass('hidden');
                     $('#spreadsheet .del-row').removeClass('hidden');
                     lastrow++;
                     var content = $('#newrow tr').html();
-                    console.log(content);
                     content = content.replace(/\|\|row\|\|/g,lastrow);
                     $('#spreadsheet tbody').append('<tr id="tr'+lastrow+'">'+content+'</tr>');
                     bindcells();
@@ -274,7 +270,6 @@
                         }
                     }
                 });
-                console.log(totals);
             
                 $('#totals'+col).html('');
                 if(type=='currency' || type=='numeric'){
@@ -326,7 +321,9 @@
         location.href="?"+params;
     }
     function delRow(id){
-        $('#row'+id).remove();
+        $('#tr'+id).remove();
+        $('#savebutton').removeClass('hidden');
+        $('#exportbutton').addClass('hidden');
     }
 </script>
 @append
