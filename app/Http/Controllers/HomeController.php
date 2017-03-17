@@ -32,7 +32,8 @@ class HomeController extends Controller
                 'clients'   => Client::withTrashed()->get(),
                 'users'     => User::withTrashed()->get(),
                 'reports'     => Report::withTrashed()->get(),
-                'spreadsheets'  => Spreadsheet::all()
+                'spreadsheets'  => Spreadsheet::all(),
+                'isAdminView'   => true
             ];
             return view('admin.home',$data);
         }

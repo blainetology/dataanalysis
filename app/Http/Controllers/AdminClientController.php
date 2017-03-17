@@ -14,7 +14,14 @@ class AdminClientController extends Controller
      */
     public function index()
     {
-        //
+        if(!\Auth::user()->isEditor())
+            abort(401);
+
+        $data = [
+            'clients' => Client::withTrashed()->get(),
+            'isAdminView'   => true
+        ];
+        return view('admin.clients.index',$data);
     }
 
     /**
@@ -26,7 +33,8 @@ class AdminClientController extends Controller
     {
         //
         $data = [
-            'input' => \Request::old()
+            'input' => \Request::old(),
+            'isAdminView'   => true
         ];
         return view('admin.clients.create',$data);
     }
@@ -66,7 +74,8 @@ class AdminClientController extends Controller
     {
         //
         $data = [
-            'input' => Client::find($id)->toArray()
+            'input' => Client::find($id)->toArray(),
+            'isAdminView'   => true
         ];
         return view('admin.clients.create',$data);
     }

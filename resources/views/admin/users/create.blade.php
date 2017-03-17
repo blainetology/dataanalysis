@@ -17,12 +17,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                {{ Form::text('first name',(!empty($input['first_name']) ? $input['first_name'] : null),['id'=>'first_name', 'class'=>'form-control', 'placeholder'=>'First Name'])}}
+                                {{ Form::text('first_name',(!empty($input['first_name']) ? $input['first_name'] : null),['id'=>'first_name', 'class'=>'form-control', 'placeholder'=>'First Name'])}}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                {{ Form::text('last name',(!empty($input['last_name']) ? $input['last_name'] : null),['id'=>'last_name', 'class'=>'form-control', 'placeholder'=>'Last Name'])}}
+                                {{ Form::text('last_name',(!empty($input['last_name']) ? $input['last_name'] : null),['id'=>'last_name', 'class'=>'form-control', 'placeholder'=>'Last Name'])}}
                             </div>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <h4>Account Type</h4>
-                                    {{ Form::select('account type',['client'=>'Client account','editor'=>'Track That Advisor employee'],(!empty($input['editor']) ? 'editor' : null),['name'=>'type', 'id'=>'type', 'class'=>'form-control'])}}
+                                    {{ Form::select('account_type',['client'=>'Client account','editor'=>'Track That Advisor employee'],(!empty($input['editor']) ? 'editor' : null),['name'=>'type', 'id'=>'type', 'class'=>'form-control'])}}
                                 </div>
                             </div>
                             <div class="col-md-7">

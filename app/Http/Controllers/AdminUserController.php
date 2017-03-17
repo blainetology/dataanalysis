@@ -17,7 +17,14 @@ class AdminUserController extends Controller
      */
     public function index()
     {
-        //
+        if(!\Auth::user()->isEditor())
+            abort(401);
+
+        $data = [
+            'users' => User::withTrashed()->get(),
+            'isAdminView'   => true
+        ];
+        return view('admin.users.index',$data);
     }
 
     /**
@@ -30,7 +37,8 @@ class AdminUserController extends Controller
         //
         $data = [
             'input' => \Request::old(),
-            'clients' => [0=>'--choose client--'] + Client::all()->pluck('business_name','id')->toArray()
+            'clients' => [0=>'--choose client--'] + Client::all()->pluck('business_name','id')->toArray(),
+            'isAdminView'   => true
         ];
         return view('admin.users.create',$data);
     }
@@ -63,7 +71,7 @@ class AdminUserController extends Controller
         $data['name'] = $input['first_name'];
         Mail::to($input['email'])->send(new NewUser($data));
 
-        return redirect('/');
+        return redirect()->route('adminusers.index');
 
     }
 
@@ -89,7 +97,8 @@ class AdminUserController extends Controller
         //
         $data = [
             'input' => User::find($id)->toArray(),
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray()
+            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'isAdminView'   => true
         ];
         return view('admin.users.create',$data);
     }
@@ -114,7 +123,7 @@ class AdminUserController extends Controller
         else
             $user->editor = 0;
         $user->save();
-        return redirect('/');
+        return redirect()->route('adminusers.index');
     }
 
     /**

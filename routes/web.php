@@ -28,4 +28,5 @@ Route::group(['middleware'=>['auth']],function(){
 		Route::resource('spreadsheets','ClientSpreadsheetController',['names'=>'clientspreadsheets']);	
 	});
 	Route::resource('reports', 'ReportsController');	
+	Route::resource('settings', 'SettingsController');	
 });

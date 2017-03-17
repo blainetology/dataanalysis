@@ -21,7 +21,14 @@ class AdminSpreadsheetController extends Controller
      */
     public function index()
     {
-        //
+        if(!\Auth::user()->isEditor())
+            abort(401);
+
+        $data = [
+            'spreadsheets' => Spreadsheet::all(),
+            'isAdminView'   => true
+        ];
+        return view('admin.spreadsheets.index',$data);
     }
 
     /**
@@ -35,7 +42,8 @@ class AdminSpreadsheetController extends Controller
         $data = [
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
             'letters' => SpreadsheetColumn::$columnLetters,
-            'input'   => ['column'=>[]]
+            'input'   => ['column'=>[]],
+            'isAdminView'   => true
         ];
         return view('admin.spreadsheets.create',$data);
     }
@@ -108,7 +116,8 @@ class AdminSpreadsheetController extends Controller
         $data = [
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'letters' => SpreadsheetColumn::$columnLetters
+            'letters' => SpreadsheetColumn::$columnLetters,
+            'isAdminView'   => true
         ];
         return view('admin.spreadsheets.create',$data);
     }
