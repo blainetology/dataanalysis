@@ -14,23 +14,8 @@
             </ul>
 
         </div>
-        <div class="col-md-12" style="padding:3px;">
-            {{ print_r($report->rules,true) }}
-            {{ print_r($content,true) }}
-            <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
-                <table id="spreadsheet" class="table table-bordered table-striped table-condensed" style="margin-bottom:5px;">
-                    <thead>
-                        <tr>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+        <div class="col-md-12">
+        @include('client.reports.'.$report->template->file)
         </div>
     </div>
 </div>

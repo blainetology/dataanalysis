@@ -82,8 +82,7 @@ class ReportsController extends Controller
     {
         //
         $report = Report::find($id);
-        $report->rules = json_decode($report->rules);
-        $distinct = 'col'.array_search(strtoupper($report->rules->distinct),SpreadsheetColumn::$columnLetters);
+/*        $report->rules = json_decode($report->rules);
         $content = SpreadsheetContent::where('spreadsheet_id',$report->rules->spreadsheet);
         $content->addSelect($distinct);
         foreach($report->rules->columns as $col) {
@@ -100,10 +99,9 @@ class ReportsController extends Controller
                     $temp[$row->$distinct][$key] += $value;
             }
         }
-        $data = [
+*/        $data = [
             'client' => Client::find($report->client_id),
             'report' => $report,
-            'content' => $temp,
             'client_reports' => Report::where('client_id',$report->client_id)->get()
         ];
         return view('client.reports.show',$data);

@@ -190,6 +190,7 @@ class AdminSpreadsheetController extends Controller
         print_r($old);
         exit;
 */        
+        $spreadsheet->touch();
         return redirect('/');
     }
 

@@ -165,15 +165,12 @@ class ClientSpreadsheetController extends Controller
             }
             $validations['col'.$column->column] = implode('|',$temp);
         }
-
         foreach($input['content'] as $key => $content){
             $content['spreadsheet_id'] = $id;
             $content['added_by'] = \Auth::user()->id;
             $content['revision_id'] = 0;
             $validator = \Validator::make($content, $validations);
             if ($validator->fails()){
-                print_r($validator->errors());
-                exit;
                 $content['validated']=0;
             }
             else
@@ -182,6 +179,7 @@ class ClientSpreadsheetController extends Controller
             if(!empty($content['col1']))
                 SpreadsheetContent::create($content);
         }
+        $spreadsheet->touch();
         return redirect()->route('clientspreadsheets.edit',['id'=>$id]);
     }
 
