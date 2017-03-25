@@ -3,6 +3,11 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
+        <div class="col-md-12">
+        <h3 style="margin:0; padding:0;">Spreadsheets</h3>
+        </div>        
+    </div>
+    <div class="row">
         {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
         <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
         <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
@@ -216,9 +221,9 @@
     var lastrow = "{{($spreadsheet->content ? $spreadsheet->content->count()+1 : 1)}}";
     var lastCellValue = "";
     $(document).ready(function(){
-        $('#spreadsheetContainer').height($(window).height()-150);
+        $('#spreadsheetContainer').height($(window).height()-180);
         $(window).on('resize',function(){
-            $('#spreadsheetContainer').height($(window).height()-150);
+            $('#spreadsheetContainer').height($(window).height()-180);
         })
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){

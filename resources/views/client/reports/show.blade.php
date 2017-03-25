@@ -4,12 +4,17 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
+        <h3>Reports</h3>
+        </div>        
+    </div>
+    <div class="row">
+        <div class="col-md-12">
             <span class="pull-right" id="action_bar">
                 <a href="/reports/{{$report->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> export to csv</a>
             </span>
             <ul class="nav nav-tabs">
                 @foreach($client_reports as $rep)
-                <li role="presentation" {!! ($report->id == $rep->id) ? 'class="active"' : '' !!}><a href="/client/reports/{{ $rep->id }}/edit">{{$rep->name}}</a></li>
+                <li role="presentation" {!! ($report->id == $rep->id) ? 'class="active"' : '' !!}><a href="/reports/{{ $rep->id }}">{{$rep->name}}</a></li>
                 @endforeach
             </ul>
 
@@ -40,9 +45,9 @@
 <script src="/js/datepicker.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#spreadsheetContainer').height($(window).height()-150);
+        $('#spreadsheetContainer').height($(window).height()-180);
         $(window).on('resize',function(){
-            $('#spreadsheetContainer').height($(window).height()-150);
+            $('#spreadsheetContainer').height($(window).height()-180);
         });
     });
 </script>

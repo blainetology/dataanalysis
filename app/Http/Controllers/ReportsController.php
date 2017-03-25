@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
 use App\Report;   
+use App\ReportTemplate;
 use App\Spreadsheet;   
 use App\SpreadsheetColumn;   
 use App\SpreadsheetContent;   
@@ -102,6 +103,7 @@ class ReportsController extends Controller
 */        $data = [
             'client' => Client::find($report->client_id),
             'report' => $report,
+            'content' => ReportTemplate::getContent($report->template->file,$report->rules),
             'client_reports' => Report::where('client_id',$report->client_id)->get()
         ];
         return view('client.reports.show',$data);

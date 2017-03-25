@@ -1,10 +1,10 @@
 <div class="container">
 <br/>
-<h3>Total Amount Pending</h3>
-{{ print_r($content) }}
+<h3>Seminar Business</h3>
+
 <table class="table table-striped table-bordered">
 	<thead>
-		<tr><th>Month</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
+		<tr><th>Seminar</th><th>Date</th><th>Num Clients Attained</th><th>Amount of Business Written</th></tr>
 	</thead>
 	<tbody>
 		<tr>
