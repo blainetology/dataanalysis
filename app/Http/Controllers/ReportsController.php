@@ -83,24 +83,7 @@ class ReportsController extends Controller
     {
         //
         $report = Report::find($id);
-/*        $report->rules = json_decode($report->rules);
-        $content = SpreadsheetContent::where('spreadsheet_id',$report->rules->spreadsheet);
-        $content->addSelect($distinct);
-        foreach($report->rules->columns as $col) {
-            $content->addSelect('col'.array_search(strtoupper($col),SpreadsheetColumn::$columnLetters));
-        }
-        $contents = $content->get();
-        $temp = [];
-        foreach($contents as $row){
-            print_r($row->toArray());
-            foreach($row->toArray() as $key=>$value){
-                if(empty($temp[$row->$distinct][$key]))
-                    $temp[$row->$distinct][$key] = 0;
-                else
-                    $temp[$row->$distinct][$key] += $value;
-            }
-        }
-*/        $data = [
+        $data = [
             'client' => Client::find($report->client_id),
             'report' => $report,
             $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
@@ -118,20 +101,17 @@ class ReportsController extends Controller
     public function edit($id)
     {
         //
-        $spreadsheet = Spreadsheet::find($id);
-        $input = $spreadsheet->toArray();
-        foreach($spreadsheet->columns as $column){
-            $column->validation = json_decode($column->validation);
-            $column->conditional = json_decode($column->conditional);
-            $input['column'][$column->column] = $column->toArray();
-        }
+        $report = Report::find($id);
+        $input = $report->toArray();
+        $input['rules'] = json_decode($report->rules,true);
         $data = [
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'letters' => SpreadsheetColumn::$columnLetters,
+            'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
+            'file' => $report->template->file,
             'isAdminView'   => true
         ];
-        return view('admin.spreadsheets.create',$data);
+        return view('admin.reports.create',$data);
     }
 
     /**
@@ -245,15 +225,16 @@ class ReportsController extends Controller
     public function generate($id)
     {
         $reports = Report::where('client_id',$id)->get();
+        $client = Client::find($id);
         $data = [
-            'client' => Client::find($id),
+            'client' => $client,
             'reports' => $reports
         ];
         foreach($reports as $report){
             $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
         }
         $pdf = \PDF::loadView('client.reports.generate', $data);
-        return $pdf->download('trackthatreport.pdf');
+        return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
         return view('client.reports.generate',$data);
     }
 

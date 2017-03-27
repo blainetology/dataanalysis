@@ -39,7 +39,7 @@
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('reports.show',$report->id) }}" title="enter data into report" class="btn btn-xs btn-success">view</a>
+                                                <a href="{{ route('reports.show',$report->id) }}" title="view report" class="btn btn-xs btn-success">view</a>
                                                 <a href="{{ route('reports.edit',$report->id) }}" title="edit report settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 {{ Form::open(['route'=>['reports.destroy',$report->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($report->name)."\" report?');" ]) }}
                                                 <button title="delete report" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
