@@ -22,7 +22,9 @@ class ReportTemplate extends Model
         return self::$template($rules);
     }
 
-    public static function _people_set_aptmt($rules){
+    
+
+    public static function people_set_aptmt($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $set = 'col'.array_search(strtoupper($rules['set']),\App\SpreadsheetColumn::$columnLetters);
@@ -32,7 +34,7 @@ class ReportTemplate extends Model
         $keptcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($kept,'yes')->count();
         return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount];
     }
-    public static function _total_amt_written($rules){
+    public static function total_amt_written($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
@@ -58,11 +60,11 @@ class ReportTemplate extends Model
         }
         return ['all'=>$all,'months'=>$months];
     }
-    public static function _total_amt_pending($rules){
+    public static function total_amt_pending($rules){
         $rules = json_decode($rules,true);
         return ['rules'=>$rules];
     }
-    public static function _total_amt_written_advisor($rules){
+    public static function total_amt_written_advisor($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
@@ -90,7 +92,7 @@ class ReportTemplate extends Model
         }
         return ['advisors'=>$advisors];
     }
-    public static function _total_amt_issued($rules){
+    public static function total_amt_issued($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $source = 'col'.array_search(strtoupper($rules['source']),\App\SpreadsheetColumn::$columnLetters);
@@ -106,7 +108,7 @@ class ReportTemplate extends Model
         }
         return ['sources'=>$sources];
     }
-    public static function _seminar_business_attained($rules){
+    public static function seminar_business_attained($rules){
         $rules = json_decode($rules,true);
         return ['rules'=>$rules];
     }

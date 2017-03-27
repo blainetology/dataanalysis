@@ -27,6 +27,7 @@ Route::group(['middleware'=>['auth']],function(){
 		Route::get('spreadsheets/{id}/export',['as'=>'clientspreadsheetexport', 'uses'=>'ClientSpreadsheetController@export']);	
 		Route::resource('spreadsheets','ClientSpreadsheetController',['names'=>'clientspreadsheets']);	
 	});
+	Route::get('reports/generate/{id}',['as'=>'reportsgenerate', 'uses'=>'ReportsController@generate']);	
 	Route::resource('reports', 'ReportsController');	
 	Route::resource('settings', 'SettingsController');	
 });

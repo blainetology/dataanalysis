@@ -1,3 +1,4 @@
+<?php $content = ${$report->template->file}; ?>
 <div class="container">
 <br/>
 <h3>Total Amount Written by Advisor</h3>

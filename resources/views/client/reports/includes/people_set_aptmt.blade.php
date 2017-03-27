@@ -1,3 +1,4 @@
+<?php $content = ${$report->template->file}; ?>
 <div class="container">
 <br/>
 <h3>Appointments (set &amp; Kept)</h3>

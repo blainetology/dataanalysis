@@ -103,7 +103,7 @@ class ReportsController extends Controller
 */        $data = [
             'client' => Client::find($report->client_id),
             'report' => $report,
-            'content' => ReportTemplate::getContent($report->template->file,$report->rules),
+            $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
             'client_reports' => Report::where('client_id',$report->client_id)->get()
         ];
         return view('client.reports.show',$data);
@@ -194,14 +194,6 @@ class ReportsController extends Controller
             $content->fill($new);
             $content->save();
         }
-/*        echo '<h4>Mapping</h4>';
-        print_r($mapping);
-        echo '<h4>New</h4>';
-        print_r($new);
-        echo '<h4>Old</h4>';
-        print_r($old);
-        exit;
-*/        
         return redirect('/');
     }
 
@@ -250,46 +242,19 @@ class ReportsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function import($id)
+    public function generate($id)
     {
-        $spreadsheet = Spreadsheet::find($id);
-        $input = $spreadsheet->toArray();
-        foreach($spreadsheet->columns as $column){
-            $column->validation = json_decode($column->validation);
-            $input['column'][$column->column] = $column->toArray();
-        }
+        $reports = Report::where('client_id',$id)->get();
         $data = [
-            'spreadsheet' => $spreadsheet,
-            'letters' => SpreadsheetColumn::$columnLetters,
+            'client' => Client::find($id),
+            'reports' => $reports
         ];
-        return view('admin.spreadsheets.import',$data);
-    }
-
-    public function importupload(Request $request, $id)
-    {
-        $spreadsheet = Spreadsheet::find($id);
-        $file = $request->file('csv');
-        if($request->get('replace') == 1)
-            SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->where('revision_id',0)->delete();
-        $row = 1;
-        if (($handle = fopen($file->path(), "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                if($row==1 && $request->get('skipfirst') == 1){
-                }
-                else{
-                    $col=1;
-                    $content=['spreadsheet_id'=>$spreadsheet->id,'added_by'=>\Auth::user()->id,'revision_id'=>0,'validated'=>1];
-                    foreach($data as $field){
-                        $content['col'.$col]=$field;
-                        $col++;
-                    }
-                    SpreadsheetContent::create($content);
-                }
-                $row++;
-            }
-            fclose($handle);
+        foreach($reports as $report){
+            $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
         }
-        return redirect('/');
+        $pdf = \PDF::loadView('client.reports.generate', $data);
+        return $pdf->download('trackthatreport.pdf');
+        return view('client.reports.generate',$data);
     }
 
 }
