@@ -9,7 +9,7 @@ class Spreadsheet extends Model
 {
     //
     use SoftDeletes;
-    protected $fillable = ['name','client_id','active'];
+    protected $fillable = ['name','client_id','active','list_order','sorting_col'];
 
     public function client(){
         return $this->belongsTo('\App\Client','client_id');

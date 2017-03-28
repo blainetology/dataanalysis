@@ -37,13 +37,13 @@
                             <div class="col-md-6">
                                 <h5>List Order</h5>
                                 <div class="form-group"> 
-                                {{ Form::text('list_order',$input['list_order'],['name'=>'list_order', 'id'=>'list_order', 'class'=>'form-control'])}}
+                                {{ Form::text('list_order',(!empty($input['list_order']) ? $input['list_order'] : null),['name'=>'list_order', 'id'=>'list_order', 'class'=>'form-control'])}}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <h5>Default Sort Column</h5>
                                 <div class="form-group"> 
-                                {{ Form::select('sorting_col',$letters,$input['sorting_col'],['name'=>'sorting_col', 'id'=>'sorting_col', 'class'=>'form-control'])}}
+                                {{ Form::select('sorting_col',$letters,(!empty($input['sorting_col']) ? $input['sorting_col'] : null),['name'=>'sorting_col', 'id'=>'sorting_col', 'class'=>'form-control'])}}
                                 </div>
                             </div>
                         </div>
@@ -104,25 +104,25 @@
                                         <div class="col-lg-11 col-lg-offset-1">
                                             <div class="input-group">
                                                 <span class="input-group-addon " id="basic-addon{{$x}}5"><div class="col-validation-label">Required</div></span>
-                                                {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'5'])}}
+                                                {{ Form::select('type',['1'=>'Yes','0'=>'No'],(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']) && !empty($input['column'][$x]['validation']->required) ? $input['column'][$x]['validation']->required : null),['name'=>"column[$x][validation][required]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'5'])}}
                                             </div>
                                         </div>
                                         <div class="col-lg-11 col-lg-offset-1">
                                             <div class="input-group">
                                                 <span class="input-group-addon" id="basic-addon{{$x}}6"><div class="col-validation-label">Select from List</div></span>
-                                                {{ Form::text('select',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->in) ? $input['column'][$x]['validation']->in : null),['name'=>"column[$x][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon'.$x.'6'])}}
+                                                {{ Form::text('select',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']) && !empty($input['column'][$x]['validation']->in) ? $input['column'][$x]['validation']->in : null),['name'=>"column[$x][validation][in]", 'class'=>'form-control input-sm', 'placeholder'=>'comma separated values','aria-describedby'=>'basic-addon'.$x.'6'])}}
                                             </div>
                                         </div>
                                         <div class="col-lg-11 col-lg-offset-1">
                                             <div class="input-group">
                                                 <span class="input-group-addon" id="basic-addon{{$x}}7"><div class="col-validation-label">Min Value</div></span>
-                                                {{ Form::text('min',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->min) ? $input['column'][$x]['validation']->min : null),['name'=>"column[$x][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'7'])}}
+                                                {{ Form::text('min',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']) && !empty($input['column'][$x]['validation']->min) ? $input['column'][$x]['validation']->min : null),['name'=>"column[$x][validation][min]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'7'])}}
                                             </div>
                                         </div>
                                         <div class="col-lg-11 col-lg-offset-1">
                                             <div class="input-group">
                                                 <span class="input-group-addon" id="basic-addon{{$x}}8"><div class="col-validation-label">Max Value</div></span>
-                                                {{ Form::text('max',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']->max) ? $input['column'][$x]['validation']->max : null),['name'=>"column[$x][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'8'])}}
+                                                {{ Form::text('max',(!empty($input['column'][$x]) && !empty($input['column'][$x]['validation']) && !empty($input['column'][$x]['validation']->max) ? $input['column'][$x]['validation']->max : null),['name'=>"column[$x][validation][max]", 'class'=>'form-control input-sm','aria-describedby'=>'basic-addon'.$x.'8'])}}
                                             </div>
                                         </div>
                                     </div>

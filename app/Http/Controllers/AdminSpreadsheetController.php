@@ -67,6 +67,7 @@ class AdminSpreadsheetController extends Controller
                     $validation[$key]=trim($value);
             }
             $column['validation'] = json_encode($validation);
+            $column['conditional'] = json_encode($column['conditional']);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
