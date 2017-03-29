@@ -24,7 +24,7 @@ class ReportsController extends Controller
             abort(401);
 
         $data = [
-            'reports' => Report::withTrashed()->get(),
+            'reports' => Report::all(),
             'spreadsheets' => Spreadsheet::all(),
             'isAdminView'   => true
         ];
