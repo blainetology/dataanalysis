@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                <div class="panel-heading">{{ !empty($input['id']) ? 'Update' : 'Create' }} Report</div>
+                <div class="panel-heading"><h2 class="panel-title">{{ !empty($duplicate) ? 'Duplicate' : (!empty($input['id']) ? 'Update' : 'Create') }} Report</h2></div>
 
                 <div class="panel-body">
 
@@ -42,12 +42,14 @@
                             </div>
                         </div>
                     </div>
+                    @if(!empty($input['id']))
                     <div class="row">
                         <div class="col-md-12">
-                            <h4>Rules</h4>
+                            <h4>Data Fields</h4>
                         </div>
                     </div> 
                     @include('admin.reports.includes.'.$file)
+                    @endif
                     <br/>
                     {{ Form::submit('Save Report',['class'=>'btn btn-primary']) }}
                     {{ Form::close() }}

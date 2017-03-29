@@ -38,14 +38,15 @@ class ReportsController extends Controller
      */
     public function create()
     {
-        //
+        $input = \Request::old();
+        $input['rules'] = [];
         $data = [
+            'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'letters' => SpreadsheetColumn::$columnLetters,
-            'input'   => ['column'=>[]],
+            'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
             'isAdminView'   => true
         ];
-        return view('admin.spreadsheets.create',$data);
+        return view('admin.reports.create',$data);
     }
 
     /**
@@ -57,20 +58,11 @@ class ReportsController extends Controller
     public function store(Request $request)
     {
         $input = \Request::all();
-        $spreadsheet = Spreadsheet::create($input);
-        foreach($input['column'] as $key => $column){
-            $column['spreadsheet_id'] = $spreadsheet->id;
-            $column['column'] = $key;
-            $validation = [];
-            foreach($column['validation'] as $key=>$value){
-                if(trim($value) != "")
-                    $validation[$key]=trim($value);
-            }
-            $column['validation'] = json_encode($validation);
-            if(!empty($column['label']))
-                SpreadsheetColumn::create($column);
-        }
-        return redirect('/');
+        $input['rules'] = '[]';
+        #print_r($input);
+        #exit;
+        $report = Report::create($input);
+        return redirect()->route('reports.edit',$report->id);
     }
 
     /**
@@ -186,10 +178,8 @@ class ReportsController extends Controller
     public function destroy($id)
     {
         //
-        $spreadsheet = Spreadsheet::find($id);
-        SpreadsheetColumn::where('spreadsheet_id',$spreadsheet->id);        
-        SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id);
-        $spreadsheet->delete();
+        $report = Report::find($id);
+        $report->delete();
         return redirect('/');
     }
 
@@ -201,19 +191,18 @@ class ReportsController extends Controller
      */
     public function duplicate($id)
     {
-        $spreadsheet = Spreadsheet::find($id);
-        $input = $spreadsheet->toArray();
-        foreach($spreadsheet->columns as $column){
-            $column->validation = json_decode($column->validation);
-            $input['column'][$column->column] = $column->toArray();
-        }
+        $report = Report::find($id);
+        $input = $report->toArray();
+        $input['rules'] = json_decode($report->rules,true);
         $data = [
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'letters' => SpreadsheetColumn::$columnLetters,
+            'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
+            'file' => $report->template->file,
+            'isAdminView'   => true,
             'duplicate' => true
         ];
-        return view('admin.spreadsheets.create',$data);
+        return view('admin.reports.create',$data);
     }
 
     /**

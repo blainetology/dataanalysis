@@ -31,7 +31,7 @@ class HomeController extends Controller
             $data = [
                 'clients'   => Client::withTrashed()->get(),
                 'users'     => User::withTrashed()->get(),
-                'reports'     => Report::withTrashed()->get(),
+                'reports'     => Report::get(),
                 'spreadsheets'  => Spreadsheet::all(),
                 'isAdminView'   => true
             ];
