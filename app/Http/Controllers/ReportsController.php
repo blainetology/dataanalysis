@@ -115,58 +115,12 @@ class ReportsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
         $input = \Request::all();
+        $input['rules'] = json_encode($input['rules']);
         #print_r($input);
         #exit;
-        $spreadsheet = Spreadsheet::find($id);
-        $spreadsheet->update($input);
-        SpreadsheetColumn::where('spreadsheet_id',$id)->delete();
-        $mapping = [];
-        foreach($input['column'] as $key => $column){
-            $mapping[$key] = $column['col_val'];
-            $column['spreadsheet_id'] = $spreadsheet->id;
-            $column['column'] = $column['col_val'];
-            $validation = [];
-            foreach($column['validation'] as $key=>$value){
-                if($key=='in'){
-                    $value = trim($value);
-                    if($value != ""){
-                        $values = explode(',',$value);
-                        $temp = [];
-                        foreach($values as $val){
-                            $temp[] = trim($val);
-                        }
-                        $validation[$key]=implode(',',$temp);
-                    }
-                }
-                else{
-                    if(trim($value) != "")
-                        $validation[$key]=trim($value);
-                }
-            }
-            $column['validation'] = json_encode($validation);
-            $conditional = [];
-            foreach($column['conditional'] as $key=>$value){
-                if(trim($value) != "")
-                    $conditional[$key]=trim($value);
-            }
-            $column['conditional'] = json_encode($conditional);
-            if(!empty($column['label']))
-                SpreadsheetColumn::create($column);
-        }
-        $old = [];
-        $new = [];
-        foreach(SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->get() as $content){
-            $old = $content->toArray();
-            $new = $old;
-            foreach($mapping as $oldID=>$newID)
-                $new['col'.$newID] = $old['col'.$oldID];
-            $content->timestamps = false;
-            $content->fill($new);
-            $content->save();
-        }
-        return redirect('/');
+        Report::find($id)->update($input);
+        return redirect()->route('reports.index');
     }
 
     /**
