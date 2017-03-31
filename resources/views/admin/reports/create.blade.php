@@ -15,16 +15,22 @@
                         {{ Form::open(['route'=>'reports.store', 'method'=>'POST']) }}
                     @endif
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="form-group">
                                 <label>Report Name</label>
                                 {{ Form::text('name',(!empty($input['name']) ? $input['name'] : null),['id'=>'name', 'name'=>'name', 'class'=>'form-control', 'placeholder'=>'Name'])}}
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label>Tab Label</label>
                                 {{ Form::text('tab label',(!empty($input['label']) ? $input['label'] : null),['id'=>'label', 'name'=>'label', 'class'=>'form-control', 'placeholder'=>'Tab Label'])}}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Status</label>
+                                {{ Form::select('active',['1'=>'Active','0'=>'Inactive'],(!empty($input['active']) ? 1 : 0),['name'=>'active', 'id'=>'active', 'class'=>'form-control'])}}
                             </div>
                         </div>
                     </div>

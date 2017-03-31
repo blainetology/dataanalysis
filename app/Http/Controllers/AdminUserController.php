@@ -135,5 +135,12 @@ class AdminUserController extends Controller
     public function destroy($id)
     {
         //
+        User::find($id)->delete();
+        return redirect()->route('adminusers.index');
+    }
+
+    public function restore($id){
+        User::withTrashed()->where('id',$id)->restore();
+        return redirect()->route('adminusers.index');
     }
 }

@@ -79,7 +79,7 @@ class ReportsController extends Controller
             'client' => Client::find($report->client_id),
             'report' => $report,
             $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
-            'client_reports' => Report::where('client_id',$report->client_id)->get()
+            'client_reports' => Report::active()->where('client_id',$report->client_id)->get()
         ];
         return view('client.reports.show',$data);
     }
@@ -134,7 +134,7 @@ class ReportsController extends Controller
         //
         $report = Report::find($id);
         $report->delete();
-        return redirect('/');
+        return redirect()->route('reports.index');
     }
 
     /**

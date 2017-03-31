@@ -16,7 +16,9 @@ Auth::routes();
 Route::get('/', 'HomeController@index');
 Route::group(['middleware'=>['auth']],function(){
 	Route::group(['prefix'=>'admin'],function(){
+		Route::get('users/{id}/restore',['as'=>'adminusers.restore', 'uses'=>'AdminUserController@restore']);	
 		Route::resource('users','AdminUserController',['names'=>'adminusers']);
+		Route::get('clients/{id}/restore',['as'=>'adminclients.restore', 'uses'=>'AdminClientController@restore']);	
 		Route::resource('clients', 'AdminClientController',['names'=>'adminclients']);
 		Route::get('spreadsheets/{id}/import',['as'=>'adminspreadsheetimport', 'uses'=>'AdminSpreadsheetController@import']);	
 		Route::post('spreadsheets/{id}/import',['as'=>'adminspreadsheetimport', 'uses'=>'AdminSpreadsheetController@importupload']);	

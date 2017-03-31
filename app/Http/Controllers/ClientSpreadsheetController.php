@@ -120,7 +120,7 @@ class ClientSpreadsheetController extends Controller
             'conditionals' => $conditionals,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
-            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->orderBy('list_order','asc')->get(),
+            'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->active()->orderBy('list_order','asc')->get(),
             'counts' => [],
             'queryvars' => $queryvars,
             'field_ids' => implode(',',$field_ids),

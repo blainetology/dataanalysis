@@ -129,11 +129,11 @@
                                 <tbody>
                                     @foreach($spreadsheets as $spreadsheet)
                                         <tr>
-                                            <td>{{ $spreadsheet->name }}</td>
-                                            <td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->name }}</td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
-                                            <td>{{ $spreadsheet->content->count() }}</td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->content->count() }}</td>
                                             <td class="no-stretch">
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
                                                 <a href="{{ route('adminspreadsheetimport',$spreadsheet->id) }}" title="upload csv file" class="btn btn-xs btn-primary"><i class="fa fa-upload" aria-hidden="true"></i></a>
@@ -173,8 +173,8 @@
                                 <tbody>
                                     @foreach($reports as $report)
                                         <tr>
-                                            <td>{{ $report->name }}</td>
-                                            <td>
+                                            <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $report->name }}</td>
+                                            <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
                                             <td class="no-stretch">

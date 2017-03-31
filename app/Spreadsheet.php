@@ -2,13 +2,11 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class Spreadsheet extends Model
 {
     //
-    use SoftDeletes;
     protected $fillable = ['name','client_id','active','list_order','sorting_col'];
 
     public function client(){
@@ -32,6 +30,20 @@ class Spreadsheet extends Model
                 $content = $content->where($col,$filter);
         }
         return $content;
+    }
+
+
+    // SCOPES
+    public function scopeActive($query){
+        return $query->where('active',1);
+    }
+    public function scopeInactive($query){
+        return $query->where('active',1);
+    }
+
+    // CUSTOM METHODS
+    public function isActive(){
+        return !empty($this->active);
     }
 
 }

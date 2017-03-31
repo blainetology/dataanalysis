@@ -2,7 +2,6 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class Report extends Model
@@ -15,6 +14,20 @@ class Report extends Model
     }
     public function template(){
         return $this->belongsTo('\App\ReportTemplate','template_id');
+    }
+
+
+    // SCOPES
+    public function scopeActive($query){
+        return $query->where('active',1);
+    }
+    public function scopeInactive($query){
+        return $query->where('active',1);
+    }
+
+    // CUSTOM METHODS
+    public function isActive(){
+        return !empty($this->active);
     }
 
 }

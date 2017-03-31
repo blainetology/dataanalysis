@@ -35,11 +35,11 @@
                                 <tbody>
                                     @foreach($spreadsheets as $spreadsheet)
                                         <tr>
-                                            <td>{{ $spreadsheet->name }}</td>
-                                            <td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->name }}</td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
-                                            <td>{{ $spreadsheet->content->count() }}</td>
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->content->count() }}</td>
                                             <td class="no-stretch">
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
                                                 <a href="{{ route('adminspreadsheetimport',$spreadsheet->id) }}" title="upload csv file" class="btn btn-xs btn-primary"><i class="fa fa-upload" aria-hidden="true"></i></a>

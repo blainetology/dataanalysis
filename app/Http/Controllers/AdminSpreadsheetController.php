@@ -205,8 +205,8 @@ class AdminSpreadsheetController extends Controller
     {
         //
         $spreadsheet = Spreadsheet::find($id);
-        SpreadsheetColumn::where('spreadsheet_id',$spreadsheet->id);        
-        SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id);
+        SpreadsheetColumn::where('spreadsheet_id',$spreadsheet->id)->delete();        
+        SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->delete();
         $spreadsheet->delete();
         return redirect('/');
     }
