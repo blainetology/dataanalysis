@@ -40,7 +40,7 @@ class AdminSpreadsheetController extends Controller
     {
         //
         $data = [
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'letters' => SpreadsheetColumn::$columnLetters,
             'input'   => ['column'=>[]],
             'isAdminView'   => true
@@ -71,7 +71,7 @@ class AdminSpreadsheetController extends Controller
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
-        return redirect('/');
+        return redirect()->route('adminspreadsheets.index');
     }
 
     /**
@@ -116,7 +116,7 @@ class AdminSpreadsheetController extends Controller
         }
         $data = [
             'input' => $input,
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'letters' => SpreadsheetColumn::$columnLetters,
             'isAdminView'   => true
         ];
@@ -192,7 +192,7 @@ class AdminSpreadsheetController extends Controller
         exit;
 */        
         $spreadsheet->touch();
-        return redirect('/');
+        return redirect()->route('adminspreadsheets.index');
     }
 
     /**
@@ -208,7 +208,7 @@ class AdminSpreadsheetController extends Controller
         SpreadsheetColumn::where('spreadsheet_id',$spreadsheet->id)->delete();        
         SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->delete();
         $spreadsheet->delete();
-        return redirect('/');
+        return redirect()->route('adminspreadsheets.index');
     }
 
     /**

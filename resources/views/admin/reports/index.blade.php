@@ -35,7 +35,7 @@
                                     @foreach($reports as $report)
                                         <tr>
                                             <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $report->name }}</td>
-                                            <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td {!! !$report->isActive() || $report->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
                                             <td class="no-stretch">

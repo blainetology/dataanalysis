@@ -29,7 +29,7 @@ class AdminClientController extends Controller{
     public function store(Request $request){
         $input = \Request::all();
         Client::create($input);
-        return redirect('/');
+        return redirect()->route('adminclients.index');
 
     }
 
@@ -48,13 +48,13 @@ class AdminClientController extends Controller{
         $client = Client::find($id);
         $client->fill($input);
         $client->save();
-        return redirect('/');
+        return redirect()->route('adminclients.index');
     }
 
     public function destroy($id){
         //
         Client::find($id)->delete();
-        return redirect('/');
+        return redirect()->route('adminclients.index');
     }
 
     public function restore($id){

@@ -34,12 +34,16 @@ class SettingsController extends Controller
     public function update(Request $request, $id)
     {
         //
-        $input = \Request::all();
         #print_r($input);
         #exit;
         $user = \Auth::user();
-        $user->fill($input);
+        $user->fill($request->toArray());
         $user->save();
+
+        if(!empty($request->password) && !empty($request->password2) && $request->password==$request->password2){
+            $user->password = \Hash::make($request->password);
+            $user->save();
+        }
 
         return redirect('/');
     }

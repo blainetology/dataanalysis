@@ -10,7 +10,7 @@ class Spreadsheet extends Model
     protected $fillable = ['name','client_id','active','list_order','sorting_col'];
 
     public function client(){
-        return $this->belongsTo('\App\Client','client_id');
+        return $this->belongsTo('\App\Client','client_id')->withTrashed();
     }
     public function columns(){
         return $this->hasMany('\App\SpreadsheetColumn','spreadsheet_id');

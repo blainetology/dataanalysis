@@ -10,7 +10,7 @@ class Report extends Model
     protected $fillable = ['name','label','client_id','template_id','rules','active'];
 
     public function client(){
-        return $this->belongsTo('\App\Client','client_id');
+        return $this->belongsTo('\App\Client','client_id')->withTrashed();
     }
     public function template(){
         return $this->belongsTo('\App\ReportTemplate','template_id');

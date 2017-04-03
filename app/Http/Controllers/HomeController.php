@@ -30,17 +30,19 @@ class HomeController extends Controller
         if(\Auth::user()->isEditor()){
             $data = [
                 'clients'   => Client::withTrashed()->get(),
-                'users'     => User::withTrashed()->get(),
-                'reports'     => Report::get(),
-                'spreadsheets'  => Spreadsheet::all(),
+                'users'     => User::withTrashed()->orderBy('last_login','desc')->get(),
+                'reports'     => Report::orderBy('opened_at','desc')->get(),
+                'spreadsheets'  => Spreadsheet::orderBy('updated_at','desc')->get(),
                 'isAdminView'   => true
             ];
             return view('admin.home',$data);
         }
         else{
             $data = [
-                'spreadsheets'  => Spreadsheet::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->get(),
-                'users'         => User::where('client_id',\Auth::user()->client_id)->where('client_id','!=',0)->where('admin',0)->where('editor',0)->get()
+                'spreadsheets'  => Spreadsheet::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->active()->get(),
+                'reports'       => Report::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->active()->get(),
+                'users'         => User::where('client_id',\Auth::user()->client_id)->where('client_id','!=',0)->where('admin',0)->where('editor',0)->get(),
+                'client'        => \Auth::user()->client
             ];
             return view('client.home',$data);
         }

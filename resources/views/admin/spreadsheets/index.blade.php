@@ -36,13 +36,15 @@
                                     @foreach($spreadsheets as $spreadsheet)
                                         <tr>
                                             <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->name }}</td>
-                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td {!! !$spreadsheet->isActive() || $spreadsheet->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
                                             <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->content->count() }}</td>
-                                            <td class="no-stretch">
+                                            <td class="no-stretch text-right">
+                                                @if($spreadsheet->active == 1)
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
                                                 <a href="{{ route('adminspreadsheetimport',$spreadsheet->id) }}" title="upload csv file" class="btn btn-xs btn-primary"><i class="fa fa-upload" aria-hidden="true"></i></a>
+                                                @endif
                                                 <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" title="duplicate spreadsheet" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
                                                 <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" title="edit spreadsheet settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 {{ Form::open(['route'=>['adminspreadsheets.destroy',$spreadsheet->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($spreadsheet->name)."\" spreadsheet?');" ]) }}

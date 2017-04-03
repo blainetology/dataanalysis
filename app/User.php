@@ -33,7 +33,7 @@ class User extends Authenticatable
     // relationships
 
     public function client(){
-        return $this->belongsTo('\App\Client','client_id');
+        return $this->belongsTo('\App\Client','client_id')->withTrashed();
     }
 
 

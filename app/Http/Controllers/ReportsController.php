@@ -42,7 +42,7 @@ class ReportsController extends Controller
         $input['rules'] = [];
         $data = [
             'input' => $input,
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
             'isAdminView'   => true
         ];
@@ -81,6 +81,10 @@ class ReportsController extends Controller
             $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
             'client_reports' => Report::active()->where('client_id',$report->client_id)->get()
         ];
+        if(!\Auth::user()->isAdmin() && !\Auth::user()->isEditor()){
+            $report->opened_at = \DB::raw('NOW()');
+            $report->save();
+        }
         return view('client.reports.show',$data);
     }
 
@@ -98,7 +102,7 @@ class ReportsController extends Controller
         $input['rules'] = json_decode($report->rules,true);
         $data = [
             'input' => $input,
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
+            'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
             'file' => $report->template->file,
             'isAdminView'   => true

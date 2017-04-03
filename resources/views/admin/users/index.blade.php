@@ -40,22 +40,24 @@
                                     <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->title }}</td>
                                     <td>
                                         @if($user->admin == 1)
-                                        <div class="label label-success">admin</div>
+                                            <div class="label label-success">admin</div>
                                         @elseif($user->editor == 1)
-                                        <div class="label label-warning">editor</div>
+                                            <div class="label label-warning">editor</div>
                                         @else
-                                        {!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}
+                                            <div {!! $user->trashed() || $user->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}</div>
                                         @endif
                                     </td>
-                                    <td>{{ $user->last_login }}</td>
+                                    <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->last_login }}</td>
                                     <td class="no-stretch">
                                         @if($user->trashed())
                                             <a href="{{ route('adminusers.restore',$user->id) }}" class="btn btn-xs btn-success">restore</a>
                                         @else
-                                            <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                            {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
-                                            <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-                                            {{ Form::close() }}
+                                            @if($user->admin == 0 && $user->editor == 0)
+                                                <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
+                                                <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                {{ Form::close() }}
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>

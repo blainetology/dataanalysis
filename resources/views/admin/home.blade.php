@@ -14,7 +14,7 @@
                 <div class="col-md-12">
 
                     {{-- clients --}}
-                    <div class="panel panel-default">
+                    <div class="panel panel-default hidden">
                         <div class="panel-heading">
                             <a href="{{ route('adminclients.create') }}" class="btn btn-sm btn-primary pull-right">Create Client</a>
                             <strong style="font-size:1.3em;" class="text-info">Clients <span class="label label-success">{{ $clients->count() }}</span></strong>
@@ -37,14 +37,14 @@
                                 <tbody>
                                     @foreach($clients as $client)
                                         <tr>
-                                            <td>{{ $client->business_name }}</td>
-                                            <td>{{ $client->users->count() }}</td>
-                                            <td>{{ $client->spreadsheets->count() }}</td>
+                                            <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->business_name }}</td>
+                                            <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->users->count() }}</td>
+                                            <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->spreadsheets->count() }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning" title="edit client"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 @if($client->trashed())
-                                                    <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-success" title="restore client"><i class="fa fa-reply" aria-hidden="true"></i></a>
+                                                    <a href="{{ route('adminclients.restore',$client->id) }}" class="btn btn-xs btn-success" title="restore client">restore</a>
                                                 @else
+                                                    <a href="{{ route('adminclients.edit',$client->id) }}" class="btn btn-xs btn-warning" title="edit client"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                     {{ Form::open(['route'=>['adminclients.destroy',$client->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete client \"".addslashes($client->business_name)."\"?');" ]) }}
                                                     <button title="delete client" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                                                     {{ Form::close() }}
@@ -60,8 +60,7 @@
                     {{-- users --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('adminusers.create') }}" class="btn btn-sm btn-primary pull-right">Create User</a>
-                            <strong style="font-size:1.3em;" class="text-info">Users <span class="label label-success">{{ $users->count() }}</span></strong>
+                            <strong style="font-size:1.3em;" class="text-info">Recent User Logins</strong>
                         </div>
 
                         @if($users->count()==0)
@@ -81,22 +80,28 @@
                                 <tbody>
                                     @foreach($users as $user)
                                         <tr>
-                                            <td>{{ $user->displayname() }}</td>
+                                            <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->displayname() }}</td>
                                             <td>
                                                 @if($user->admin == 1)
-                                                <div class="label label-success">admin</div>
+                                                    <div class="label label-success">admin</div>
                                                 @elseif($user->editor == 1)
-                                                <div class="label label-warning">editor</div>
+                                                    <div class="label label-warning">editor</div>
                                                 @else
-                                                {!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}
+                                                    <div {!! $user->trashed() || $user->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}</div>
                                                 @endif
                                             </td>
-                                            <td>{{ $user->last_login }}</td>
+                                            <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->last_login }}</td>
                                             <td class="no-stretch">
-                                                <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                                {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
-                                                <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-                                                {{ Form::close() }}
+                                                @if($user->trashed())
+                                                    <a href="{{ route('adminusers.restore',$user->id) }}" class="btn btn-xs btn-success">restore</a>
+                                                @else
+                                                    <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                    @if($user->admin == 0)
+                                                    {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
+                                                    <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                    {{ Form::close() }}
+                                                    @endif
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -108,8 +113,7 @@
                     {{-- spreadsheets --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('adminspreadsheets.create') }}" class="btn btn-sm btn-primary pull-right">Create Spreadsheet</a>
-                            <strong style="font-size:1.3em;" class="text-info">Spreadsheets <span class="label label-success">{{ $spreadsheets->count() }}</span></strong>
+                            <strong style="font-size:1.3em;" class="text-info">Recently Updated Spreadsheets</strong>
                         </div>
 
                         @if($spreadsheets->count()==0)
@@ -122,7 +126,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
-                                        <th>Rows</th>
+                                        <th>Last Updated</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -130,14 +134,14 @@
                                     @foreach($spreadsheets as $spreadsheet)
                                         <tr>
                                             <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->name }}</td>
-                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td {!! !$spreadsheet->isActive() || $spreadsheet->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
-                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->content->count() }}</td>
-                                            <td class="no-stretch">
+                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->updated_at }}</td>
+                                            <td class="no-stretch text-right">
+                                                @if($spreadsheet->active == 1)
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
-                                                <a href="{{ route('adminspreadsheetimport',$spreadsheet->id) }}" title="upload csv file" class="btn btn-xs btn-primary"><i class="fa fa-upload" aria-hidden="true"></i></a>
-                                                <a href="{{ route('adminspreadsheetduplicate',$spreadsheet->id) }}" title="duplicate spreadsheet" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                                                @endif
                                                 <a href="{{ route('adminspreadsheets.edit',$spreadsheet->id) }}" title="edit spreadsheet settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 {{ Form::open(['route'=>['adminspreadsheets.destroy',$spreadsheet->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($spreadsheet->name)."\" spreadsheet?');" ]) }}
                                                 <button title="delete spreadsheet" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -153,8 +157,7 @@
                     {{-- reports --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="{{ route('reports.create') }}" class="btn btn-sm btn-primary pull-right">Create Report</a>
-                            <strong style="font-size:1.3em;" class="text-info">Reports <span class="label label-success">{{ $reports->count() }}</span></strong>
+                            <strong style="font-size:1.3em;" class="text-info">Recently View Reports</strong>
                         </div>
 
                         @if($reports->count()==0)
@@ -167,6 +170,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
+                                        <th>Last Viewed</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -174,12 +178,14 @@
                                     @foreach($reports as $report)
                                         <tr>
                                             <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $report->name }}</td>
-                                            <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td {!! !$report->isActive() || $report->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
+                                            <td>{{ $report->opened_at }}</td>
                                             <td class="no-stretch">
+                                                @if($report->active == 1)
                                                 <a href="{{ route('reports.show',$report->id) }}" title="view report" class="btn btn-xs btn-success">view</a>
-                                                <a href="{{ route('reports.duplicate',$report->id) }}" title="duplicate report" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                                                @endif
                                                 <a href="{{ route('reports.edit',$report->id) }}" title="edit report settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 {{ Form::open(['route'=>['reports.destroy',$report->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($report->name)."\" report?');" ]) }}
                                                 <button title="delete report" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>

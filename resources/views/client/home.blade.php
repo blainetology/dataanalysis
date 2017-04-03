@@ -36,19 +36,10 @@
                         No spreadsheets
                     @else
                         <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
                             <tbody>
                                 @foreach($spreadsheets as $spreadsheet)
                                     <tr>
-                                        <td>{{ $spreadsheet->name }}</td>
-                                        <td class="no-stretch">
-                                            <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-success">data entry</a>
-                                        </td>
+                                        <td><a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}">{{ $spreadsheet->name }}</a></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -63,23 +54,14 @@
                 <div class="panel-heading"><strong>My Reports <span class="label label-default">{{ $spreadsheets->count() }}</span></strong></div>
 
                 <div class="panel-body">
-                    @if($spreadsheets->count()==0)
+                    @if($reports->count()==0)
                         No reports
                     @else
                         <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
                             <tbody>
-                                @foreach($spreadsheets as $spreadsheet)
+                                @foreach($reports as $report)
                                     <tr>
-                                        <td>{{ $spreadsheet->name }}</td>
-                                        <td class="no-stretch">
-                                            <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" class="btn btn-xs btn-info">view</a>
-                                        </td>
+                                        <td><a href="{{ route('reports.show',$report->id) }}">{{ $report->name }}</a></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -98,17 +80,10 @@
                         No users
                     @else
                         <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                </tr>
-                            </thead>
                             <tbody>
                                 @foreach($users as $user)
                                     <tr>
-                                        <td>{{ $user->displayname() }}</td>
-                                        <td>{{ $user->email }}</td>
+                                        <td>{{ $user->displayname() }} <small>({{ $user->email }})</small></td>
                                     </tr>
                                 @endforeach
                             </tbody>
