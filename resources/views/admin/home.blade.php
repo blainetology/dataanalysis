@@ -90,7 +90,7 @@
                                                     <div {!! $user->trashed() || $user->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}</div>
                                                 @endif
                                             </td>
-                                            <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->last_login }}</td>
+                                            <td class="no-stretch" {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->last_login }}</td>
                                             <td class="no-stretch">
                                                 @if($user->trashed())
                                                     <a href="{{ route('adminusers.restore',$user->id) }}" class="btn btn-xs btn-success">restore</a>
@@ -137,7 +137,7 @@
                                             <td {!! !$spreadsheet->isActive() || $spreadsheet->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
-                                            <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->updated_at }}</td>
+                                            <td class="no-stretch" {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->updated_at }}</td>
                                             <td class="no-stretch text-right">
                                                 @if($spreadsheet->active == 1)
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
@@ -157,7 +157,7 @@
                     {{-- reports --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <strong style="font-size:1.3em;" class="text-info">Recently View Reports</strong>
+                            <strong style="font-size:1.3em;" class="text-info">Recently Viewed Reports</strong>
                         </div>
 
                         @if($reports->count()==0)
@@ -181,7 +181,7 @@
                                             <td {!! !$report->isActive() || $report->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
-                                            <td>{{ $report->opened_at }}</td>
+                                            <td class="no-stretch">{{ $report->opened_at }}</td>
                                             <td class="no-stretch">
                                                 @if($report->active == 1)
                                                 <a href="{{ route('reports.show',$report->id) }}" title="view report" class="btn btn-xs btn-success">view</a>
