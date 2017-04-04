@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\NewUser;
 use App\Client;
 use App\User;
+use App\Log;   
 
 class AdminUserController extends Controller
 {

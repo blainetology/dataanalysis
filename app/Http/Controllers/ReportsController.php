@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
+use App\Log;   
 use App\Report;   
 use App\ReportTemplate;
 use App\Spreadsheet;   
@@ -85,6 +86,7 @@ class ReportsController extends Controller
             $report->opened_at = \DB::raw('NOW()');
             $report->save();
         }
+        Log::report($report->id,'show');
         return view('client.reports.show',$data);
     }
 
@@ -107,6 +109,7 @@ class ReportsController extends Controller
             'file' => $report->template->file,
             'isAdminView'   => true
         ];
+        Log::report($report->id,'edit');
         return view('admin.reports.create',$data);
     }
 

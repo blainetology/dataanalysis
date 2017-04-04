@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
+use App\Log;   
 use App\Spreadsheet;   
 use App\SpreadsheetContent;   
 use App\SpreadsheetColumn;   
@@ -127,6 +128,7 @@ class ClientSpreadsheetController extends Controller
             'sort_col' => \Request::get('sort_col',$spreadsheet->sorting_col)
         ];
         #return $data;
+        Log::spreadsheet($spreadsheet->id,'show');
         return view('client.spreadsheet.edit',$data);
      }
 

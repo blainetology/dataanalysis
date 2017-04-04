@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
+use App\Log;   
 use App\Spreadsheet;   
 use App\SpreadsheetColumn;   
 use App\SpreadsheetContent;   
@@ -120,6 +121,7 @@ class AdminSpreadsheetController extends Controller
             'letters' => SpreadsheetColumn::$columnLetters,
             'isAdminView'   => true
         ];
+        Log::spreadsheet($spreadsheet->id,'edit');
         return view('admin.spreadsheets.create',$data);
     }
 

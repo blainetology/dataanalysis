@@ -29,5 +29,6 @@ class LogSuccessfulLogin
         //
         $event->user->last_login = date('Y-m-d H:i:s');
         $event->user->save();
+        \App\Log::user($event->user->id,'login');
     }
 }
