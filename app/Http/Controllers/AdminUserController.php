@@ -11,11 +11,7 @@ use App\Log;
 
 class AdminUserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         if(!\Auth::user()->isEditor())
@@ -28,11 +24,6 @@ class AdminUserController extends Controller
         return view('admin.users.index',$data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
@@ -44,12 +35,6 @@ class AdminUserController extends Controller
         return view('admin.users.create',$data);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         //
@@ -71,28 +56,17 @@ class AdminUserController extends Controller
         $data['email'] = $input['email'];
         $data['name'] = $input['first_name'];
         Mail::to($input['email'])->send(new NewUser($data));
+        Log::loguser($user->id,'created');
 
         return redirect()->route('adminusers.index');
 
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
@@ -104,13 +78,6 @@ class AdminUserController extends Controller
         return view('admin.users.create',$data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
@@ -124,26 +91,23 @@ class AdminUserController extends Controller
         else
             $user->editor = 0;
         $user->save();
+        Log::loguser($user->id,'updated');
         return redirect()->route('adminusers.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+   public function destroy($id)
     {
         //
         $user = User::find($id);
         if($user)
             $user->delete();
+        Log::loguser($user->id,'deleted');
         return redirect()->route('adminusers.index');
     }
 
     public function restore($id){
         User::withTrashed()->where('id',$id)->restore();
+        Log::loguser($user->id,'restored');
         return redirect()->route('adminusers.index');
     }
 }

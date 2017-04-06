@@ -15,11 +15,6 @@ class AdminSpreadsheetController extends Controller
 
     public $keyOnly = ['required'];
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         if(!\Auth::user()->isEditor())
@@ -32,11 +27,6 @@ class AdminSpreadsheetController extends Controller
         return view('admin.spreadsheets.index',$data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
@@ -49,12 +39,6 @@ class AdminSpreadsheetController extends Controller
         return view('admin.spreadsheets.create',$data);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $input = \Request::all();
@@ -72,15 +56,10 @@ class AdminSpreadsheetController extends Controller
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
+        Log::logspreadsheet($spreadsheet->id,'created');
         return redirect()->route('adminspreadsheets.index');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
@@ -96,15 +75,10 @@ class AdminSpreadsheetController extends Controller
             'letters' => SpreadsheetColumn::$columnLetters,
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get()
         ];
+        Log::logspreadsheet($spreadsheet->id,'viewed');
         return view('client.spreadsheet.edit',$data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
@@ -121,17 +95,9 @@ class AdminSpreadsheetController extends Controller
             'letters' => SpreadsheetColumn::$columnLetters,
             'isAdminView'   => true
         ];
-        Log::spreadsheet($spreadsheet->id,'edit');
         return view('admin.spreadsheets.create',$data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
@@ -185,40 +151,22 @@ class AdminSpreadsheetController extends Controller
             $content->fill($new);
             $content->save();
         }
-/*        echo '<h4>Mapping</h4>';
-        print_r($mapping);
-        echo '<h4>New</h4>';
-        print_r($new);
-        echo '<h4>Old</h4>';
-        print_r($old);
-        exit;
-*/        
         $spreadsheet->touch();
+        Log::logspreadsheet($spreadsheet->id,'updated');
         return redirect()->route('adminspreadsheets.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         //
         $spreadsheet = Spreadsheet::find($id);
         SpreadsheetColumn::where('spreadsheet_id',$spreadsheet->id)->delete();        
         SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->delete();
+        Log::logspreadsheet($spreadsheet->id,'deleted');
         $spreadsheet->delete();
         return redirect()->route('adminspreadsheets.index');
     }
 
-    /**
-     * Show the form for duplicating the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function duplicate($id)
     {
         $spreadsheet = Spreadsheet::find($id);
@@ -236,12 +184,6 @@ class AdminSpreadsheetController extends Controller
         return view('admin.spreadsheets.create',$data);
     }
 
-    /**
-     * Show the form for importing csv.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function import($id)
     {
         $spreadsheet = Spreadsheet::find($id);
@@ -303,6 +245,7 @@ class AdminSpreadsheetController extends Controller
             }
             fclose($handle);
         }
+        Log::logspreadsheet($spreadsheet->id,'imported');
         return redirect('/');
     }
 

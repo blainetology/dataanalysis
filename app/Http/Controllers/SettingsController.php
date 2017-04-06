@@ -45,6 +45,7 @@ class SettingsController extends Controller
             $user->save();
         }
 
+        Log::user($user->id,'settings');
         return redirect('/');
     }
 }

@@ -20,4 +20,8 @@ class Client extends Model
         return $this->hasMany('\App\Spreadsheet','client_id');
     }
 
+    public function displayname(){
+      return trim($this->business_name);
+    }
+
 }

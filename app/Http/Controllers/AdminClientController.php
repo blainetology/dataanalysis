@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Client;
+use App\Log;   
 
 class AdminClientController extends Controller{
 
@@ -29,8 +30,8 @@ class AdminClientController extends Controller{
     public function store(Request $request){
         $input = \Request::all();
         Client::create($input);
+        Log::logclient($client->id,'created');
         return redirect()->route('adminclients.index');
-
     }
 
     public function edit($id){
@@ -48,17 +49,20 @@ class AdminClientController extends Controller{
         $client = Client::find($id);
         $client->fill($input);
         $client->save();
+        Log::logclient($client->id,'edited');
         return redirect()->route('adminclients.index');
     }
 
     public function destroy($id){
         //
         Client::find($id)->delete();
+        Log::logclient($client->id,'deleted');
         return redirect()->route('adminclients.index');
     }
 
     public function restore($id){
         Client::withTrashed()->where('id',$id)->restore();
+        Log::logclient($client->id,'restored');
         return redirect()->route('adminclients.index');
     }
 }

@@ -14,11 +14,7 @@ use App\SpreadsheetContent;
 
 class ReportsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         if(!\Auth::user()->isEditor())
@@ -32,11 +28,6 @@ class ReportsController extends Controller
         return view('admin.reports.index',$data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         $input = \Request::old();
@@ -50,12 +41,6 @@ class ReportsController extends Controller
         return view('admin.reports.create',$data);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $input = \Request::all();
@@ -63,15 +48,10 @@ class ReportsController extends Controller
         #print_r($input);
         #exit;
         $report = Report::create($input);
+        Log::logreport($report->id,'created');
         return redirect()->route('reports.edit',$report->id);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
@@ -86,16 +66,10 @@ class ReportsController extends Controller
             $report->opened_at = \DB::raw('NOW()');
             $report->save();
         }
-        Log::report($report->id,'show');
+        Log::logreport($report->id,'viewed');
         return view('client.reports.show',$data);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
@@ -109,17 +83,9 @@ class ReportsController extends Controller
             'file' => $report->template->file,
             'isAdminView'   => true
         ];
-        Log::report($report->id,'edit');
         return view('admin.reports.create',$data);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $input = \Request::all();
@@ -127,29 +93,19 @@ class ReportsController extends Controller
         #print_r($input);
         #exit;
         Report::find($id)->update($input);
+        Log::logreport($report->id,'updated');
         return redirect()->route('reports.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         //
         $report = Report::find($id);
         $report->delete();
+        Log::logreport($report->id,'deleted');
         return redirect()->route('reports.index');
     }
 
-    /**
-     * Show the form for duplicating the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function duplicate($id)
     {
         $report = Report::find($id);
@@ -166,12 +122,6 @@ class ReportsController extends Controller
         return view('admin.reports.create',$data);
     }
 
-    /**
-     * Show the form for importing csv.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function generate($id)
     {
         $reports = Report::where('client_id',$id)->get();

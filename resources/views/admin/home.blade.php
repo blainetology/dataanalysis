@@ -60,7 +60,7 @@
                     {{-- users --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <strong style="font-size:1.3em;" class="text-info">Recent User Logins</strong>
+                            <strong style="font-size:1.1em;" class="text-info">Recent User Logins</strong>
                         </div>
 
                         @if($users->count()==0)
@@ -68,7 +68,7 @@
                                <h4> No users</h4>
                             </div>
                         @else
-                            <table class="table table-striped">
+                            <table class="table table-striped table-condensed">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -113,7 +113,7 @@
                     {{-- spreadsheets --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <strong style="font-size:1.3em;" class="text-info">Recently Updated Spreadsheets</strong>
+                            <strong style="font-size:1.1em;" class="text-info">Recently Updated Spreadsheets</strong>
                         </div>
 
                         @if($spreadsheets->count()==0)
@@ -121,7 +121,7 @@
                                 <h4>No spreadsheets</h4>
                             </div>
                         @else
-                            <table class="table table-striped">
+                            <table class="table table-striped table-condensed">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -157,7 +157,7 @@
                     {{-- reports --}}
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <strong style="font-size:1.3em;" class="text-info">Recently Viewed Reports</strong>
+                            <strong style="font-size:1.1em;" class="text-info">Recently Viewed Reports</strong>
                         </div>
 
                         @if($reports->count()==0)
@@ -165,7 +165,7 @@
                                 <h4>No reports</h4>
                             </div>
                         @else
-                            <table class="table table-striped">
+                            <table class="table table-striped table-condensed">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -207,10 +207,36 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><strong>Stats</strong></div>
+                        <div class="panel-heading"><strong>Activity Log</strong></div>
 
-                        <div class="panel-body">
-                        </div>
+                        <table class="table table-striped table-condensed">
+                        @foreach($logs as $log)
+                            <tr>
+                            <td class="small">
+                            <?php 
+                            $logmodel = $log->{$log->model}->first();
+                            ?>
+                            @if($log->action == 'login')
+                            <i class="fa fa-sign-in" aria-hidden="true"></i>
+                            @elseif($log->model=='user')
+                            <i class="fa fa-user text-danger" aria-hidden="true"></i>
+                            @elseif($log->model=='client')
+                            <i class="fa fa-users text-warning" aria-hidden="true"></i>
+                            @elseif($log->model=='report')
+                            <i class="fa fa-bar-chart text-success" aria-hidden="true"></i>
+                            @elseif($log->model=='spreadsheet')
+                            <i class="fa fa-table text-info" aria-hidden="true"></i>
+                            @endif
+                            <small>{{ date('m/d/y h:iA',strtotime($log->created_at)) }}</small><br/>
+                            <strong>{{ $log->auth->displayname() }}</strong> <em>{{ $log->action }}</em>
+                            @if($log->action != 'login')
+                            {{ $log->model }}
+                            <strong>{{ $logmodel->displayname() }}</strong>
+                            @endif
+                            </td>
+                            </tr>
+                        @endforeach
+                        </table>
                     </div>
                 </div>
             </div>

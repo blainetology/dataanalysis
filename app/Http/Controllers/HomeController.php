@@ -7,6 +7,7 @@ use App\Client;
 use App\User;
 use App\Spreadsheet;
 use App\Report;
+use App\Log;
 
 class HomeController extends Controller
 {
@@ -27,12 +28,13 @@ class HomeController extends Controller
      */
     public function index()
     {
-        if(\Auth::user()->isEditor()){
+        if(\Auth::user()->isEditor() || \Auth::user()->isAdmin()){
             $data = [
                 'clients'   => Client::withTrashed()->get(),
-                'users'     => User::withTrashed()->orderBy('last_login','desc')->get(),
-                'reports'     => Report::orderBy('opened_at','desc')->get(),
-                'spreadsheets'  => Spreadsheet::orderBy('updated_at','desc')->get(),
+                'users'     => User::withTrashed()->orderBy('last_login','desc')->take(10)->get(),
+                'reports'     => Report::orderBy('opened_at','desc')->take(10)->get(),
+                'spreadsheets'  => Spreadsheet::orderBy('updated_at','desc')->take(10)->get(),
+                'logs'      => Log::orderBy('created_at','desc')->take(25)->get(),
                 'isAdminView'   => true
             ];
             return view('admin.home',$data);

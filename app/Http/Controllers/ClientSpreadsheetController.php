@@ -12,64 +12,9 @@ use App\SpreadsheetColumn;
 
 class ClientSpreadsheetController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public $keyOnly = ['required'];
 
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $input = \Request::all();
-        $spreadsheet = Spreadsheet::create($input);
-        SpreadsheetColumn::where('spreadsheet_id',$id)->delete();
-        foreach($input['column'] as $key => $column){
-            $column['spreadsheet_id'] = $id;
-            $column['column'] = $key;
-            if(!empty($column['label']))
-                SpreadsheetColumn::create($column);
-        }
-        return redirect('/');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
@@ -87,12 +32,6 @@ class ClientSpreadsheetController extends Controller
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation,true);
             $column->conditional = json_decode($column->conditional,true);
-/*            $distincts = SpreadsheetContent::select('col'.$column->column.' AS col', \DB::raw('COUNT(id) AS qty'))->where('spreadsheet_id',$spreadsheet->id)->groupBy('col'.$column->column)->get();
-            $temp = [];
-            foreach($distincts as $distinct)
-                $temp[$distinct->col] = $distinct->col." (".$distinct->qty.")";
-            $column->distincts = $temp;
-*/          
             $temp=[];
             $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
             foreach($column->validation as $key=>$value){
@@ -128,17 +67,9 @@ class ClientSpreadsheetController extends Controller
             'sort_col' => \Request::get('sort_col',$spreadsheet->sorting_col)
         ];
         #return $data;
-        Log::spreadsheet($spreadsheet->id,'show');
         return view('client.spreadsheet.edit',$data);
      }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
@@ -182,18 +113,8 @@ class ClientSpreadsheetController extends Controller
                 SpreadsheetContent::create($content);
         }
         $spreadsheet->touch();
+        Log::logspreadsheet($spreadsheet->id,'edited');
         return redirect()->route('clientspreadsheets.edit',['id'=>$id]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 
     public function export($id)
@@ -203,12 +124,6 @@ class ClientSpreadsheetController extends Controller
         $columns = [];
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation,true);
-/*            $distincts = SpreadsheetContent::select('col'.$column->column.' AS col', \DB::raw('COUNT(id) AS qty'))->where('spreadsheet_id',$spreadsheet->id)->groupBy('col'.$column->column)->get();
-            $temp = [];
-            foreach($distincts as $distinct)
-                $temp[$distinct->col] = $distinct->col." (".$distinct->qty.")";
-            $column->distincts = $temp;
-*/            
             $column->distincts = SpreadsheetContent::distinct('col'.$column->column)->where('spreadsheet_id',$spreadsheet->id)->pluck('col'.$column->column,'col'.$column->column);
             $columns[$column->column] = $column;
         }
@@ -238,6 +153,7 @@ class ClientSpreadsheetController extends Controller
             }
             fputcsv($output, $row);
         }
+        Log::logspreadsheet($spreadsheet->id,'exported');
         return "";
      }
 

@@ -46,4 +46,8 @@ class Spreadsheet extends Model
         return !empty($this->active);
     }
 
+    public function displayname(){
+      return trim($this->name);
+    }
+
 }
