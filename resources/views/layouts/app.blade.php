@@ -48,10 +48,10 @@
                         @endif
                         @if(\Auth::user()->isEditor() && !empty($isAdminView))
                             <li><a href="/"><h4 style="padding:0; margin:2px 30px 0 0;">Site Administration</h4></a></li>
-                            <li><a href="{{ route('adminclients.index') }}">Clients</a></li>
-                            <li><a href="{{ route('adminusers.index') }}">Users</a></li>
-                            <li><a href="{{ route('adminspreadsheets.index') }}">Spreadsheets</a></li>
-                            <li><a href="{{ route('reports.index') }}">Reports</a></li>
+                            <li><a href="{{ route('adminclients.index') }}"><i class="fa fa-users" aria-hidden="true"></i> Clients</a></li>
+                            <li><a href="{{ route('adminusers.index') }}"><i class="fa fa-user" aria-hidden="true"></i> Users</a></li>
+                            <li><a href="{{ route('adminspreadsheets.index') }}"><i class="fa fa-table" aria-hidden="true"></i> Spreadsheets</a></li>
+                            <li><a href="{{ route('reports.index') }}"><i class="fa fa-bar-chart" aria-hidden="true"></i> Reports</a></li>
                         @endif
                     </ul>
 
