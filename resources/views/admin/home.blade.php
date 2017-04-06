@@ -231,7 +231,7 @@
                             <strong>{{ $log->auth->displayname() }}</strong> <em>{{ $log->action }}</em>
                             @if($log->action != 'login')
                             {{ $log->model }}
-                            <strong>{{ $logmodel->displayname() }}</strong>
+                            <strong>{{ $logmodel ? $logmodel->displayname() : '[removed]' }}</strong>
                             @endif
                             </td>
                             </tr>
