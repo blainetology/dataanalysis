@@ -46,7 +46,7 @@
                         @if(isset($client) && empty($isAdminView))
                         <li style="padding-top:15px;"> &nbsp; &nbsp; Client: <strong>{{ $client->business_name }}</strong></li>
                         @endif
-                        @if(\Auth::user()->isEditor() && !empty($isAdminView))
+                        @if(\Auth::check() && \Auth::user()->isEditor() && !empty($isAdminView))
                             <li><a href="/"><h4 style="padding:0; margin:2px 30px 0 0;">Site Administration</h4></a></li>
                             <li><a href="{{ route('adminclients.index') }}"><i class="fa fa-users" aria-hidden="true"></i> Clients</a></li>
                             <li><a href="{{ route('adminusers.index') }}"><i class="fa fa-user" aria-hidden="true"></i> Users</a></li>

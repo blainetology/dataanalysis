@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\NewUser;
 use App\Client;
 use App\User;
 use App\Log;   
+use App\Notifications\NewUser;
 
 class AdminUserController extends Controller
 {
+
 
     public function index()
     {
@@ -51,11 +52,8 @@ class AdminUserController extends Controller
             $user->editor = 0;
         $user->save();
 
-        $data = [];
-        $data['password'] = $password;
-        $data['email'] = $input['email'];
-        $data['name'] = $input['first_name'];
-        Mail::to($input['email'])->send(new NewUser($data));
+        $user->unhashed=$password;
+        $user->notify(new NewUser());
         Log::loguser($user->id,'created');
 
         return redirect()->route('adminusers.index');

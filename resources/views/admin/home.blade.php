@@ -228,7 +228,7 @@
                             <i class="fa fa-table text-info" aria-hidden="true"></i>
                             @endif
                             <small>{{ date('m/d/y h:iA',strtotime($log->created_at)) }}</small><br/>
-                            <strong>{{ $log->auth->displayname() }}</strong> <em>{{ $log->action }}</em>
+                            <strong>{{ $log->auth ? $log->auth->displayname() : '[removed]' }}</strong> <em>{{ $log->action }}</em>
                             @if($log->action != 'login')
                             {{ $log->model }}
                             <strong>{{ $logmodel ? $logmodel->displayname() : '[removed]' }}</strong>

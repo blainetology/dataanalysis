@@ -51,7 +51,7 @@
 
         <div class="col-md-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><strong>My Reports <span class="label label-default">{{ $spreadsheets->count() }}</span></strong></div>
+                <div class="panel-heading"><strong>My Reports <span class="label label-default">{{ $reports->count() }}</span></strong></div>
 
                 <div class="panel-body">
                     @if($reports->count()==0)
