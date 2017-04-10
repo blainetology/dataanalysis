@@ -44,12 +44,16 @@
                                 <h3 class="text-danger">This is an admin account</h3>
                             </div>
                         @else
+                            @if(\Auth::user()->isAdmin())
                             <div class="col-md-5">
                                 <div class="form-group">
                                     <h4>Account Type</h4>
                                     {{ Form::select('account_type',['client'=>'Client account','editor'=>'Track That Advisor employee'],(!empty($input['editor']) ? 'editor' : null),['name'=>'type', 'id'=>'type', 'class'=>'form-control'])}}
                                 </div>
                             </div>
+                            @else
+                                <input type="hidden" name="type" value="client">
+                            @endif
                             <div class="col-md-7">
                                 <div class="form-group" id="client_select">
                                     <h4>Client</h4>

@@ -25,7 +25,7 @@
                                 <h4>No clients</h4>
                             </div>
                         @else
-                            <table class="table table-striped">
+                            <table class="table table-striped small">
                                 <thead>
                                     <tr>
                                         <th>Business Name</th>
@@ -40,7 +40,7 @@
                                             <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->business_name }}</td>
                                             <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->users->count() }}</td>
                                             <td {!! $client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $client->spreadsheets->count() }}</td>
-                                            <td class="no-stretch">
+                                            <td class="text-right">
                                                 @if($client->trashed())
                                                     <a href="{{ route('adminclients.restore',$client->id) }}" class="btn btn-xs btn-success" title="restore client">restore</a>
                                                 @else
@@ -68,20 +68,20 @@
                                <h4> No users</h4>
                             </div>
                         @else
-                            <table class="table table-striped table-condensed">
+                            <table class="table table-striped table-condensed small">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
                                         <th>Last Login</th>
-                                        <th>Actions</th>
+                                        <th class="text-right" width="150"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($users as $user)
                                         <tr>
                                             <td {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->displayname() }}</td>
-                                            <td>
+                                            <td width="150">
                                                 @if($user->admin == 1)
                                                     <div class="label label-success">admin</div>
                                                 @elseif($user->editor == 1)
@@ -90,17 +90,17 @@
                                                     <div {!! $user->trashed() || $user->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{!! $user->client ? $user->client->business_name : '<div class="label label-danger">none</div>' !!}</div>
                                                 @endif
                                             </td>
-                                            <td class="no-stretch" {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $user->last_login }}</td>
-                                            <td class="no-stretch">
+                                            <td class="no-stretch" {!! $user->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ date('m/d/y h:iA',strtotime($user->last_login)) }}</td>
+                                            <td class="text-right">
                                                 @if($user->trashed())
                                                     <a href="{{ route('adminusers.restore',$user->id) }}" class="btn btn-xs btn-success">restore</a>
                                                 @else
-                                                    <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-                                                    @if($user->admin == 0)
-                                                    {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
-                                                    <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-                                                    {{ Form::close() }}
-                                                    @endif
+                                                    @if(($user->admin == 0 && $user->editor == 0) || \Auth::user()->isAdmin())
+                                                        <a href="{{ route('adminusers.edit',$user->id) }}" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                        {{ Form::open(['route'=>['adminusers.destroy',$user->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete user \"".addslashes($user->displayname())."\"?');" ]) }}
+                                                        <button title="delete user" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                        {{ Form::close() }}
+                                                        @endif
                                                 @endif
                                             </td>
                                         </tr>
@@ -121,24 +121,24 @@
                                 <h4>No spreadsheets</h4>
                             </div>
                         @else
-                            <table class="table table-striped table-condensed">
+                            <table class="table table-striped table-condensed small">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
                                         <th>Last Updated</th>
-                                        <th>Actions</th>
+                                        <th class="text-right" width="150"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($spreadsheets as $spreadsheet)
                                         <tr>
                                             <td {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $spreadsheet->name }}</td>
-                                            <td {!! !$spreadsheet->isActive() || $spreadsheet->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td width="150" {!! !$spreadsheet->isActive() || $spreadsheet->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $spreadsheet->client ? $spreadsheet->client->business_name : '---' }}
                                             </td>
-                                            <td class="no-stretch" {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ $spreadsheet->updated_at }}</td>
-                                            <td class="no-stretch text-right">
+                                            <td class="no-stretch" {!! !$spreadsheet->isActive() ? 'style="text-decoration:line-through;"' : '' !!}>{{ date('m/d/y h:iA',strtotime($spreadsheet->updated_at)) }}</td>
+                                            <td class="text-right">
                                                 @if($spreadsheet->active == 1)
                                                 <a href="{{ route('clientspreadsheets.edit',$spreadsheet->id) }}" title="enter data into speadsheet" class="btn btn-xs btn-success">data entry</a>
                                                 @endif
@@ -165,24 +165,24 @@
                                 <h4>No reports</h4>
                             </div>
                         @else
-                            <table class="table table-striped table-condensed">
+                            <table class="table table-striped table-condensed small">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Client</th>
                                         <th>Last Viewed</th>
-                                        <th>Actions</th>
+                                        <th class="text-right" width="150"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($reports as $report)
                                         <tr>
                                             <td {!! !$report->isActive() ? 'style="text-decoration:line-through !important;"' : '' !!}>{{ $report->name }}</td>
-                                            <td {!! !$report->isActive() || $report->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
+                                            <td width="150" {!! !$report->isActive() || $report->client->trashed() ? 'style="text-decoration:line-through !important;"' : '' !!}>
                                                 {{ $report->client ? $report->client->business_name : '---' }}
                                             </td>
-                                            <td class="no-stretch">{{ $report->opened_at }}</td>
-                                            <td class="no-stretch">
+                                            <td class="no-stretch">{{ date('m/d/y h:iA',strtotime($report->opened_at)) }}</td>
+                                            <td class="text-right">
                                                 @if($report->active == 1)
                                                 <a href="{{ route('reports.show',$report->id) }}" title="view report" class="btn btn-xs btn-success">view</a>
                                                 @endif
