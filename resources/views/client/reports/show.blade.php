@@ -14,11 +14,32 @@
             </span>
             <ul class="nav nav-tabs">
                 @foreach($client_reports as $rep)
-                <li role="presentation" {!! ($report->id == $rep->id) ? 'class="active"' : '' !!}><a href="/reports/{{ $rep->id }}">{{$rep->label}}</a></li>
+                <li role="presentation" {!! ($report->id == $rep->id) ? 'class="active"' : '' !!}><a href="/reports/{{ $rep->id }}?{{ $_SERVER['QUERY_STRING'] }}">{{$rep->label}}</a></li>
                 @endforeach
             </ul>
 
         </div>
+    </div>
+</div>
+<br/>
+<div class="container">
+    <div class="row">
+        <form method="GET">
+        <div class="col-md-3">
+            <label>Start Date:</label><br/>
+            {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control','id'=>'start_date'])}}
+        </div>
+        <div class="col-md-3">
+            <label>End Date:</label><br/>
+            {{ Form::text('end_date',\Request::get('end_date',date('Y').'-12-31'),['name'=>'end_date','class'=>'form-control','id'=>'end_date'])}}
+        </div>
+        <div class="col-md-2">
+            <label>&nbsp;</label><br/>
+            <input type="submit" value="Filter Dates" class="btn btn-info btn-md">
+        </div>
+        </form>
+    </div>
+    <div class="row">
         <div class="col-md-12">
         @include('client.reports.includes.'.$report->template->file)
         </div>
@@ -45,6 +66,8 @@
 <script src="/js/datepicker.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
+        $('#start_date').datepicker({format: 'yyyy-mm-dd'});
+        $('#end_date').datepicker({format: 'yyyy-mm-dd'});
         $('#spreadsheetContainer').height($(window).height()-180);
         $(window).on('resize',function(){
             $('#spreadsheetContainer').height($(window).height()-180);

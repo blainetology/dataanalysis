@@ -1,5 +1,4 @@
 <?php $content = ${$report->template->file}; ?>
-<div class="container">
 <br/>
 <h3>Total Amount Written</h3>
 
@@ -28,5 +27,3 @@
 		</tr>
 	</tfoot>
 </table>
-
-</div>

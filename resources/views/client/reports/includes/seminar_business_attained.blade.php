@@ -1,5 +1,4 @@
 <?php $content = ${$report->template->file}; ?>
-<div class="container">
 <br/>
 <h3>Seminar Business</h3>
 
@@ -12,5 +11,3 @@
 		</tr>
 	</tbody>
 </table>
-
-</div>

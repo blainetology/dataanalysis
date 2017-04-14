@@ -1,5 +1,4 @@
 <?php $content = ${$report->template->file}; ?>
-<div class="container">
 <br/>
 <h3>Appointments (Set &amp; Kept)</h3>
 
@@ -26,6 +25,4 @@
 			<div style="padding:2px 5px;">{{ $content['kept'] }} Kept</div>&nbsp;
 		</div>
 	</div>
-</div>
-
 </div>
