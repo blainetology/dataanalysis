@@ -17,7 +17,7 @@
 	</tbody>
 </table>
 
-<div style="width:100%; background: #F00; font-size: 10px;">
+<div style="width:100%; background: #F00; font-size: 10px; display:none;">
 	<div style="padding:2px 5px;">{{ $content['all'] }} Leads</div>
 	<div style="width:{{ round($content['set']/$content['all']*100) }}%; background: #FF0;">
 		<div style="padding:2px 5px;">{{ $content['set'] }} Set</div>
