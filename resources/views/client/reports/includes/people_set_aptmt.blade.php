@@ -4,7 +4,7 @@
 
 <table class="table table-striped table-bordered">
 	<thead>
-		<tr><th>All Leads</th><th>Num Set</th><th>Num Kept</th><th>% of All that Set</th><th>% of Set that Kept</th></tr>
+		<tr bgcolor="#FFF"><th>All Leads</th><th>Num Set</th><th>Num Kept</th><th>% of All that Set</th><th>% of Set that Kept</th></tr>
 	</thead>
 	<tbody>
 		<tr>

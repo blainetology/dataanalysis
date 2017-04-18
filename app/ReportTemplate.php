@@ -59,7 +59,29 @@ class ReportTemplate extends Model
                 $months[$row->$month]['life']+=$row->$life;
             }
         }
-        return ['all'=>$all,'months'=>$months];
+
+        $advisors = null;
+        if(!empty($rules['advisor'])){
+            $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
+            $advisors = [];
+            foreach($results as $row){
+                if(!isset($advisors[$row->$advisor]))
+                    $advisors[$row->$advisor] = ['months'=>[],'all'=>['fia'=>0,'aum'=>0,'life'=>0]];
+                $advisors[$row->$advisor]['all']['fia']+=$row->$fia;
+                $advisors[$row->$advisor]['all']['aum']+=$row->$aum;
+                $advisors[$row->$advisor]['all']['life']+=$row->$life;
+                if(!isset($advisors[$row->$advisor]['months'][$row->$month])){
+                    $advisors[$row->$advisor]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->life];
+                }
+                else{
+                    $advisors[$row->$advisor]['months'][$row->$month]['fia']+=$row->$fia;
+                    $advisors[$row->$advisor]['months'][$row->$month]['aum']+=$row->$aum;
+                    $advisors[$row->$advisor]['months'][$row->$month]['life']+=$row->$life;
+                }
+            }
+        }
+
+        return ['all'=>$all,'months'=>$months,'advisors'=>$advisors];
     }
     public static function total_amt_pending($rules){
         $rules = json_decode($rules,true);

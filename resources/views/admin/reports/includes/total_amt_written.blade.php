@@ -12,16 +12,21 @@
 		{{ Form::text('Month Column',(!empty($input['rules']) ? $input['rules']['month'] : null),['name'=>'rules[month]', 'class'=>'form-control'])}}
 	</div>
 </div>
+<br/>
 <div class="row">
-	<div class="col-md-4">
+	<div class="col-md-3">
+		<label>Advisor Column</label><br/>
+		{{ Form::text('Advisor Column',(!empty($input['rules']) ? $input['rules']['advisor'] : null),['name'=>'rules[advisor]', 'class'=>'form-control'])}}
+	</div>
+	<div class="col-md-3">
 		<label>FIA Column</label><br/>
 		{{ Form::text('FIA Column',(!empty($input['rules']) ? $input['rules']['fia'] : null),['name'=>'rules[fia]', 'class'=>'form-control'])}}
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-3">
 		<label>AUM Column</label><br/>
 		{{ Form::text('AUM Column',(!empty($input['rules']) ? $input['rules']['aum'] : null),['name'=>'rules[aum]', 'class'=>'form-control'])}}
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-3">
 		<label>Life Column</label><br/>
 		{{ Form::text('Life Column',(!empty($input['rules']) ? $input['rules']['life'] : null),['name'=>'rules[life]', 'class'=>'form-control'])}}
 	</div>
