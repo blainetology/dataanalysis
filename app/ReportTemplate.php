@@ -51,7 +51,7 @@ class ReportTemplate extends Model
             $all['aum']+=$row->$aum;
             $all['life']+=$row->$life;
             if(!isset($months[$row->$month])){
-                $months[$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->life];
+                $months[$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
             }
             else{
                 $months[$row->$month]['fia']+=$row->$fia;
@@ -71,7 +71,7 @@ class ReportTemplate extends Model
                 $advisors[$row->$advisor]['all']['aum']+=$row->$aum;
                 $advisors[$row->$advisor]['all']['life']+=$row->$life;
                 if(!isset($advisors[$row->$advisor]['months'][$row->$month])){
-                    $advisors[$row->$advisor]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->life];
+                    $advisors[$row->$advisor]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
                 }
                 else{
                     $advisors[$row->$advisor]['months'][$row->$month]['fia']+=$row->$fia;
@@ -97,34 +97,6 @@ class ReportTemplate extends Model
                 $total += $row->$written;
         }
         return ['total'=>$total];
-    }
-    public static function total_amt_written_advisor($rules){
-        $rules = json_decode($rules,true);
-        $spreadsheet_id = $rules['spreadsheet'];
-        $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
-        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
-        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->orderBy($date,'asc')->get();
-        $advisors = [];
-        foreach($results as $row){
-            if(!isset($advisors[$row->$advisor]))
-                $advisors[$row->$advisor] = ['months'=>[],'all'=>['fia'=>0,'aum'=>0,'life'=>0]];
-            $advisors[$row->$advisor]['all']['fia']+=$row->$fia;
-            $advisors[$row->$advisor]['all']['aum']+=$row->$aum;
-            $advisors[$row->$advisor]['all']['life']+=$row->$life;
-            if(!isset($advisors[$row->$advisor]['months'][$row->$month])){
-                $advisors[$row->$advisor]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->life];
-            }
-            else{
-                $advisors[$row->$advisor]['months'][$row->$month]['fia']+=$row->$fia;
-                $advisors[$row->$advisor]['months'][$row->$month]['aum']+=$row->$aum;
-                $advisors[$row->$advisor]['months'][$row->$month]['life']+=$row->$life;
-            }
-        }
-        return ['advisors'=>$advisors];
     }
     public static function total_amt_issued($rules){
         $rules = json_decode($rules,true);
