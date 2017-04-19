@@ -30,9 +30,9 @@ class ReportTemplate extends Model
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
         $set = 'col'.array_search(strtoupper($rules['set']),\App\SpreadsheetColumn::$columnLetters);
         $kept = 'col'.array_search(strtoupper($rules['kept']),\App\SpreadsheetColumn::$columnLetters);
-        $allcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->count();
-        $setcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->where($set,'yes')->count();
-        $keptcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->where($kept,'yes')->count();
+        $allcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->count();
+        $setcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->where($set,'yes')->count();
+        $keptcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-md-'))])->where($kept,'yes')->count();
         return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount];
     }
     public static function total_amt_written($rules){
@@ -43,7 +43,7 @@ class ReportTemplate extends Model
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
         $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
         $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
         $all = ['fia'=>0,'aum'=>0,'life'=>0];
         $months = [];
         foreach($results as $row){
@@ -90,7 +90,7 @@ class ReportTemplate extends Model
         $written = 'col'.array_search(strtoupper($rules['written']),\App\SpreadsheetColumn::$columnLetters);
         $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
         $value = $rules['value'];
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($conditional,$value)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($conditional,$value)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->get();
         $total = 0;
         foreach($results as $row){
             if(!empty($row->$written))
@@ -105,7 +105,7 @@ class ReportTemplate extends Model
         $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
         $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
         $sources = null;
         $issued = ["fia"=>0,"aum"=>0,"total"=>0];
 
@@ -137,7 +137,7 @@ class ReportTemplate extends Model
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
         $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y').'-12-31')])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
         $sources = [];
         foreach($results as $row){
             if(!isset($sources[$row->$source]))

@@ -29,7 +29,7 @@
                         <br/><br/><br/>
                         <p>custom report prepared for</p>
                         <h2>{{ $report->client->business_name }}</h2>
-                        <p>Represents data through {{ date('m/d/Y') }}</p>
+                        <p>Represents data {{ date('m/d/Y',strtotime($start) ) }} through {{ date('m/d/Y',strtotime($end)) }}</p>
                     </div>
                 </div>
             </div>

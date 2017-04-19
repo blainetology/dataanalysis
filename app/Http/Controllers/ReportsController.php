@@ -128,7 +128,9 @@ class ReportsController extends Controller
         $client = Client::find($id);
         $data = [
             'client' => $client,
-            'reports' => $reports
+            'reports' => $reports,
+            'start' => \Request::get('start_date',date('Y').'-01-01'),
+            'end' => \Request::get('end_date',date('Y-m-d'))
         ];
         foreach($reports as $report){
             $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);

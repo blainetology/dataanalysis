@@ -31,7 +31,7 @@
         </div>
         <div class="col-md-3">
             <label>End Date:</label><br/>
-            {{ Form::text('end_date',\Request::get('end_date',date('Y').'-12-31'),['name'=>'end_date','class'=>'form-control','id'=>'end_date'])}}
+            {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control','id'=>'end_date'])}}
         </div>
         <div class="col-md-2">
             <label>&nbsp;</label><br/>
