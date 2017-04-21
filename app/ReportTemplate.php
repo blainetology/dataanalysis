@@ -148,7 +148,55 @@ class ReportTemplate extends Model
     }
     public static function seminar_business_attained($rules){
         $rules = json_decode($rules,true);
-        return ['rules'=>$rules];
+        $spreadsheet_id = $rules['spreadsheet'];
+        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
+        if(!empty($rules['location']))
+            $location = 'col'.array_search(strtoupper($rules['location']),\App\SpreadsheetColumn::$columnLetters);
+        else
+            $location = null;
+        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
+        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
+        $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
+        $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
+        $all = ['fia'=>0,'aum'=>0,'life'=>0];
+        $months = [];
+        foreach($results as $row){
+            $all['fia']+=$row->$fia;
+            $all['aum']+=$row->$aum;
+            $all['life']+=$row->$life;
+            if(!isset($months[$row->$month])){
+                $months[$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
+            }
+            else{
+                $months[$row->$month]['fia']+=$row->$fia;
+                $months[$row->$month]['aum']+=$row->$aum;
+                $months[$row->$month]['life']+=$row->$life;
+            }
+        }
+
+        $seminars = null;
+        if(!empty($rules['seminar'])){
+            $seminar = 'col'.array_search(strtoupper($rules['seminar']),\App\SpreadsheetColumn::$columnLetters);
+            $seminars = [];
+            foreach($results as $row){
+                $index = $row->$seminar.($location ? ' - '.$row->$location : '').' - '.date('m/d/Y', strtotime($row->$date));
+                if(!isset($seminars[$index]))
+                    $seminars[$index] = ['months'=>[],'all'=>['fia'=>0,'aum'=>0,'life'=>0]];
+                $seminars[$index]['all']['fia']+=$row->$fia;
+                $seminars[$index]['all']['aum']+=$row->$aum;
+                $seminars[$index]['all']['life']+=$row->$life;
+                if(!isset($seminars[$index]['months'][$row->$month])){
+                    $seminars[$index]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
+                }
+                else{
+                    $seminars[$index]['months'][$row->$month]['fia']+=$row->$fia;
+                    $seminars[$index]['months'][$row->$month]['aum']+=$row->$aum;
+                    $seminars[$index]['months'][$row->$month]['life']+=$row->$life;
+                }
+            }
+        }
+        return ['all'=>$all,'months'=>$months,'seminars'=>$seminars];
     }
 
 
