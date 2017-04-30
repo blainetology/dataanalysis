@@ -27,3 +27,16 @@
 		{{ Form::text('AUM Column',(!empty($input['rules']) ? $input['rules']['aum'] : null),['name'=>'rules[aum]', 'class'=>'form-control'])}}
 	</div>
 </div>
+<br/>
+<div class="row">
+	<div class="col-md-6">
+		If present, the report will include the total amount written, broken down by advisor<br/>
+		<label>Advisor Column</label><br/>
+		{{ Form::text('Advisor Column',(!empty($input['rules']) && isset($input['rules']['advisor']) ? $input['rules']['advisor'] : null),['name'=>'rules[advisor]', 'class'=>'form-control'])}}
+	</div>
+	<div class="col-md-6">
+		If set, the report will include the total amount written, broken down by weeks<br/>
+		<label>Week Begins</label><br/>
+		{{ Form::select('Week Begins',['none'=>"don't show",'sun'=>'sunday','mon'=>'monday'],(!empty($input['rules']) && isset($input['rules']['week']) ? $input['rules']['week'] : null),['name'=>'rules[week]', 'class'=>'form-control'])}}
+	</div>
+</div>

@@ -92,7 +92,8 @@ class ReportsController extends Controller
         $input['rules'] = json_encode($input['rules']);
         #print_r($input);
         #exit;
-        Report::find($id)->update($input);
+        $report = Report::find($id);
+        $report->update($input);
         Log::logreport($report->id,'updated');
         return redirect()->route('reports.index');
     }

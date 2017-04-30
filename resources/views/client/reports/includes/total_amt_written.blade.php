@@ -65,3 +65,27 @@
 	</div>
 	@endforeach
 @endif
+
+@if(!empty($content['weeks']))
+	<br/>
+	<h3>Total Amount Written By Week</h3>
+	<table class="table table-striped table-bordered">
+		<thead>
+			<tr bgcolor="#FFF"><th>Week</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
+		</thead>
+		<tbody>
+			@foreach($content['weeks'] as $name=>$week)
+			<tr>
+				<td>{{ $week['start'] }} - {{ $week['end'] }}</td>
+				<td>${{ number_format($week['fia'],2) }}</td>
+				<td>${{ number_format($week['aum'],2) }}</td>
+				<td>${{ number_format($week['life'],2) }}</td>
+				<td>${{ number_format($week['fia']+$week['aum']+$week['life'],2) }}</td>
+			</tr>
+			@endforeach
+		</tbody>
+		<tfoot>
+			<tr bgcolor="#FFF"><th>Week</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
+		</tfoot>
+	</table>
+@endif

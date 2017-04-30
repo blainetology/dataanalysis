@@ -81,7 +81,26 @@ class ReportTemplate extends Model
             }
         }
 
-        return ['all'=>$all,'months'=>$months,'advisors'=>$advisors];
+        $weeks = null;
+        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+            $weeks = [];
+            foreach($results as $row){
+                $timestamp = strtotime($row->$date);
+                if($rules['week']=='sun')
+                    $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
+                $slug = date("Y-m-d",$timestamp);
+                #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
+                if(!isset($weeks[$slug]))
+                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'fia'=>0,'aum'=>0,'life'=>0];
+                $weeks[$slug]['fia']+=$row->$fia;
+                $weeks[$slug]['aum']+=$row->$aum;
+                $weeks[$slug]['life']+=$row->$life;
+            }
+        }
+
+        return ['all'=>$all,'months'=>$months,'advisors'=>$advisors,'weeks'=>$weeks];
     }
     public static function total_amt_pending($rules){
         $rules = json_decode($rules,true);
