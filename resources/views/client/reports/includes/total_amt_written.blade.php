@@ -3,7 +3,7 @@
 
 
 <h3>Total Amount Written</h3>
-<table class="table table-striped table-bordered">
+<table class="table table-striped table-bordered table-condensed">
 	<thead>
 		<tr bgcolor="#FFF"><th>Month</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
 	</thead>
@@ -37,7 +37,7 @@
 		<div class="panel-heading">
 			<h3 class="panel-title">{{ $name }}</h3>
 		</div>
-		<table class="table table-striped table-bordered">
+		<table class="table table-striped table-bordered table-condensed">
 			<thead>
 				<tr bgcolor="#FFF"><th>Month</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
 			</thead>
@@ -69,7 +69,7 @@
 @if(!empty($content['weeks']))
 	<br/>
 	<h3>Total Amount Written By Week</h3>
-	<table class="table table-striped table-bordered">
+	<table class="table table-striped table-bordered table-condensed">
 		<thead>
 			<tr bgcolor="#FFF"><th>Week</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
 		</thead>
@@ -84,8 +84,5 @@
 			</tr>
 			@endforeach
 		</tbody>
-		<tfoot>
-			<tr bgcolor="#FFF"><th>Week</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
-		</tfoot>
 	</table>
 @endif

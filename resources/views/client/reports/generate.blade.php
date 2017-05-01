@@ -5,6 +5,10 @@
     @foreach($reports as $report)
     <div class="row pagebreak">
         <div class="col-md-12">
+        {{ $report->label }}
+        <hr/>
+        </div>
+        <div class="col-md-12">
         @include('client.reports.includes.'.$report->template->file)
         </div>
     </div>

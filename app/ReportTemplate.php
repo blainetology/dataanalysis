@@ -11,6 +11,9 @@ class ReportTemplate extends Model
     public $timestamps = false;
     protected $fillable = ['name','file','active'];
 
+    public static $start;
+    public static $end;
+
     public function report(){
         return $this->hasMany('\App\Report','template_id');
     }
@@ -19,22 +22,43 @@ class ReportTemplate extends Model
     // custom reports
 
     public static function getContent($template,$rules){
+        self::$start = \Request::get('start_date',date('Y').'-01-01');
+        self::$end = \Request::get('end_date',date('Y-m-d'));
+
         return self::$template($rules);
     }
 
     
-
+    // PEOPLE THAT HAVE SET APPOINTMENTS
     public static function people_set_aptmt($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
         $set = 'col'.array_search(strtoupper($rules['set']),\App\SpreadsheetColumn::$columnLetters);
         $kept = 'col'.array_search(strtoupper($rules['kept']),\App\SpreadsheetColumn::$columnLetters);
-        $allcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->count();
-        $setcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->where($set,'yes')->count();
-        $keptcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-md-'))])->where($kept,'yes')->count();
-        return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount];
+        $allcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->count();
+        $setcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($set,'yes')->count();
+        $keptcount = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($kept,'yes')->count();
+
+        $advisors = null;
+        if(!empty($rules['advisor'])){
+            $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
+            $results = \App\SpreadsheetContent::select($advisor)->distinct()->where('spreadsheet_id',$spreadsheet_id)->get();
+            $advisors = [];
+            foreach($results as $row){
+                if(!isset($advisors[$row->$advisor]))
+                    $advisors[$row->$advisor] = ['all'=>0,'set'=>0,'kept'=>0];
+
+                $advisors[$row->$advisor]['all']= \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($advisor,$row->$advisor)->count();
+                $advisors[$row->$advisor]['set']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($advisor,$row->$advisor)->where($set,'yes')->count();
+                $advisors[$row->$advisor]['kept']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($advisor,$row->$advisor)->where($kept,'yes')->count();
+            }
+        }
+
+        return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount,'advisors'=>$advisors];
     }
+
+    // TOTAL AMOUNT WRITTEN
     public static function total_amt_written($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
@@ -43,7 +67,7 @@ class ReportTemplate extends Model
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
         $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
         $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
         $all = ['fia'=>0,'aum'=>0,'life'=>0];
         $months = [];
         foreach($results as $row){
@@ -84,6 +108,17 @@ class ReportTemplate extends Model
         $weeks = null;
         if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
             $weeks = [];
+
+            $timestamp = strtotime(self::$start);
+            $endtimestamp = strtotime(self::$end);
+            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+                if($rules['week']=='sun')
+                    $starttimestamp = $x-(date('w',$x)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
+                $slug = date("Y-m-d",$starttimestamp);
+                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'fia'=>0,'aum'=>0,'life'=>0];
+            }
             foreach($results as $row){
                 $timestamp = strtotime($row->$date);
                 if($rules['week']=='sun')
@@ -102,6 +137,7 @@ class ReportTemplate extends Model
 
         return ['all'=>$all,'months'=>$months,'advisors'=>$advisors,'weeks'=>$weeks];
     }
+
     public static function total_amt_pending($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
@@ -109,7 +145,7 @@ class ReportTemplate extends Model
         $written = 'col'.array_search(strtoupper($rules['written']),\App\SpreadsheetColumn::$columnLetters);
         $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
         $value = $rules['value'];
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($conditional,$value)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($conditional,$value)->whereBetween($date,[self::$start,self::$end])->get();
         $total = 0;
         foreach($results as $row){
             if(!empty($row->$written))
@@ -117,6 +153,7 @@ class ReportTemplate extends Model
         }
         return ['total'=>$total];
     }
+
     public static function total_amt_issued($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
@@ -124,7 +161,7 @@ class ReportTemplate extends Model
         $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
         $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
         $sources = null;
         $issued = ["fia"=>0,"aum"=>0,"total"=>0];
 
@@ -147,24 +184,39 @@ class ReportTemplate extends Model
                 $sources[$row->$source]['total']+=$row->$aum;
             }
         }
-        return ['issued'=>$issued,'sources'=>$sources];
-    }
-    public static function total_amt_issued_source($rules){
-        $rules = json_decode($rules,true);
-        $spreadsheet_id = $rules['spreadsheet'];
-        $source = 'col'.array_search(strtoupper($rules['source']),\App\SpreadsheetColumn::$columnLetters);
-        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
-        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
-        $sources = [];
-        foreach($results as $row){
-            if(!isset($sources[$row->$source]))
-                $sources[$row->$source] = 0;
-            $sources[$row->$source]+=$row->$fia;
+
+        $weeks = null;
+        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+            $weeks = [];
+
+            $timestamp = strtotime(self::$start);
+            $endtimestamp = strtotime(self::$end);
+            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+                if($rules['week']=='sun')
+                    $starttimestamp = $x-(date('w',$x)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
+                $slug = date("Y-m-d",$starttimestamp);
+                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'fia'=>0,'aum'=>0];
+            }
+            foreach($results as $row){
+                $timestamp = strtotime($row->$date);
+                if($rules['week']=='sun')
+                    $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
+                $slug = date("Y-m-d",$timestamp);
+                #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
+                if(!isset($weeks[$slug]))
+                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'fia'=>0,'aum'=>0];
+                $weeks[$slug]['fia']+=$row->$fia;
+                $weeks[$slug]['aum']+=$row->$aum;
+            }
         }
-        return ['sources'=>$sources];
+
+        return ['issued'=>$issued,'sources'=>$sources,'weeks'=>$weeks];
     }
+
     public static function seminar_business_attained($rules){
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
@@ -177,7 +229,7 @@ class ReportTemplate extends Model
         $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
         $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
         $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[\Request::get('start_date',date('Y').'-01-01'),\Request::get('end_date',date('Y-m-d'))])->orderBy($date,'asc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
         $all = ['fia'=>0,'aum'=>0,'life'=>0];
         $months = [];
         foreach($results as $row){

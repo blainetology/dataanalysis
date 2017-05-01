@@ -10,7 +10,7 @@
     <div class="row">
         <div class="col-md-12">
             <span class="pull-right" id="action_bar">
-                <a href="/reports/generate/{{$report->client_id}}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
+                <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
             </span>
             <ul class="nav nav-tabs">
                 @foreach($client_reports as $rep)

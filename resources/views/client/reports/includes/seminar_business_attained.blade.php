@@ -3,7 +3,7 @@
 
 
 <h3>Total Amount Written</h3>
-<table class="table table-striped table-bordered">
+<table class="table table-striped table-bordered table-condensed">
 	<thead>
 		<tr bgcolor="#FFF"><th>Month</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
 	</thead>
@@ -37,7 +37,7 @@
 		<div class="panel-heading">
 			<h3 class="text-info" style="margin:0; padding:0; font-size:1.4em;">{{ $name }}</h3>
 		</div>
-		<table class="table table-striped table-bordered">
+		<table class="table table-striped table-bordered table-condensed">
 			<thead>
 				<tr bgcolor="#FFF"><th>Month</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>
 			</thead>
