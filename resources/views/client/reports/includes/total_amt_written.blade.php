@@ -30,8 +30,8 @@
 </table>
 
 @if(!empty($content['advisors']))
-	<br/>
-	<h3>Total Amount Written By Advisor</h3>
+	<hr/>
+	<h3>Total Amount Written, By Advisor</h3>
 	@foreach($content['advisors'] as $name=>$advisor)
 	<div class="panel panel-default">
 		<div class="panel-heading">
@@ -67,8 +67,8 @@
 @endif
 
 @if(!empty($content['weeks']))
-	<br/>
-	<h3>Total Amount Written By Week</h3>
+	<hr/>
+	<h3>Total Amount Written, By Week</h3>
 	<table class="table table-striped table-bordered table-condensed">
 		<thead>
 			<tr bgcolor="#FFF"><th>Week</th><th>FIA</th><th>AUM</th><th>Life</th><th>Total</th></tr>

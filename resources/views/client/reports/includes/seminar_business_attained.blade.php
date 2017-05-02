@@ -31,7 +31,7 @@
 
 @if(!empty($content['seminars']))
 	<br/>
-	<h3>Total Amount Written By Seminar</h3>
+	<h3>Total Amount Written, By Seminar</h3>
 	@foreach($content['seminars'] as $name=>$seminar)
 	<div class="panel panel-default">
 		<div class="panel-heading">

@@ -18,7 +18,7 @@
 
 @if($content['sources'])
 <br/>
-<h3>Total Amount Issued By Source</h3>
+<h3>Total Amount Issued, By Source</h3>
 <table class="table table-striped table-bordered table-condensed">
 	<thead>
 		<tr bgcolor="#FFF"><th>Source</th><th>FIA Amount Issued</th><th>AUM Amount Invested</th><th>Total</th></tr>
@@ -38,7 +38,7 @@
 
 @if(!empty($content['weeks']))
 	<br/>
-	<h3>Total Amount Issued By Week</h3>
+	<h3>Total Amount Issued, By Week</h3>
 	<table class="table table-striped table-bordered table-condensed">
 		<thead>
 			<tr bgcolor="#FFF"><th>Week</th><th>FIA Amount Issued</th><th>AUM Amount Invested</th><th>Total</th></tr>

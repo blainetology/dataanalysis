@@ -19,7 +19,7 @@
 
 @if(!empty($content['advisors']))
 	<br/>
-	<h3>Appointments (Set &amp; Kept) By Advisor</h3>
+	<h3>Appointments (Set &amp; Kept), By Advisor</h3>
 	<table class="table table-striped table-bordered table-condensed">
 		<thead>
 			<tr bgcolor="#FFF"><th>Advisor</th><th>All Leads</th><th>Num Set</th><th>Num Kept</th><th>% of All that Set</th><th>% of Set that Kept</th></tr>

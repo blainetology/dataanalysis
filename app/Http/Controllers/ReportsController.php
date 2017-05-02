@@ -45,6 +45,7 @@ class ReportsController extends Controller
     {
         $input = \Request::all();
         $input['rules'] = '[]';
+        $input['opened_at'] = \DB::raw('NOW()');
         #print_r($input);
         #exit;
         $report = Report::create($input);
@@ -80,6 +81,7 @@ class ReportsController extends Controller
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
+            'spreadsheets' => Spreadsheet::where('client_id',$report->client_id),
             'file' => $report->template->file,
             'isAdminView'   => true
         ];

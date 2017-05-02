@@ -151,7 +151,20 @@ class ReportTemplate extends Model
             if(!empty($row->$written))
                 $total += $row->$written;
         }
-        return ['total'=>$total];
+
+        $advisors = null;
+        if(!empty($rules['advisor'])){
+            $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
+            $advisors = [];
+            foreach($results as $row){
+                if(!isset($advisors[$row->$advisor]))
+                    $advisors[$row->$advisor] = 0;
+                if(!empty($row->$written))
+                    $advisors[$row->$advisor] += $row->$written;
+            }
+        }
+
+        return ['total'=>$total,'advisors'=>$advisors];
     }
 
     public static function total_amt_issued($rules){
