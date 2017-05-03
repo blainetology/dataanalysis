@@ -133,9 +133,9 @@
 
 <div style="width:100%; background: #F00; font-size: 10px; display:none;">
 	<div style="padding:2px 5px;">{{ $content['all'] }} Leads</div>
-	<div style="width:{{ round($content['set']/$content['all']*100) }}%; background: #FF0;">
+	<div style="width:{{ !empty($content['all']) ? round($content['set']/$content['all']*100) : 0 }}%; background: #FF0;">
 		<div style="padding:2px 5px;">{{ $content['set'] }} Set</div>
-		<div style="width:{{ round( ($content['kept'])/$content['set']*100) }}%; background: #0F0;">
+		<div style="width:{{ !empty($content['set']) ? round( ($content['kept'])/$content['set']*100) : 0 }}%; background: #0F0;">
 			<div style="padding:2px 5px;">{{ $content['kept'] }} Kept</div>&nbsp;
 		</div>
 	</div>
