@@ -55,7 +55,37 @@ class ReportTemplate extends Model
             }
         }
 
-        return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount,'advisors'=>$advisors];
+        $sources = null;
+        if(!empty($rules['source'])){
+            $source = 'col'.array_search(strtoupper($rules['source']),\App\SpreadsheetColumn::$columnLetters);
+            $results = \App\SpreadsheetContent::select($source)->distinct()->where('spreadsheet_id',$spreadsheet_id)->get();
+            $sources = [];
+            foreach($results as $row){
+                if(!isset($sources[$row->$source]))
+                    $sources[$row->$source] = ['all'=>0,'set'=>0,'kept'=>0];
+
+                $sources[$row->$source]['all']= \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($source,$row->$source)->count();
+                $sources[$row->$source]['set']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($source,$row->$source)->where($set,'yes')->count();
+                $sources[$row->$source]['kept']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($source,$row->$source)->where($kept,'yes')->count();
+            }
+        }
+
+        $seminars = null;
+        if(!empty($rules['source'])){
+            $seminar_date = 'col'.array_search(strtoupper($rules['seminar_date']),\App\SpreadsheetColumn::$columnLetters);
+            $seminar_type = 'col'.array_search(strtoupper($rules['seminar_type']),\App\SpreadsheetColumn::$columnLetters);
+            $results = \App\SpreadsheetContent::select($seminar_type,$seminar_date)->distinct()->where('spreadsheet_id',$spreadsheet_id)->get();
+            $seminars = [];
+            foreach($results as $row){
+                if(!isset($seminars[$row->$seminar_type.'-'.$row->$seminar_date]))
+                    $seminars[$row->$seminar_type.'-'.$row->$seminar_date] = ['all'=>0,'set'=>0,'kept'=>0,'type'=>$row->$seminar_type,'date'=>date('m/d/Y',strtotime($row->$seminar_date))];
+
+                $seminars[$row->$seminar_type.'-'.$row->$seminar_date]['all']= \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($seminar_type,$row->$seminar_type)->where($seminar_date,$row->$seminar_date)->count();
+                $seminars[$row->$seminar_type.'-'.$row->$seminar_date]['set']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($seminar_type,$row->$seminar_type)->where($seminar_date,$row->$seminar_date)->where($set,'yes')->count();
+                $seminars[$row->$seminar_type.'-'.$row->$seminar_date]['kept']=\App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->where($seminar_type,$row->$seminar_type)->where($seminar_date,$row->$seminar_date)->where($kept,'yes')->count();
+            }
+        }
+        return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount,'advisors'=>$advisors,'sources'=>$sources,'seminars'=>$seminars];
     }
 
     // TOTAL AMOUNT WRITTEN

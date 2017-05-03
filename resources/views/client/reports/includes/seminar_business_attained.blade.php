@@ -1,5 +1,5 @@
 <?php $content = ${$report->template->file}; ?>
-<br/>
+<hr/>
 
 
 <h3>Total Amount Written</h3>
@@ -30,7 +30,7 @@
 </table>
 
 @if(!empty($content['seminars']))
-	<br/>
+	<hr/>
 	<h3>Total Amount Written, By Seminar</h3>
 	@foreach($content['seminars'] as $name=>$seminar)
 	<div class="panel panel-default">

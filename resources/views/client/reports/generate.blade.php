@@ -5,8 +5,7 @@
     @foreach($reports as $report)
     <div class="row pagebreak">
         <div class="col-md-12">
-        {{ $report->label }}
-        <hr/>
+        <h3 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->label }} Report</h3>
         </div>
         <div class="col-md-12">
         @include('client.reports.includes.'.$report->template->file)

@@ -1,5 +1,5 @@
 <?php $content = ${$report->template->file}; ?>
-<br/>
+<hr/>
 
 
 <h3>Total Amount Written</h3>

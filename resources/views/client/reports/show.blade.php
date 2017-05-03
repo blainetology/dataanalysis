@@ -39,7 +39,11 @@
         </div>
         </form>
     </div>
+    <br/>
     <div class="row">
+        <div class="col-md-12">
+        <h2 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->name }} Report</h2>
+        </div>
         <div class="col-md-12">
         @include('client.reports.includes.'.$report->template->file)
         </div>
