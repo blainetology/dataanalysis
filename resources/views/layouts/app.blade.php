@@ -11,6 +11,7 @@
 
     <!-- Styles -->
     <link href="/css/app.css" rel="stylesheet">
+    <link href="/css/bootstrap.css" rel="stylesheet">
     <link href="/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Scripts -->
@@ -36,7 +37,7 @@
 
                     <!-- Branding Image -->
                     <a class="navbar-brand" href="{{ url('/') }}">
-                        <img src="/images/trackthatlogo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" style="height:42px; width:auto; margin-top:-10px;" />
+                        <img src="/images/logo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" style="height:42px; width:auto; margin-top:-10px;" />
                     </a>
                 </div>
 

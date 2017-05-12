@@ -21,7 +21,7 @@
             <div class="row">
                 <div class="col-md-8 col-md-offset-2 text-center">
                 <br/><br/><br/>
-                <img src="/images/trackthatlogo.jpg" alt="{{ config('app.name') }}" />
+                <img src="/images/logo.jpg" alt="{{ config('app.name') }}" />
                 <br/><br/><br/>
                     <form class="form-horizontal text-left" role="form" method="POST" action="{{ url('/login') }}">
 

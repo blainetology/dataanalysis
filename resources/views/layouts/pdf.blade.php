@@ -11,6 +11,7 @@
 
     <!-- Styles -->
     <link href="http://{{ $_SERVER['HTTP_HOST'] }}/css/app.css" rel="stylesheet">
+    <link href="http://{{ $_SERVER['HTTP_HOST'] }}/css/bootstrap.css" rel="stylesheet">
 
     @yield('styles')
     @yield('scripts')
@@ -23,7 +24,7 @@
                     <div class="col-lg-12 text-center">
                         <br/><br/><br/>
                         <br/><br/><br/>
-                        <img src="http://{{ $_SERVER['HTTP_HOST'] }}/images/trackthatlogo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" />
+                        <img src="http://{{ $_SERVER['HTTP_HOST'] }}/images/logo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" />
                         <br/><br/><br/>
                         <br/><br/><br/>
                         <br/><br/><br/>
