@@ -140,3 +140,40 @@
 		</div>
 	</div>
 </div>
+
+<div style="width:400px;">
+<canvas id="myChart" width="300" height="300"></canvas>
+</div>
+<script>
+var ctx = document.getElementById("myChart");
+var data = {
+    labels: [
+        "Red",
+        "Blue",
+        "Yellow"
+    ],
+    datasets: [
+        {
+            data: [300, 50, 100],
+            backgroundColor: [
+                "#FF6384",
+                "#36A2EB",
+                "#FFCE56"
+            ],
+            hoverBackgroundColor: [
+                "#FF6384",
+                "#36A2EB",
+                "#FFCE56"
+            ]
+        }]
+};
+var myPieChart = new Chart(ctx,{
+    type: 'pie',
+    data: data,
+    options: {
+        animation:{
+            animateScale:true
+        }
+    }
+});
+</script>
