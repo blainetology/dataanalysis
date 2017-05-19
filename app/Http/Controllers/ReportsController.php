@@ -138,8 +138,25 @@ class ReportsController extends Controller
         foreach($reports as $report){
             $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
         }
-        $pdf = \PDF::loadView('client.reports.generate', $data);
+        #$pdf = \PDF::loadView('client.reports.generate', $data);
+        $pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data)->setOption('javascript-delay', 2000);
         return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
+        return view('client.reports.generate',$data);
+    }
+
+    public function generatepreview($id)
+    {
+        $reports = Report::where('client_id',$id)->get();
+        $client = Client::find($id);
+        $data = [
+            'client' => $client,
+            'reports' => $reports,
+            'start' => \Request::get('start_date',date('Y').'-01-01'),
+            'end' => \Request::get('end_date',date('Y-m-d'))
+        ];
+        foreach($reports as $report){
+            $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+        }
         return view('client.reports.generate',$data);
     }
 

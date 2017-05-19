@@ -28,6 +28,9 @@
 		</tr>
 	</tfoot>
 </table>
+		<div class="well well-sm">
+			<canvas id="allChart" width="300" height="300"></canvas>
+		</div>
 
 @if(!empty($content['advisors']))
 	<hr/>
@@ -86,3 +89,16 @@
 		</tbody>
 	</table>
 @endif
+<script>
+var colors = ["#F00","#FF0","#0C0"];
+var labels = ["FIA","AUM","Life"];
+var data = {labels: labels,datasets:[{data: [{{$content['all']['fia']}}, {{$content['all']['aum']}}, {{$content['all']['life']}}],backgroundColor: colors,hoverBackgroundColor: colors},{data: [{{$content['all']['fia']}}, {{$content['all']['aum']}}, {{$content['all']['life']}}],backgroundColor: colors,hoverBackgroundColor: colors}],'stacked':true};
+var ctx = document.getElementById("allChart");
+var allPieChart = new Chart(ctx,{type: 'bar',data: data,options: {}});
+
+@foreach($content['advisors'] as $name=>$row)
+var data{{ str_slug($name,'_') }} = {labels: labels,datasets:[{data: [{{$row['all']['fia']}}, {{$row['all']['aum']}}, {{$row['all']['life']}}],backgroundColor: colors,hoverBackgroundColor: colors}]};
+var ctx = document.getElementById("{{str_slug($name,'_')}}Chart");
+var {{ str_slug($name,'_') }}PieChart = new Chart(ctx,{type: 'bar',data: data{{ str_slug($name,'_') }},options: {}});
+@endforeach
+</script>

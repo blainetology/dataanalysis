@@ -14,6 +14,7 @@
 Auth::routes();
 
 Route::get('/', 'HomeController@index');
+Route::get('reports/generatepreview/{id?}',['as'=>'reports.generatepreview', 'uses'=>'ReportsController@generatepreview']);	
 Route::group(['middleware'=>['auth']],function(){
 	Route::group(['prefix'=>'admin'],function(){
 		Route::get('users/{id}/restore',['as'=>'adminusers.restore', 'uses'=>'AdminUserController@restore']);	
@@ -30,7 +31,7 @@ Route::group(['middleware'=>['auth']],function(){
 		Route::resource('spreadsheets','ClientSpreadsheetController',['names'=>'clientspreadsheets']);	
 	});
 	Route::get('reports/{id}/duplicate',['as'=>'reports.duplicate', 'uses'=>'ReportsController@duplicate']);	
-	Route::get('reports/generate/{id}',['as'=>'reports.generate', 'uses'=>'ReportsController@generate']);	
 	Route::resource('reports', 'ReportsController');	
-	Route::resource('settings', 'SettingsController');	
+	Route::resource('settings', 'SettingsController');
+	Route::get('reports/generate/{id?}',['as'=>'reports.generate', 'uses'=>'ReportsController@generate']);	
 });

@@ -23,8 +23,10 @@ $line-height-base: 1.6;
 $text-color: #333;
 
 // Navbar
-$navbar-default-bg: #cccccc;
-$navbar-inverse-bg: #666;
+$navbar-default-bg: #EEE;
+$navbar-inverse-bg: #222;
+$navbar-inverse-link-color: #FFF;
+$navbar-inverse-color: #FFF;
 
 // Buttons
 $btn-default-color: $text-color;
@@ -44,6 +46,6 @@ $panel-border-radius:1px;
 $panel-heading-padding: 5px 10px;
 
 // Tables
-$table-condensed-cell-padding: 2px 5px;
+$table-condensed-cell-padding: 3px 5px;
 
 // Forms

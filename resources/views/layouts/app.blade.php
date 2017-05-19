@@ -22,7 +22,7 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-default navbar-static-top">
+        <nav class="navbar navbar-default navbar-static-top ">
             <div class="container-fluid">
                 <div class="navbar-header">
 
@@ -86,6 +86,8 @@
 
         @yield('content')
 
+        <br/><br/>
+        <hr/>
         <footer style="text-align: center;">
         &copy;{{ date('Y') }}, Track That Advisor, LLC
         </footer>

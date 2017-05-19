@@ -7,11 +7,13 @@
 
     <title>{{ config('app.name') }}</title>
 
-    <link href="http:/{{ $_SERVER['HTTP_HOST'] }}/images/favicon.png" rel="shortcut icon">
+    <link href="http:/data.app/images/favicon.png" rel="shortcut icon">
 
     <!-- Styles -->
-    <link href="http://{{ $_SERVER['HTTP_HOST'] }}/css/app.css" rel="stylesheet">
-    <link href="http://{{ $_SERVER['HTTP_HOST'] }}/css/bootstrap.css" rel="stylesheet">
+    <link href="http://data.app/css/app.css" rel="stylesheet">
+    <link href="http://data.app/css/bootstrap.css" rel="stylesheet">
+
+    <script src="http://data.app/js/app.js"></script>
 
     @yield('styles')
     @yield('scripts')
@@ -24,7 +26,7 @@
                     <div class="col-lg-12 text-center">
                         <br/><br/><br/>
                         <br/><br/><br/>
-                        <img src="http://{{ $_SERVER['HTTP_HOST'] }}/images/logo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" />
+                        <img src="http://data.app/images/logo.jpg" alt="{{ config('app.name', 'Track That Advisor') }}" />
                         <br/><br/><br/>
                         <br/><br/><br/>
                         <br/><br/><br/>
