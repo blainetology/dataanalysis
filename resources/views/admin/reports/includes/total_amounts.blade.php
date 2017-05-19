@@ -17,13 +17,16 @@
 </div>
 <br/>
 <div class="row">
-	<div class="col-md-6">
-		If present, the report will include the total amount written, broken down by advisor<br/>
-		<label>Advisor Column</label><br/>
-		{{ Form::text('Advisor Column',(!empty($input['rules']) && isset($input['rules']['advisor']) ? $input['rules']['advisor'] : null),['name'=>'rules[advisor]', 'class'=>'form-control'])}}
+	<div class="col-md-8">
+		If present, the report will include the total amounts, broken down by each column listed<br/>
+		<label>Section Columns</label><br/>
+		{{ Form::text('Advisor Column',(!empty($input['rules']) && isset($input['rules']['sections']) ? $input['rules']['sections'] : null),['name'=>'rules[sections]', 'class'=>'form-control'])}}
 	</div>
-	<div class="col-md-6">
-		If set, the report will include the total amount written, broken down by weeks<br/>
+</div>
+<br/>
+<div class="row">
+	<div class="col-md-8">
+		If set, the report will include the total amounts, broken down by weeks<br/>
 		<label>Week Begins</label><br/>
 		{{ Form::select('Week Begins',['none'=>"don't show",'sun'=>'sunday','mon'=>'monday'],(!empty($input['rules']) && isset($input['rules']['week']) ? $input['rules']['week'] : null),['name'=>'rules[week]', 'class'=>'form-control'])}}
 	</div>

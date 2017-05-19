@@ -88,6 +88,126 @@ class ReportTemplate extends Model
         return ['all'=>$allcount,'set'=>$setcount,'kept'=>$keptcount,'advisors'=>$advisors,'sources'=>$sources,'seminars'=>$seminars];
     }
 
+    // TOTAL AMOUNTS
+    public static function total_amounts($rules){
+        $rules = json_decode($rules,true);
+        $spreadsheet_id = $rules['spreadsheet'];
+        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
+        $columns=[];
+        $sections=[];
+        $letters = explode(',',$rules['columns']);
+        foreach($letters as $letter){
+            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
+            $columns[(string)$index] = $index;
+            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$columns)->get();
+            foreach($results as $row)
+                $columns[(string)$row->column] = $row->label;
+        }
+
+        $letters = explode(',',$rules['sections']);
+        foreach($letters as $letter){
+            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
+            $sections['col'.$index] = $index;
+            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
+            foreach($results as $row)
+                $sections['col'.$row->column] = ['label'=>$row->label,'data'=>[]];
+        }
+
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        $all = [];
+        foreach($columns as $key=>$label)
+            $all['col'.$key] = 0;
+        $months = [];
+        foreach($results as $row){
+            $row->month = date('F Y',strtotime($row->$date));
+            foreach($columns as $key=>$label)
+                $all['col'.$key] += $row->{'col'.$key};
+            if(!isset($months[$row->month])){
+                $months[$row->month] = [];
+                foreach($columns as $key=>$label)
+                    $months[$row->month]['col'.$key] = 0;
+            }
+            foreach($columns as $key=>$label)
+                $months[$row->month]['col'.$key] += $row->{'col'.$key};
+        }
+        // now by sections
+        foreach($sections as $id=>$section){
+            $col = $id;
+            foreach($results as $row){
+                $row->month = date('F Y',strtotime($row->$date));
+                foreach($columns as $key=>$label){
+                    if(!isset($sections[$id]['data'][$row->$col]['all']['col'.$key]))
+                        $sections[$id]['data'][$row->$col]['all']['col'.$key]=0;
+                    $sections[$id]['data'][$row->$col]['all']['col'.$key] += $row->{'col'.$key};
+                }
+                if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
+                    $sections[$id]['data'][$row->$col]['months'][$row->month] = [];
+                    foreach($columns as $key=>$label)
+                        $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] = 0;
+                }
+                foreach($columns as $key=>$label)
+                    $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] += $row->{'col'.$key};
+            }
+        }
+
+        $weeks = null;
+        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+            $weeks = [];
+
+            $timestamp = strtotime(self::$start);
+            $endtimestamp = strtotime(self::$end);
+            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+                if($rules['week']=='sun')
+                    $starttimestamp = $x-(date('w',$x)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
+                $slug = date("Y-m-d",$starttimestamp);
+                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'cols'=>[]];
+                foreach($columns as $key=>$label)
+                    $weeks[$slug]['cols']['col'.$key]=0;
+            }
+            foreach($results as $row){
+                $timestamp = strtotime($row->$date);
+                if($rules['week']=='sun')
+                    $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
+                elseif($rules['week']=='mon')
+                    $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
+                $slug = date("Y-m-d",$timestamp);
+                #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
+                if(!isset($weeks[$slug])){
+                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'cols'=>[]];
+                    foreach($columns as $key=>$label)
+                        $weeks[$slug]['cols']['col'.$key]=0;
+                }
+                foreach($columns as $key=>$label)
+                    $weeks[$slug]['cols']['col'.$key]+=$row->{'col'.$key};
+            }
+        }
+        if($weeks)
+            krsort($weeks);
+
+/*        echo "<pre>";
+        echo "COLUMNS\n";
+        print_r($columns);
+        echo "<br/>";
+        echo "SECTIONS\n";
+        print_r($sections);
+        echo "<br/>";
+        echo "ALL\n";
+        print_r($all);
+        echo "<br/>";
+        echo "MONTHS\n";
+        print_r($months);
+        echo "<br/>";
+        echo "WEEKS\n";
+        print_r($weeks);
+        echo "<br/>";
+        echo "</pre>";
+        exit;
+*/
+        return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
+    }
+
     // TOTAL AMOUNT WRITTEN
     public static function total_amt_written($rules){
         $rules = json_decode($rules,true);
