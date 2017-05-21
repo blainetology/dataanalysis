@@ -93,6 +93,15 @@ class ReportTemplate extends Model
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
+
+        $conditional = $operator = $value = null;
+
+        if(!empty($rules['conditional']) && !empty($rules['operator']) && $rules['value'] != ""){
+            $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
+            $operator = $rules['operator'];
+            $value = $rules['value'];
+        }
+
         $columns=[];
         $sections=[];
         $letters = explode(',',$rules['columns']);
@@ -113,43 +122,33 @@ class ReportTemplate extends Model
                 $sections['col'.$row->column] = ['label'=>$row->label,'data'=>[]];
         }
 
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        // let's get the content from the database
+        $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
+        if($conditional && $operator && $value)
+            $query = $query->where($conditional,$operator,$value);
+        $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        
+        // let's total it all together first
         $all = [];
         foreach($columns as $key=>$label)
             $all['col'.$key] = 0;
         $months = [];
         foreach($results as $row){
-            $row->month = date('F Y',strtotime($row->$date));
             foreach($columns as $key=>$label)
                 $all['col'.$key] += $row->{'col'.$key};
-            if(!isset($months[$row->month])){
-                $months[$row->month] = [];
-                foreach($columns as $key=>$label)
-                    $months[$row->month]['col'.$key] = 0;
-            }
-            foreach($columns as $key=>$label)
-                $months[$row->month]['col'.$key] += $row->{'col'.$key};
-        }
-        // now by sections
-        foreach($sections as $id=>$section){
-            $col = $id;
-            foreach($results as $row){
+            if(!empty($rules['month']) && $rules['month']=='yes'){
                 $row->month = date('F Y',strtotime($row->$date));
-                foreach($columns as $key=>$label){
-                    if(!isset($sections[$id]['data'][$row->$col]['all']['col'.$key]))
-                        $sections[$id]['data'][$row->$col]['all']['col'.$key]=0;
-                    $sections[$id]['data'][$row->$col]['all']['col'.$key] += $row->{'col'.$key};
-                }
-                if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
-                    $sections[$id]['data'][$row->$col]['months'][$row->month] = [];
+                if(!isset($months[$row->month])){
+                    $months[$row->month] = [];
                     foreach($columns as $key=>$label)
-                        $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] = 0;
+                        $months[$row->month]['col'.$key] = 0;
                 }
                 foreach($columns as $key=>$label)
-                    $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] += $row->{'col'.$key};
+                    $months[$row->month]['col'.$key] += $row->{'col'.$key};
             }
         }
 
+        // and also break it down by weeks
         $weeks = null;
         if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
             $weeks = [];
@@ -186,6 +185,63 @@ class ReportTemplate extends Model
         if($weeks)
             krsort($weeks);
 
+
+        // now by sections
+        foreach($sections as $id=>$section){
+            $col = $id;
+            foreach($results as $row){
+                $row->month = date('F Y',strtotime($row->$date));
+                // all
+                foreach($columns as $key=>$label){
+                    if(!isset($sections[$id]['data'][$row->$col]['all']['col'.$key]))
+                        $sections[$id]['data'][$row->$col]['all']['col'.$key]=0;
+                    $sections[$id]['data'][$row->$col]['all']['col'.$key] += $row->{'col'.$key};
+                }
+                //month
+                if(!empty($rules['month']) && $rules['month']=='yes'){
+                    if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
+                        $sections[$id]['data'][$row->$col]['months'][$row->month] = [];
+                        foreach($columns as $key=>$label)
+                            $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] = 0;
+                    }
+                    foreach($columns as $key=>$label)
+                        $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] += $row->{'col'.$key};
+                }
+
+                // weeks
+                if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+
+                    $timestamp = strtotime(self::$start);
+                    $endtimestamp = strtotime(self::$end);
+                    for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+                        if($rules['week']=='sun')
+                            $starttimestamp = $x-(date('w',$x)*60*60*24);
+                        elseif($rules['week']=='mon')
+                            $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
+                        $slug = date("Y-m-d",$starttimestamp);
+                        if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]))
+                            $sections[$id]['data'][$row->$col]['weeks'][$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'cols'=>[]];
+                        foreach($columns as $key=>$label){
+                            if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]))
+                                $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]=0;
+                        }
+                    }
+                    $timestamp = strtotime($row->$date);
+                    if($rules['week']=='sun')
+                        $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
+                    elseif($rules['week']=='mon')
+                        $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
+                    $slug = date("Y-m-d",$timestamp);
+                    #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
+                    foreach($columns as $key=>$label)
+                        $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key] += $row->{'col'.$key};
+                }
+                if(isset($sections[$id]['data'][$row->$col]['weeks']))
+                    krsort($sections[$id]['data'][$row->$col]['weeks']);
+            }
+        }
+
+
 /*        echo "<pre>";
         echo "COLUMNS\n";
         print_r($columns);
@@ -206,115 +262,6 @@ class ReportTemplate extends Model
         exit;
 */
         return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
-    }
-
-    // TOTAL AMOUNT WRITTEN
-    public static function total_amt_written($rules){
-        $rules = json_decode($rules,true);
-        $spreadsheet_id = $rules['spreadsheet'];
-        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
-        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
-        $all = ['fia'=>0,'aum'=>0,'life'=>0];
-        $months = [];
-        foreach($results as $row){
-            $all['fia']+=$row->$fia;
-            $all['aum']+=$row->$aum;
-            $all['life']+=$row->$life;
-            if(!isset($months[$row->$month])){
-                $months[$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
-            }
-            else{
-                $months[$row->$month]['fia']+=$row->$fia;
-                $months[$row->$month]['aum']+=$row->$aum;
-                $months[$row->$month]['life']+=$row->$life;
-            }
-        }
-
-        $advisors = null;
-        if(!empty($rules['advisor'])){
-            $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
-            $advisors = [];
-            foreach($results as $row){
-                if(!isset($advisors[$row->$advisor]))
-                    $advisors[$row->$advisor] = ['months'=>[],'all'=>['fia'=>0,'aum'=>0,'life'=>0]];
-                $advisors[$row->$advisor]['all']['fia']+=$row->$fia;
-                $advisors[$row->$advisor]['all']['aum']+=$row->$aum;
-                $advisors[$row->$advisor]['all']['life']+=$row->$life;
-                if(!isset($advisors[$row->$advisor]['months'][$row->$month])){
-                    $advisors[$row->$advisor]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
-                }
-                else{
-                    $advisors[$row->$advisor]['months'][$row->$month]['fia']+=$row->$fia;
-                    $advisors[$row->$advisor]['months'][$row->$month]['aum']+=$row->$aum;
-                    $advisors[$row->$advisor]['months'][$row->$month]['life']+=$row->$life;
-                }
-            }
-        }
-
-        $weeks = null;
-        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
-            $weeks = [];
-
-            $timestamp = strtotime(self::$start);
-            $endtimestamp = strtotime(self::$end);
-            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
-                if($rules['week']=='sun')
-                    $starttimestamp = $x-(date('w',$x)*60*60*24);
-                elseif($rules['week']=='mon')
-                    $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
-                $slug = date("Y-m-d",$starttimestamp);
-                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'fia'=>0,'aum'=>0,'life'=>0];
-            }
-            foreach($results as $row){
-                $timestamp = strtotime($row->$date);
-                if($rules['week']=='sun')
-                    $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
-                elseif($rules['week']=='mon')
-                    $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
-                $slug = date("Y-m-d",$timestamp);
-                #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
-                if(!isset($weeks[$slug]))
-                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'fia'=>0,'aum'=>0,'life'=>0];
-                $weeks[$slug]['fia']+=$row->$fia;
-                $weeks[$slug]['aum']+=$row->$aum;
-                $weeks[$slug]['life']+=$row->$life;
-            }
-        }
-
-        return ['all'=>$all,'months'=>$months,'advisors'=>$advisors,'weeks'=>$weeks];
-    }
-
-    public static function total_amt_pending($rules){
-        $rules = json_decode($rules,true);
-        $spreadsheet_id = $rules['spreadsheet'];
-        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $written = 'col'.array_search(strtoupper($rules['written']),\App\SpreadsheetColumn::$columnLetters);
-        $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
-        $value = $rules['value'];
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->where($conditional,$value)->whereBetween($date,[self::$start,self::$end])->get();
-        $total = 0;
-        foreach($results as $row){
-            if(!empty($row->$written))
-                $total += $row->$written;
-        }
-
-        $advisors = null;
-        if(!empty($rules['advisor'])){
-            $advisor = 'col'.array_search(strtoupper($rules['advisor']),\App\SpreadsheetColumn::$columnLetters);
-            $advisors = [];
-            foreach($results as $row){
-                if(!isset($advisors[$row->$advisor]))
-                    $advisors[$row->$advisor] = 0;
-                if(!empty($row->$written))
-                    $advisors[$row->$advisor] += $row->$written;
-            }
-        }
-
-        return ['total'=>$total,'advisors'=>$advisors];
     }
 
     public static function total_amt_issued($rules){

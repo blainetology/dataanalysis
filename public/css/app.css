@@ -1394,12 +1394,12 @@ textarea {
 }
 
 a {
-  color: #3366cc;
+  color: #3399cc;
   text-decoration: none;
 }
 
 a:hover, a:focus {
-  color: #24478f;
+  color: #246b8f;
   text-decoration: underline;
 }
 
@@ -1432,6 +1432,7 @@ img {
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
+  -webkit-transition: all 0.2s ease-in-out;
   transition: all 0.2s ease-in-out;
   display: inline-block;
   max-width: 100%;
@@ -1627,12 +1628,12 @@ mark,
 }
 
 .text-primary {
-  color: #3366cc;
+  color: #3399cc;
 }
 
 a.text-primary:hover,
 a.text-primary:focus {
-  color: #2952a3;
+  color: #297aa3;
 }
 
 .text-success {
@@ -1676,12 +1677,12 @@ a.text-danger:focus {
 }
 
 .bg-primary {
-  background-color: #3366cc;
+  background-color: #3399cc;
 }
 
 a.bg-primary:hover,
 a.bg-primary:focus {
-  background-color: #2952a3;
+  background-color: #297aa3;
 }
 
 .bg-success {
@@ -3032,13 +3033,14 @@ output {
   border: 1px solid #e6e6e6;
   border-radius: 1px;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
   transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
 
 .form-control:focus {
-  border-color: #99b3e6;
+  border-color: #99cce6;
   outline: 0;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(153, 179, 230, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(153, 204, 230, 0.6);
 }
 
 .form-control::-moz-placeholder {
@@ -3698,27 +3700,27 @@ fieldset[disabled] .btn-default.focus {
 
 .btn-primary {
   color: #fff;
-  background-color: #3366cc;
-  border-color: #2e5cb8;
+  background-color: #3399cc;
+  border-color: #2e8ab8;
 }
 
 .btn-primary:focus, .btn-primary.focus {
   color: #fff;
-  background-color: #2952a3;
-  border-color: #142952;
+  background-color: #297aa3;
+  border-color: #143d52;
 }
 
 .btn-primary:hover {
   color: #fff;
-  background-color: #2952a3;
-  border-color: #224387;
+  background-color: #297aa3;
+  border-color: #226587;
 }
 
 .btn-primary:active, .btn-primary.active,
 .open > .btn-primary.dropdown-toggle {
   color: #fff;
-  background-color: #2952a3;
-  border-color: #224387;
+  background-color: #297aa3;
+  border-color: #226587;
 }
 
 .btn-primary:active:hover, .btn-primary:active:focus, .btn-primary:active.focus, .btn-primary.active:hover, .btn-primary.active:focus, .btn-primary.active.focus,
@@ -3726,8 +3728,8 @@ fieldset[disabled] .btn-default.focus {
 .open > .btn-primary.dropdown-toggle:focus,
 .open > .btn-primary.dropdown-toggle.focus {
   color: #fff;
-  background-color: #224387;
-  border-color: #142952;
+  background-color: #226587;
+  border-color: #143d52;
 }
 
 .btn-primary:active, .btn-primary.active,
@@ -3739,12 +3741,12 @@ fieldset[disabled] .btn-default.focus {
 fieldset[disabled] .btn-primary:hover,
 fieldset[disabled] .btn-primary:focus,
 fieldset[disabled] .btn-primary.focus {
-  background-color: #3366cc;
-  border-color: #2e5cb8;
+  background-color: #3399cc;
+  border-color: #2e8ab8;
 }
 
 .btn-primary .badge {
-  color: #3366cc;
+  color: #3399cc;
   background-color: #fff;
 }
 
@@ -3957,7 +3959,7 @@ fieldset[disabled] .btn-danger.focus {
 }
 
 .btn-link {
-  color: #3366cc;
+  color: #3399cc;
   font-weight: normal;
   border-radius: 0;
 }
@@ -3973,7 +3975,7 @@ fieldset[disabled] .btn-link {
 }
 
 .btn-link:hover, .btn-link:focus {
-  color: #24478f;
+  color: #246b8f;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -4023,6 +4025,7 @@ input[type="button"].btn-block {
 
 .fade {
   opacity: 0;
+  -webkit-transition: opacity 0.15s linear;
   transition: opacity 0.15s linear;
 }
 
@@ -4050,8 +4053,11 @@ tbody.collapse.in {
   position: relative;
   height: 0;
   overflow: hidden;
+  -webkit-transition-property: height, visibility;
   transition-property: height, visibility;
+  -webkit-transition-duration: 0.35s;
   transition-duration: 0.35s;
+  -webkit-transition-timing-function: ease;
   transition-timing-function: ease;
 }
 
@@ -4129,7 +4135,7 @@ tbody.collapse.in {
   color: #fff;
   text-decoration: none;
   outline: 0;
-  background-color: #3366cc;
+  background-color: #3399cc;
 }
 
 .dropdown-menu > .disabled > a, .dropdown-menu > .disabled > a:hover, .dropdown-menu > .disabled > a:focus {
@@ -4611,7 +4617,7 @@ tbody.collapse.in {
 
 .nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
   background-color: #eeeeee;
-  border-color: #3366cc;
+  border-color: #3399cc;
 }
 
 .nav .nav-divider {
@@ -4667,7 +4673,7 @@ tbody.collapse.in {
 
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
   color: #fff;
-  background-color: #3366cc;
+  background-color: #3399cc;
 }
 
 .nav-stacked > li {
@@ -5382,7 +5388,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   padding: 6px 12px;
   line-height: 1.6;
   text-decoration: none;
-  color: #3366cc;
+  color: #3399cc;
   background-color: #fff;
   border: 1px solid #ddd;
   margin-left: -1px;
@@ -5405,7 +5411,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination > li > span:hover,
 .pagination > li > span:focus {
   z-index: 2;
-  color: #24478f;
+  color: #246b8f;
   background-color: #eeeeee;
   border-color: #ddd;
 }
@@ -5416,8 +5422,8 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination > .active > span:focus {
   z-index: 3;
   color: #fff;
-  background-color: #3366cc;
-  border-color: #3366cc;
+  background-color: #3399cc;
+  border-color: #3399cc;
   cursor: default;
 }
 
@@ -5562,11 +5568,11 @@ a.label:hover, a.label:focus {
 }
 
 .label-primary {
-  background-color: #3366cc;
+  background-color: #3399cc;
 }
 
 .label-primary[href]:hover, .label-primary[href]:focus {
-  background-color: #2952a3;
+  background-color: #297aa3;
 }
 
 .label-success {
@@ -5633,7 +5639,7 @@ a.label:hover, a.label:focus {
 
 .list-group-item.active > .badge,
 .nav-pills > .active > a > .badge {
-  color: #3366cc;
+  color: #3399cc;
   background-color: #fff;
 }
 
@@ -5713,6 +5719,7 @@ a.badge:hover, a.badge:focus {
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
+  -webkit-transition: border 0.2s ease-in-out;
   transition: border 0.2s ease-in-out;
 }
 
@@ -5733,7 +5740,7 @@ a.badge:hover, a.badge:focus {
 a.thumbnail:hover,
 a.thumbnail:focus,
 a.thumbnail.active {
-  border-color: #3366cc;
+  border-color: #3399cc;
 }
 
 .alert {
@@ -5865,13 +5872,15 @@ a.thumbnail.active {
   line-height: 22px;
   color: #fff;
   text-align: center;
-  background-color: #3366cc;
+  background-color: #3399cc;
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  -webkit-transition: width 0.6s ease;
   transition: width 0.6s ease;
 }
 
 .progress-striped .progress-bar,
 .progress-bar-striped {
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-size: 40px 40px;
 }
@@ -5887,6 +5896,7 @@ a.thumbnail.active {
 }
 
 .progress-striped .progress-bar-success {
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 
@@ -5895,6 +5905,7 @@ a.thumbnail.active {
 }
 
 .progress-striped .progress-bar-info {
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 
@@ -5903,6 +5914,7 @@ a.thumbnail.active {
 }
 
 .progress-striped .progress-bar-warning {
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 
@@ -5911,6 +5923,7 @@ a.thumbnail.active {
 }
 
 .progress-striped .progress-bar-danger {
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 
@@ -6040,8 +6053,8 @@ button.list-group-item {
 .list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
   z-index: 2;
   color: #fff;
-  background-color: #3366cc;
-  border-color: #3366cc;
+  background-color: #3399cc;
+  border-color: #3399cc;
 }
 
 .list-group-item.active .list-group-item-heading,
@@ -6055,7 +6068,7 @@ button.list-group-item {
 }
 
 .list-group-item.active .list-group-item-text, .list-group-item.active:hover .list-group-item-text, .list-group-item.active:focus .list-group-item-text {
-  color: #d6e0f5;
+  color: #d6ebf5;
 }
 
 .list-group-item-success {
@@ -6480,7 +6493,7 @@ button.list-group-item-danger.active:focus {
 
 .panel-default > .panel-heading {
   color: #333333;
-  background-color: #ddd;
+  background-color: #CCC;
   border-color: #e6e6e6;
 }
 
@@ -6489,7 +6502,7 @@ button.list-group-item-danger.active:focus {
 }
 
 .panel-default > .panel-heading .badge {
-  color: #ddd;
+  color: #CCC;
   background-color: #333333;
 }
 
@@ -6498,26 +6511,26 @@ button.list-group-item-danger.active:focus {
 }
 
 .panel-primary {
-  border-color: #3366cc;
+  border-color: #3399cc;
 }
 
 .panel-primary > .panel-heading {
   color: #fff;
-  background-color: #3366cc;
-  border-color: #3366cc;
+  background-color: #3399cc;
+  border-color: #3399cc;
 }
 
 .panel-primary > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #3366cc;
+  border-top-color: #3399cc;
 }
 
 .panel-primary > .panel-heading .badge {
-  color: #3366cc;
+  color: #3399cc;
   background-color: #fff;
 }
 
 .panel-primary > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #3366cc;
+  border-bottom-color: #3399cc;
 }
 
 .panel-success {
@@ -6714,6 +6727,7 @@ button.close {
 .modal.fade .modal-dialog {
   -webkit-transform: translate(0, -25%);
   transform: translate(0, -25%);
+  -webkit-transition: -webkit-transform 0.3s ease-out;
   transition: -webkit-transform 0.3s ease-out;
   transition: transform 0.3s ease-out;
   transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
@@ -7139,6 +7153,7 @@ button.close {
 .carousel-inner > .item {
   display: none;
   position: relative;
+  -webkit-transition: 0.6s ease-in-out left;
   transition: 0.6s ease-in-out left;
 }
 
@@ -7152,6 +7167,7 @@ button.close {
 
 @media all and (transform-3d), (-webkit-transform-3d) {
   .carousel-inner > .item {
+    -webkit-transition: -webkit-transform 0.6s ease-in-out;
     transition: -webkit-transform 0.6s ease-in-out;
     transition: transform 0.6s ease-in-out;
     transition: transform 0.6s ease-in-out, -webkit-transform 0.6s ease-in-out;
@@ -7231,6 +7247,7 @@ button.close {
 }
 
 .carousel-control.left {
+  background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.0001) 100%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#80000000', endColorstr='#00000000', GradientType=1);
@@ -7239,6 +7256,7 @@ button.close {
 .carousel-control.right {
   left: auto;
   right: 0;
+  background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.0001) 0%, rgba(0, 0, 0, 0.5) 100%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#80000000', GradientType=1);
