@@ -27,6 +27,7 @@ $navbar-default-bg: #EEE;
 $navbar-inverse-bg: #222;
 $navbar-inverse-link-color: #FFF;
 $navbar-inverse-color: #FFF;
+$navbar-margin-bottom: 12px;
 
 // Buttons
 $btn-default-color: $text-color;
@@ -38,7 +39,9 @@ $btn-border-radius-small: 0px;
 $input-border: lighten($text-color, 70%);
 $input-border-focus: lighten($brand-primary, 25%);
 $input-color-placeholder: lighten($text-color, 30%);
-$input-border-radius: 1px;
+$input-border-radius: 0px;
+$input-border-radius-small: 0px;
+$input-border-radius-large: 0px;
 
 // Panels
 $panel-default-heading-bg: #CCC;

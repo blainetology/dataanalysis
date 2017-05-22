@@ -61,7 +61,8 @@ class ReportsController extends Controller
             'client' => Client::find($report->client_id),
             'report' => $report,
             $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
-            'client_reports' => Report::active()->where('client_id',$report->client_id)->get()
+            'client_reports' => Report::active()->where('client_id',$report->client_id)->get(),
+            'client_spreadsheets' => Spreadsheet::active()->where('client_id',$report->client_id)->get()
         ];
         if(!\Auth::user()->isAdmin() && !\Auth::user()->isEditor()){
             $report->opened_at = \DB::raw('NOW()');
@@ -138,8 +139,9 @@ class ReportsController extends Controller
         foreach($reports as $report){
             $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
         }
-        #$pdf = \PDF::loadView('client.reports.generate', $data);
-        $pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data)->setOption('javascript-delay', 2000);
+        return view('client.reports.generate',$data);
+        $pdf = \PDF::loadView('client.reports.generate', $data);
+        #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data)->setOption('javascript-delay', 2000);
         return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
         return view('client.reports.generate',$data);
     }

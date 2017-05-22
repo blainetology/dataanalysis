@@ -11,7 +11,6 @@
 
     <!-- Styles -->
     <link href="http://data.app/css/app.css" rel="stylesheet">
-    <link href="http://data.app/css/bootstrap.css" rel="stylesheet">
 
     <script src="http://data.app/js/app.js"></script>
 

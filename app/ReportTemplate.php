@@ -102,8 +102,8 @@ class ReportTemplate extends Model
             $value = $rules['value'];
         }
 
+        // setup which columns to display
         $columns=[];
-        $sections=[];
         $letters = explode(',',$rules['columns']);
         foreach($letters as $letter){
             $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
@@ -113,6 +113,8 @@ class ReportTemplate extends Model
                 $columns[(string)$row->column] = $row->label;
         }
 
+        // setup which sections to display
+        $sections=[];
         $letters = explode(',',$rules['sections']);
         foreach($letters as $letter){
             $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
@@ -129,26 +131,47 @@ class ReportTemplate extends Model
         $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
         
         // let's total it all together first
-        $all = [];
+        $all = ['count'=>0,'cols'=>[]];
         foreach($columns as $key=>$label)
-            $all['col'.$key] = 0;
-        $months = [];
+            $all['cols']['col'.$key] = 0;
+
         foreach($results as $row){
             foreach($columns as $key=>$label)
-                $all['col'.$key] += $row->{'col'.$key};
-            if(!empty($rules['month']) && $rules['month']=='yes'){
+                $all['cols']['col'.$key] += $row->{'col'.$key};
+            $all['count']++;
+        }
+
+        // and break it down by months
+        $months = null;
+        if(!empty($rules['month']) && $rules['month']=='yes'){
+            $months = [];
+
+            $starttimestamp = strtotime(self::$start);
+            $endtimestamp = strtotime(self::$end);
+            for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24)){
+                $slug = date("F Y",$x);
+                if(!isset($months[$slug])){
+                    $months[$slug] = ['count'=>0,'cols'=>[]];
+                    foreach($columns as $key=>$label)
+                        $months[$slug]['cols']['col'.$key] = 0;
+                }
+            }
+
+
+            foreach($results as $row){
                 $row->month = date('F Y',strtotime($row->$date));
                 if(!isset($months[$row->month])){
-                    $months[$row->month] = [];
+                    $months[$row->month] = ['count'=>0,'cols'=>[]];
                     foreach($columns as $key=>$label)
-                        $months[$row->month]['col'.$key] = 0;
+                        $months[$row->month]['cols']['col'.$key] = 0;
                 }
                 foreach($columns as $key=>$label)
-                    $months[$row->month]['col'.$key] += $row->{'col'.$key};
+                    $months[$row->month]['cols']['col'.$key] += $row->{'col'.$key};
+                $months[$row->month]['count']++;
             }
         }
 
-        // and also break it down by weeks
+        // and break it down by weeks
         $weeks = null;
         if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
             $weeks = [];
@@ -161,7 +184,7 @@ class ReportTemplate extends Model
                 elseif($rules['week']=='mon')
                     $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
                 $slug = date("Y-m-d",$starttimestamp);
-                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'cols'=>[]];
+                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
                 foreach($columns as $key=>$label)
                     $weeks[$slug]['cols']['col'.$key]=0;
             }
@@ -173,13 +196,9 @@ class ReportTemplate extends Model
                     $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                 $slug = date("Y-m-d",$timestamp);
                 #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
-                if(!isset($weeks[$slug])){
-                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'cols'=>[]];
-                    foreach($columns as $key=>$label)
-                        $weeks[$slug]['cols']['col'.$key]=0;
-                }
                 foreach($columns as $key=>$label)
                     $weeks[$slug]['cols']['col'.$key]+=$row->{'col'.$key};
+                $weeks[$slug]['count']++;
             }
         }
         if($weeks)
@@ -192,24 +211,40 @@ class ReportTemplate extends Model
             foreach($results as $row){
                 $row->month = date('F Y',strtotime($row->$date));
                 // all
+                if(!isset($sections[$id]['data'][$row->$col]['all']['count']))
+                    $sections[$id]['data'][$row->$col]['all']['count']=0;
+                $sections[$id]['data'][$row->$col]['all']['count']++;
                 foreach($columns as $key=>$label){
-                    if(!isset($sections[$id]['data'][$row->$col]['all']['col'.$key]))
-                        $sections[$id]['data'][$row->$col]['all']['col'.$key]=0;
-                    $sections[$id]['data'][$row->$col]['all']['col'.$key] += $row->{'col'.$key};
+                    if(!isset($sections[$id]['data'][$row->$col]['all']['cols']['col'.$key]))
+                        $sections[$id]['data'][$row->$col]['all']['cols']['col'.$key]=0;
+                    $sections[$id]['data'][$row->$col]['all']['cols']['col'.$key] += $row->{'col'.$key};
                 }
                 //month
-                if(!empty($rules['month']) && $rules['month']=='yes'){
+                if(!empty($rules['month']) && $rules['month']=='yes' && !empty($rules['monthsections']) && $rules['monthsections']=='yes'){
+
+                    $starttimestamp = strtotime(self::$start);
+                    $endtimestamp = strtotime(self::$end);
+                    for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24)){
+                        $slug = date("F Y",$x);
+                        if(!isset($sections[$id]['data'][$row->$col]['months'][$slug])){
+                            $sections[$id]['data'][$row->$col]['months'][$slug] = ['count'=>0,'cols'=>[]];
+                            foreach($columns as $key=>$label)
+                                $sections[$id]['data'][$row->$col]['months'][$slug]['cols']['col'.$key] = 0;
+                        }
+                    }
+
                     if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
-                        $sections[$id]['data'][$row->$col]['months'][$row->month] = [];
+                        $sections[$id]['data'][$row->$col]['months'][$row->month] = ['count'=>0,'cols'=>[]];
                         foreach($columns as $key=>$label)
-                            $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] = 0;
+                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols']['col'.$key] = 0;
                     }
                     foreach($columns as $key=>$label)
-                        $sections[$id]['data'][$row->$col]['months'][$row->month]['col'.$key] += $row->{'col'.$key};
+                        $sections[$id]['data'][$row->$col]['months'][$row->month]['cols']['col'.$key] += $row->{'col'.$key};
+                    $sections[$id]['data'][$row->$col]['months'][$row->month]['count']++;
                 }
 
                 // weeks
-                if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+                if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') && !empty($rules['weeksections']) && $rules['weeksections']=='yes'){
 
                     $timestamp = strtotime(self::$start);
                     $endtimestamp = strtotime(self::$end);
@@ -220,7 +255,7 @@ class ReportTemplate extends Model
                             $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
                         $slug = date("Y-m-d",$starttimestamp);
                         if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]))
-                            $sections[$id]['data'][$row->$col]['weeks'][$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'cols'=>[]];
+                            $sections[$id]['data'][$row->$col]['weeks'][$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
                         foreach($columns as $key=>$label){
                             if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]))
                                 $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]=0;
@@ -232,9 +267,9 @@ class ReportTemplate extends Model
                     elseif($rules['week']=='mon')
                         $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                     $slug = date("Y-m-d",$timestamp);
-                    #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
                     foreach($columns as $key=>$label)
                         $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key] += $row->{'col'.$key};
+                    $sections[$id]['data'][$row->$col]['weeks'][$slug]['count']++;
                 }
                 if(isset($sections[$id]['data'][$row->$col]['weeks']))
                     krsort($sections[$id]['data'][$row->$col]['weeks']);

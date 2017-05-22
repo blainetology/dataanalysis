@@ -22,7 +22,7 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-default navbar-static-top ">
+        <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
                 <div class="navbar-header">
 
@@ -43,9 +43,6 @@
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
                     <!-- Left Side Of Navbar -->
                     <ul class="nav navbar-nav">
-                        @if(isset($client) && empty($isAdminView))
-                        <li style="padding-top:15px;"> &nbsp; &nbsp; Client: <strong>{{ $client->business_name }}</strong></li>
-                        @endif
                         @if(\Auth::check() && \Auth::user()->isEditor() && !empty($isAdminView))
                             <li><a href="/"><h4 style="padding:0; margin:2px 30px 0 0;">Site Administration</h4></a></li>
                             <li><a href="{{ route('adminclients.index') }}"><i class="fa fa-users" aria-hidden="true"></i> Clients</a></li>
@@ -62,6 +59,9 @@
                             <li><a href="{{ url('/login') }}">Login</a></li>
                             <li><a href="{{ url('/register') }}">Register</a></li>
                         @else
+                            @if(isset($client) && empty($isAdminView))
+                            <li style="padding-top:15px;"><strong>{{ $client->business_name }}</strong> &nbsp; &nbsp; </li>
+                            @endif
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                                     {{ Auth::user()->displayname() }} <span class="caret"></span>
@@ -83,14 +83,9 @@
                 </div>
             </div>
         </nav>
-
+        <div style="height:51px; background: #F00;"></div>
         @yield('content')
 
-        <br/><br/>
-        <hr/>
-        <footer style="text-align: center;">
-        &copy;{{ date('Y') }}, Track That Advisor, LLC
-        </footer>
     </div>
 
     <!-- Scripts -->

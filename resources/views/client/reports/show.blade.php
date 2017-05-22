@@ -3,49 +3,57 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
-        <h3>Reports</h3>
-        </div>        
-    </div>
+        <div class="col-md-2 col-lg-1 bg-info" style="height:100%; position: fixed; left:0; top:50px;">
+            <h4>Spreadsheets</h4>
+            @foreach($client_spreadsheets as $rep)
+            <a href="/client/spreadsheets/{{ $rep->id }}/edit">{{$rep->name}}</a><br/>
+            @endforeach
+            <br/>
+            <h4>Reports</h4>
+            @foreach($client_reports as $rep)
+            <a href="/reports/{{ $rep->id }}?{{ $_SERVER['QUERY_STRING'] }}">{{$rep->label}}</a><br/>
+            @endforeach
+            <br/>
+            <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-info btn-sm"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
+            <br/><br/>
+        </div>     
+    </div>   
     <div class="row">
-        <div class="col-md-12">
-            <span class="pull-right" id="action_bar">
-                <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
-            </span>
-            <ul class="nav nav-tabs">
-                @foreach($client_reports as $rep)
-                <li role="presentation" {!! ($report->id == $rep->id) ? 'class="active"' : '' !!}><a href="/reports/{{ $rep->id }}?{{ $_SERVER['QUERY_STRING'] }}">{{$rep->label}}</a></li>
-                @endforeach
-            </ul>
-
-        </div>
-    </div>
-</div>
-<br/>
-<div class="container">
+        <div class="col-md-10 col-offset-md-2 col-lg-11 col-offset-lg-1" style="height:52px; position: fixed; right:0; top:50px; padding-top:10px; border-bottom:1px solid #EEE; background: #F9F9F9; z-index: 100;">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="text-info" style="margin-bottom:0; padding-bottom:0; margin-top:2px;">{{ $report->name }} Report</h3>
+                </div>
+                <div class="col-md-4">
+                    <form method="GET" style="margin:0; padding:0;">
+                            <div class="col-md-4" style="padding:2px;">
+                                {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control input-sm','id'=>'start_date'])}}
+                            </div>
+                            <div class="col-md-2 text-center" style="padding:2px; padding-top:6px;">
+                            <strong>through</strong>
+                            </div>
+                            <div class="col-md-4" style="padding:2px;">
+                                {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control input-sm','id'=>'end_date'])}}
+                            </div>
+                            <div class="col-md-2" style="padding:2px;">
+                                <input type="submit" value="Filter" class="btn btn-info btn-sm" style="width:100%;">
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>     
+    </div>   
     <div class="row">
-        <form method="GET">
-        <div class="col-md-3">
-            <label>Start Date:</label><br/>
-            {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control','id'=>'start_date'])}}
+        <div class="col-md-2 col-lg-1">
         </div>
-        <div class="col-md-3">
-            <label>End Date:</label><br/>
-            {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control','id'=>'end_date'])}}
-        </div>
-        <div class="col-md-2">
-            <label>&nbsp;</label><br/>
-            <input type="submit" value="Filter Dates" class="btn btn-info btn-md">
-        </div>
-        </form>
-    </div>
-    <br/>
-    <div class="row">
-        <div class="col-md-12">
-        <h2 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->name }} Report</h2>
-        </div>
-        <div class="col-md-12">
-        @include('client.reports.includes.'.$report->template->file)
+        <div class="col-md-10 col-lg-11">
+            <div class="row">
+                <div class="col-md-12" style="height:51px;">
+                </div>
+                <div class="col-md-12">
+                    @include('client.reports.includes.'.$report->template->file)
+                </div>
+            </div>
         </div>
     </div>
 </div>

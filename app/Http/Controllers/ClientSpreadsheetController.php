@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
 use App\Log;   
+use App\Report;   
 use App\Spreadsheet;   
 use App\SpreadsheetContent;   
 use App\SpreadsheetColumn;   
@@ -60,6 +61,7 @@ class ClientSpreadsheetController extends Controller
             'conditionals' => $conditionals,
             'max' => $spreadsheet->columns->max()->column,
             'letters' => SpreadsheetColumn::$columnLetters,
+            'client_reports' => Report::where('client_id',$spreadsheet->client_id)->active()->get(),
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->active()->orderBy('list_order','asc')->get(),
             'counts' => [],
             'queryvars' => $queryvars,

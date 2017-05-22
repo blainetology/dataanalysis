@@ -46,11 +46,13 @@
 	<div class="col-md-6">
 		If set, the report will include the total amounts, broken down by months<br/>
 		<label>Show Months</label><br/>
-		{{ Form::select('Show Months',['yes'=>"show",'no'=>"don't show"],(!empty($input['rules']) && isset($input['rules']['month']) ? $input['rules']['month'] : null),['name'=>'rules[month]', 'class'=>'form-control'])}}
+		{{ Form::select('Show Months',['yes'=>"show",'no'=>"don't show"],(!empty($input['rules']) && isset($input['rules']['month']) ? $input['rules']['month'] : null),['name'=>'rules[month]', 'class'=>'form-control'])}}<br/>
+		{{ Form::select('Show Months in Sections',['yes'=>"show months in sections",'no'=>'hide months in sections'],(!empty($input['rules']) && isset($input['rules']['monthsections']) ? $input['rules']['monthsections'] : null),['name'=>'rules[monthsections]', 'class'=>'form-control'])}}
 	</div>
 	<div class="col-md-6">
 		If set, the report will include the total amounts, broken down by weeks<br/>
 		<label>Show Weeks</label><br/>
-		{{ Form::select('Show Weeks',['none'=>"don't show",'sun'=>'yes, week begins on sunday','mon'=>'yes, week begins on monday'],(!empty($input['rules']) && isset($input['rules']['week']) ? $input['rules']['week'] : null),['name'=>'rules[week]', 'class'=>'form-control'])}}
+		{{ Form::select('Show Weeks',['none'=>"don't show",'sun'=>'yes, week begins on sunday','mon'=>'yes, week begins on monday'],(!empty($input['rules']) && isset($input['rules']['week']) ? $input['rules']['week'] : null),['name'=>'rules[week]', 'class'=>'form-control'])}}<br/>
+		{{ Form::select('Show Weeks in Sections',['yes'=>"show weeks in sections",'no'=>'hide weeks in sections'],(!empty($input['rules']) && isset($input['rules']['weeksections']) ? $input['rules']['weeksections'] : null),['name'=>'rules[weeksections]', 'class'=>'form-control'])}}
 	</div>
 </div>
