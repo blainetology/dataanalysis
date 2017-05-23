@@ -1,6 +1,6 @@
 <?php $content = ${$report->template->file}; ?>
 @if(!empty($content['sections']))
-	<span class="pull-right">
+	<span class="pull-right hidden-sm hidden-xs">
 	Jump To 
 	@foreach($content['sections'] as $sections)
 		| <a href="#section_{{ str_slug($sections['label'],'_') }}">By {{ $sections['label'] }}</a>

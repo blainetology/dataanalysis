@@ -14,4 +14,9 @@ class SpreadsheetContent extends Model
     public function user(){
     	return $this->belongsTo('\App\User','added_by');
     }
+
+    public function geocode(){
+    	return $this->belongsTo('\App\Geocode');
+    }
+
 }

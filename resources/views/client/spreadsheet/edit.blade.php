@@ -1,32 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-{{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
+
+@include('client.sidebar')
+<div style="margin-left:200px; position: relative;">
+    {{ Form::open(['route'=>['clientspreadsheets.update',$spreadsheet->id],'method'=>'PUT','onsubmit'=>'sheetupdated=false']) }}
     <input type="hidden" name="sort_col" id="sort_col" value="{{$sort_col}}">
     <input type="hidden" name="field_ids" id="field_ids" value="{{$field_ids}}">
 
-    <div class="row">
-        <div class="col-md-2 col-lg-1 bg-success" style="height:100%; position: fixed; left:0; top:50px;">
-            <h4>Spreadsheets</h4>
-            @foreach($client_spreadsheets as $rep)
-            <a href="/client/spreadsheets/{{ $rep->id }}/edit">{{$rep->name}}</a><br/>
-            @endforeach
-            <br/>
-            <h4>Reports</h4>
-            @foreach($client_reports as $rep)
-            <a href="/reports/{{ $rep->id }}?{{ $_SERVER['QUERY_STRING'] }}">{{$rep->label}}</a><br/>
-            @endforeach
-            <br/>
-            <a href="/reports/generate/{{$spreadsheet->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-info btn-sm"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
-            <br/><br/>
-        </div>     
-    </div>   
-    <div class="row">
-        <div class="col-md-10 col-offset-md-2 col-lg-11 col-offset-lg-1" style="height:52px; position: fixed; right:0; top:50px; padding-top:10px; border-bottom:1px solid #EEE; background: #F9F9F9; z-index: 100;">
+    <div id="page-header" style="height:52px; position: fixed; left:200px; top:50px; padding-top:10px; border-bottom:1px solid #EEE; background: #F9F9F9; z-index: 100; width:100%; box-sizing: border-box;">
+        <div class="container-fluid">
             <div class="row">
                 <div class="col-md-8">
-                    <h3 class="text-info" style="margin-bottom:0; padding-bottom:0; margin-top:2px;">{{ $spreadsheet->name }} Spreadsheet</h3>
+                    <h3 class="text-info" style="margin-bottom:0; padding-bottom:0; margin-top:4px; font-size: 1.5em;">{{ $spreadsheet->name }} Spreadsheet</h3>
                 </div>
                 <div class="col-md-4 text-right">
                     <a href="/client/spreadsheets/{{$spreadsheet->id}}/export?{{$_SERVER['QUERY_STRING']}}" class="btn btn-info btn-sm" id="exportbutton"><i class="fa fa-download" aria-hidden="true"></i> export to csv</a>
@@ -36,139 +22,138 @@
                     <button class="btn btn-success btn-sm hidden" id="savebutton" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> save changes</button>
                </div>
             </div>
-        </div>     
-    </div>   
-    <div class="row">
-        <div class="col-md-2 col-lg-1">
         </div>
-        <div class="col-md-10 col-lg-11">
-            <div class="row">
-                <div class="col-md-12" style="height:51px;">
-                </div>
-                <div class="col-md-12" style="padding:0 1px;">
-                    <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
-                        <table id="spreadsheet" class="table table-striped table-condensed" style="margin-bottom:0px;">
-                            <thead>
-                                <tr>
-                                    <td class="bg-info0"></td>
-                                    @for($x=1; $x<=$max; $x++)
-                                        <th class="bg-info no-stretch col{{$x}}" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
-                                            <div class="small text-info" style="font-weight:100;{{ $sort_col==$x ? ' text-decoration:underline;' : ''}}"><a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a></div>
-                                            {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
-                                            @if(\Auth::user()->isEditor())
-                                                <br/>
-                                                @if($columns[$x]->type=='date')
-                                                    <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min">
-                                                    <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max">
-                                                @elseif($columns[$x]->type=='numeric' || $columns[$x]->type=='integer' || $columns[$x]->type=='currency')
-                                                    <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="min-width:40px;">
-                                                     <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="min-width:40px;">
-                                                @elseif($columns[$x]->type!='notes')
-                                                    <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="height:24px; min-width: 110px;">
-                                                        <option value="0">--no filter--</option>
-                                                        @if(count($columns[$x]->distincts))
-                                                        <optgroup label="filters"> 
-                                                        @foreach($columns[$x]->distincts as $key => $value)
-                                                        <option value="{{$key}}" {{\Request::input('filter.col'.$x) == $key && $key != "" ? 'selected' : ''}}>{{$value}}</option> 
-                                                        @endforeach
-                                                        </optgroup>
-                                                        @endif
-                                                    </select>
+    </div>     
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12" style="height:51px;"></div>
+            <div class="col-md-12" style="padding:0">
+                <div id="spreadsheetContainer" style="overflow:auto; width:100%; height:84px;">
+                    <table id="spreadsheet" class="table table-striped table-condensed" style="margin-bottom:0px;">
+                        <thead>
+                            <tr>
+                                <td class="bg-primary"></td>
+                                @for($x=1; $x<=$max; $x++)
+                                    <th class="bg-info no-stretch col{{$x}}" style="width:{{round(100/$max)}}%; vertical-align:top; padding-top:2px;">
+                                        <div class="small text-info" style="font-weight:100;{{ $sort_col==$x ? ' text-decoration:underline;' : ''}}">
+                                            <a href="?{{$queryvars}}&sort_col={{$x}}">Column {{$letters[$x]}}</a>
+                                        </div>
+                                        {{ isset($columns[$x]) ? $columns[$x]['label'] : '' }}
+                                        <br/>
+                                        @if($columns[$x]->type=='date')
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min">
+                                            <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_date" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max">
+                                        @elseif($columns[$x]->type=='numeric' || $columns[$x]->type=='integer' || $columns[$x]->type=='currency')
+                                            <input name="filter[col{{$x}}][min]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.min')}}" placeholder="min" style="min-width:40px;">
+                                             <input name="filter[col{{$x}}][max]" class="form-control input-sm filter-input type_{{$columns[$x]->type}}" onchange="applyFilter()" value="{{\Request::input('filter.col'.$x.'.max')}}" placeholder="max" style="min-width:40px;">
+                                        @elseif($columns[$x]->type!='notes')
+                                            <select name="filter[col{{$x}}]" class="form-control input-sm filter-input" onchange="applyFilter()" style="height:24px; min-width: 110px;">
+                                                <option value="0">--no filter--</option>
+                                                @if(count($columns[$x]->distincts))
+                                                <optgroup label="filters"> 
+                                                @foreach($columns[$x]->distincts as $key => $value)
+                                                <option value="{{$key}}" {{\Request::input('filter.col'.$x) == $key && $key != "" ? 'selected' : ''}}>{{$value}}</option> 
+                                                @endforeach
+                                                </optgroup>
                                                 @endif
+                                            </select>
+                                        @endif
+
+                                    </th>
+                                    <?php
+                                    if(in_array($columns[$x]->type, ['numeric','integer','currency']))
+                                        $counts[$x]=null;
+                                    else  
+                                        $counts[$x]=[];
+                                    ?>
+                                @endfor
+                                <td class="bg-info"></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for($y=1; $y<=($spreadsheet->content ? $spreadsheet->content->count()+1 : 1); $y++)
+                                <?php
+                                $content = null;
+                                if(isset($spreadsheet->content[($y-1)]))
+                                    $content = $spreadsheet->content[($y-1)];
+                                ?>
+                                <tr id="tr{{$y}}">
+                                    <th class="nostretch no-stretch bg-primary text-center row{{$y}} col0 {{$content && $content->validated==0 ? 'bg-danger' : ''}}" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
+                                    @for($x=1; $x<=$max; $x++)
+                                        <td style="padding:0;" class="row{{$y}} col{{$x}} {{$content && $content->validated==0 ? 'bg-danger' : ''}}">
+                                            @if($columns[$x]->type=='currency')
+                                            <div class="input-group"><div class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
+                                            @elseif($columns[$x]->type=='date')
+                                            <div class="input-group"><div class="input-group-addon "><i class="fa fa-calendar" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
+                                            @else
+                                            {!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}
                                             @endif
-                                        </th>
+                                        </td>
                                         <?php
-                                        if(in_array($columns[$x]->type, ['numeric','integer','currency']))
-                                            $counts[$x]=null;
-                                        else  
-                                            $counts[$x]=[];
+                                        if(isset($content['col'.$x])){
+                                            if(in_array($columns[$x]->type, ['integer'])){
+                                                if(!$counts[$x])
+                                                    $counts[$x] = (int)$content['col'.$x];
+                                                else 
+                                                    $counts[$x] += (int)$content['col'.$x];
+                                            }
+                                            elseif(in_array($columns[$x]->type, ['currency','numeric'])){
+                                                if(!$counts[$x])
+                                                    $counts[$x] = $content['col'.$x];
+                                                else 
+                                                    $counts[$x] += $content['col'.$x];
+                                            }
+                                            elseif($content['col'.$x] != ""){
+                                                if(isset($counts[$x][$content['col'.$x]]))
+                                                    $counts[$x][$content['col'.$x]]++;
+                                                else
+                                                    $counts[$x][$content['col'.$x]]=1;
+                                            }
+                                        }
                                         ?>
                                     @endfor
+                                    <td>
+                                    @if($y == ($spreadsheet->content ? $spreadsheet->content->count()+1 : 1))
+                                    <a href="javascript:newRow({{$y}})" class="text-success new-row hidden" id="newRow{{$y}}"><i class="fa fa-plus" aria-hidden="true"></i></a>
+                                    <a href="javascript:delRow({{$y}})" class="text-danger del-row hidden" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
+                                    @else
+                                    <a href="javascript:delRow({{$y}})" class="text-danger del-row" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
+                                    @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @for($y=1; $y<=($spreadsheet->content ? $spreadsheet->content->count()+1 : 1); $y++)
-                                    <?php
-                                    $content = null;
-                                    if(isset($spreadsheet->content[($y-1)]))
-                                        $content = $spreadsheet->content[($y-1)];
-                                    ?>
-                                    <tr id="tr{{$y}}">
-                                        <th class="nostretch no-stretch bg-info row{{$y}} col0 {{$content && $content->validated==0 ? 'bg-danger' : ''}}" id="th{{$y}}" {!! $content ? 'title="Entered by '.$content->user->displayname().' on '.date('Y-m-d @ h:ia',strtotime($content['created_at'])).'"' : '' !!} >{{$y}}</th>
-                                        @for($x=1; $x<=$max; $x++)
-                                            <td style="padding:0;" class="row{{$y}} col{{$x}} {{$content && $content->validated==0 ? 'bg-danger' : ''}}">
-                                                @if($columns[$x]->type=='currency')
-                                                <div class="input-group"><div class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
-                                                @elseif($columns[$x]->type=='date')
-                                                <div class="input-group"><div class="input-group-addon "><i class="fa fa-calendar" aria-hidden="true"></i></div>{!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}</div>
-                                                @else
-                                                {!! \App\SpreadsheetColumn::sheetCell($columns[$x],$content,$x,$y) !!}
-                                                @endif
-                                            </td>
-                                            <?php
-                                            if(isset($content['col'.$x])){
-                                                if(in_array($columns[$x]->type, ['integer'])){
-                                                    if(!$counts[$x])
-                                                        $counts[$x] = (int)$content['col'.$x];
-                                                    else 
-                                                        $counts[$x] += (int)$content['col'.$x];
-                                                }
-                                                elseif(in_array($columns[$x]->type, ['currency','numeric'])){
-                                                    if(!$counts[$x])
-                                                        $counts[$x] = $content['col'.$x];
-                                                    else 
-                                                        $counts[$x] += $content['col'.$x];
-                                                }
-                                                elseif($content['col'.$x] != ""){
-                                                    if(isset($counts[$x][$content['col'.$x]]))
-                                                        $counts[$x][$content['col'.$x]]++;
-                                                    else
-                                                        $counts[$x][$content['col'.$x]]=1;
-                                                }
-                                            }
-                                            ?>
-                                        @endfor
-                                        <td>
-                                        @if($y == ($spreadsheet->content ? $spreadsheet->content->count()+1 : 1))
-                                        <a href="javascript:newRow({{$y}})" class="text-success new-row hidden" id="newRow{{$y}}"><i class="fa fa-plus" aria-hidden="true"></i></a>
-                                        <a href="javascript:delRow({{$y}})" class="text-danger del-row hidden" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
-                                        @else
-                                        <a href="javascript:delRow({{$y}})" class="text-danger del-row" id="delRow{{$y}}"><i class="fa fa-ban" aria-hidden="true"></i></a>
+                            @endfor
+                       </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="bg-warning"></td>
+                                @for($x=1; $x<=$max; $x++)
+                                    <td class="small bg-warning col{{$x}}" id="totals{{$x}}">
+                                    @if(in_array($columns[$x]->type, ['numeric','integer']))
+                                        @if($counts[$x])
+                                            {{ $counts[$x] }}
                                         @endif
-                                        </td>
-                                    </tr>
+                                    @elseif($columns[$x]->type == 'currency')
+                                        @if($counts[$x])
+                                            ${{ number_format($counts[$x],2) }}
+                                        @endif
+                                    @elseif($columns[$x]->type != 'notes')
+                                        @foreach($counts[$x] as $key=>$value)
+                                        ({{$value}}) {{$key}}<br/>
+                                        @endforeach
+                                    @endif
+                                    </td>
                                 @endfor
-                           </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td class="bg-info"></td>
-                                    @for($x=1; $x<=$max; $x++)
-                                      <td class="small bg-warning col{{$x}}" id="totals{{$x}}">
-                                        @if(in_array($columns[$x]->type, ['numeric','integer']))
-                                            @if($counts[$x])
-                                                {{ $counts[$x] }}
-                                            @endif
-                                        @elseif($columns[$x]->type == 'currency')
-                                            @if($counts[$x])
-                                                ${{ number_format($counts[$x],2) }}
-                                            @endif
-                                        @elseif($columns[$x]->type != 'notes')
-                                            @foreach($counts[$x] as $key=>$value)
-                                            ({{$value}}) {{$key}}<br/>
-                                            @endforeach
-                                        @endif
-                                      </td>
-                                    @endfor
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                                <td class="bg-warning"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
     {{ Form::close() }}
 </div>
+
 <table id="newrow" style="display:none;">
     <tr id="row||row||">
         <th class="nostretch no-stretch bg-info row||row|| col0" id="th||row||" {!! $content ? 'title="Entered by '.\Auth::user()->displayname().' on '.date('Y-m-d @ h:ia').'"' : '' !!} >||row||</th>
@@ -240,8 +225,10 @@
     var lastCellValue = "";
     $(document).ready(function(){
         $('#spreadsheetContainer').height($(window).height()-102);
+        $('#page-header').width($(window).width()-200);
         $(window).on('resize',function(){
             $('#spreadsheetContainer').height($(window).height()-102);
+            $('#page-header').width($(window).width()-200);
         })
         function bindcells(){
             $('.sheet_cell').not($('.bound')).on('focus',function(){
