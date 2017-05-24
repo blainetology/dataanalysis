@@ -143,7 +143,7 @@ class ReportTemplate extends Model
 
         // and break it down by months
         $months = null;
-        if(!empty($rules['month']) && $rules['month']=='yes'){
+        if(!empty($rules['month'])){
             $months = [];
 
             $starttimestamp = strtotime(self::$start);
@@ -173,15 +173,15 @@ class ReportTemplate extends Model
 
         // and break it down by weeks
         $weeks = null;
-        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
+        if(!empty($rules['week'])){
             $weeks = [];
 
             $timestamp = strtotime(self::$start);
             $endtimestamp = strtotime(self::$end);
             for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
-                if($rules['week']=='sun')
+                if($rules['week']=='SUN')
                     $starttimestamp = $x-(date('w',$x)*60*60*24);
-                elseif($rules['week']=='mon')
+                elseif($rules['week']=='MON')
                     $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
                 $slug = date("Y-m-d",$starttimestamp);
                 $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
@@ -190,9 +190,9 @@ class ReportTemplate extends Model
             }
             foreach($results as $row){
                 $timestamp = strtotime($row->$date);
-                if($rules['week']=='sun')
+                if($rules['week']=='SUN')
                     $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
-                elseif($rules['week']=='mon')
+                elseif($rules['week']=='MON')
                     $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                 $slug = date("Y-m-d",$timestamp);
                 #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
@@ -220,7 +220,7 @@ class ReportTemplate extends Model
                     $sections[$id]['data'][$row->$col]['all']['cols']['col'.$key] += $row->{'col'.$key};
                 }
                 //month
-                if(!empty($rules['month']) && $rules['month']=='yes' && !empty($rules['monthsections']) && $rules['monthsections']=='yes'){
+                if(!empty($rules['month']) && !empty($rules['monthsections'])){
 
                     $starttimestamp = strtotime(self::$start);
                     $endtimestamp = strtotime(self::$end);
@@ -244,14 +244,14 @@ class ReportTemplate extends Model
                 }
 
                 // weeks
-                if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') && !empty($rules['weeksections']) && $rules['weeksections']=='yes'){
+                if(!empty($rules['week']) && !empty($rules['weeksections'])){
 
                     $timestamp = strtotime(self::$start);
                     $endtimestamp = strtotime(self::$end);
                     for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
-                        if($rules['week']=='sun')
+                        if($rules['week']=='SUN')
                             $starttimestamp = $x-(date('w',$x)*60*60*24);
-                        elseif($rules['week']=='mon')
+                        elseif($rules['week']=='MON')
                             $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
                         $slug = date("Y-m-d",$starttimestamp);
                         if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]))
@@ -262,9 +262,9 @@ class ReportTemplate extends Model
                         }
                     }
                     $timestamp = strtotime($row->$date);
-                    if($rules['week']=='sun')
+                    if($rules['week']=='SUN')
                         $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
-                    elseif($rules['week']=='mon')
+                    elseif($rules['week']=='MON')
                         $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                     $slug = date("Y-m-d",$timestamp);
                     foreach($columns as $key=>$label)
@@ -276,90 +276,20 @@ class ReportTemplate extends Model
             }
         }
 
-
-/*        echo "<pre>";
-        echo "COLUMNS\n";
-        print_r($columns);
-        echo "<br/>";
-        echo "SECTIONS\n";
-        print_r($sections);
-        echo "<br/>";
-        echo "ALL\n";
-        print_r($all);
-        echo "<br/>";
-        echo "MONTHS\n";
-        print_r($months);
-        echo "<br/>";
-        echo "WEEKS\n";
-        print_r($weeks);
-        echo "<br/>";
-        echo "</pre>";
-        exit;
-*/
         return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
     }
 
-    public static function total_amt_issued($rules){
+    public static function mapped_totals($rules){
+
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
-        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
-        $sources = null;
-        $issued = ["fia"=>0,"aum"=>0,"total"=>0];
+        $location_format = preg_replace('/[^a-zA-Z0-9 ]/',' ',$rules['location']);
 
-        foreach($results as $row){
-            $issued['fia']+=$row->$fia;
-            $issued['aum']+=$row->$aum;
-            $issued['total']+=$row->$fia;
-            $issued['total']+=$row->$aum;
-        }
+        $location = 'col'.array_search(strtoupper($rules['location']),\App\SpreadsheetColumn::$columnLetters);
 
-        if(!empty($rules['source'])){
-            $sources = [];
-            $source = 'col'.array_search(strtoupper($rules['source']),\App\SpreadsheetColumn::$columnLetters);
-            foreach($results as $row){
-                if(!isset($sources[$row->$source]))
-                    $sources[$row->$source] = ["fia"=>0,"aum"=>0,"total"=>0];
-                $sources[$row->$source]['fia']+=$row->$fia;
-                $sources[$row->$source]['aum']+=$row->$aum;
-                $sources[$row->$source]['total']+=$row->$fia;
-                $sources[$row->$source]['total']+=$row->$aum;
-            }
-        }
+        return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
 
-        $weeks = null;
-        if(!empty($rules['week']) && ($rules['week']=='sun' || $rules['week']=='mon') ){
-            $weeks = [];
-
-            $timestamp = strtotime(self::$start);
-            $endtimestamp = strtotime(self::$end);
-            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
-                if($rules['week']=='sun')
-                    $starttimestamp = $x-(date('w',$x)*60*60*24);
-                elseif($rules['week']=='mon')
-                    $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
-                $slug = date("Y-m-d",$starttimestamp);
-                $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'fia'=>0,'aum'=>0];
-            }
-            foreach($results as $row){
-                $timestamp = strtotime($row->$date);
-                if($rules['week']=='sun')
-                    $timestamp = $timestamp-(date('w',$timestamp)*60*60*24);
-                elseif($rules['week']=='mon')
-                    $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
-                $slug = date("Y-m-d",$timestamp);
-                #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
-                if(!isset($weeks[$slug]))
-                    $weeks[$slug] = ['start'=>date('m/d/Y',$timestamp),'end'=>date('m/d/Y',$timestamp+(60*60*24*6)),'fia'=>0,'aum'=>0];
-                $weeks[$slug]['fia']+=$row->$fia;
-                $weeks[$slug]['aum']+=$row->$aum;
-            }
-        }
-
-        return ['issued'=>$issued,'sources'=>$sources,'weeks'=>$weeks];
     }
 
     public static function seminar_business_attained($rules){

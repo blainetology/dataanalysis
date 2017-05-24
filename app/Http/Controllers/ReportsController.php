@@ -92,7 +92,11 @@ class ReportsController extends Controller
     public function update(Request $request, $id)
     {
         $input = \Request::all();
-        $input['rules'] = json_encode($input['rules']);
+        $temp = [];
+        foreach($input['rules'] as $key=>$rule){
+            $temp[$key] = strtoupper(trim($rule));
+        }
+        $input['rules'] = json_encode($temp);
         #print_r($input);
         #exit;
         $report = Report::find($id);
