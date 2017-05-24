@@ -284,9 +284,67 @@ class ReportTemplate extends Model
         $rules = json_decode($rules,true);
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        $location_format = preg_replace('/[^a-zA-Z0-9 ]/',' ',$rules['location']);
 
-        $location = 'col'.array_search(strtoupper($rules['location']),\App\SpreadsheetColumn::$columnLetters);
+        // figure out the address for geo coding
+        $rules['location'] = preg_replace('/([A-Z])/',"*$1*",trim($rules['location']));
+        $location_format = preg_replace('/[^a-zA-Z0-9\* ]/',' ',$rules['location']);
+        $location_format = explode(' ',$location_format);
+        $geo_cols = [];
+        $geo_search = [];
+        foreach($location_format as $col){
+            if(!empty($col)){
+                $geo_cols[$col] = 'col'.array_search(strtoupper(str_replace('*','',$col)),\App\SpreadsheetColumn::$columnLetters);
+                $geo_search[]=$col;
+            }
+        }
+
+        // setup which columns to display
+        $columns=[];
+        $letters = explode(',',$rules['columns']);
+        foreach($letters as $letter){
+            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
+            $columns[(string)$index] = $index;
+            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$columns)->get();
+            foreach($results as $row)
+                $columns[(string)$row->column] = $row->label;
+        }
+
+        // setup which sections to display
+        $sections=[];
+        $letters = explode(',',$rules['sections']);
+        foreach($letters as $letter){
+            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
+            $sections['col'.$index] = $index;
+            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
+            foreach($results as $row)
+                $sections['col'.$row->column] = ['label'=>$row->label,'data'=>[]];
+        }
+
+        // let's get the content from the database
+        $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
+        $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+
+        $all = [];
+        foreach($results as $row){
+            $geo_replace = [];
+            foreach($geo_cols as $letter=>$col){
+                $geo_replace[]=$row->{$col};
+            }
+            $location = str_replace($geo_search, $geo_replace, $rules['location']);
+            foreach($columns as $key=>$label){
+                if(!isset($all[$location]['geocode']))
+                    $all[$location]['geocode'] = ['latitude'=>null,'longitude'=>null];
+                if(!isset($all[$location]['all']))
+                    $all[$location]['all']=0;
+                if(!isset($all[$location]['cols']['col'.$key]))
+                    $all[$location]['cols']['col'.$key]=0;
+                $all[$location]['cols']['col'.$key] += $row->{'col'.$key};
+                $all[$location]['all'] += $row->{'col'.$key};
+            }
+        }
+
+        echo '<pre>'.print_r($all,true).'</pre>';
+        exit;
 
         return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
 
