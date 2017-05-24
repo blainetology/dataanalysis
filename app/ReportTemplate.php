@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Geocode;
+
 class ReportTemplate extends Model
 {
     //
@@ -285,11 +287,12 @@ class ReportTemplate extends Model
         $spreadsheet_id = $rules['spreadsheet'];
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
 
-        // figure out the address for geo coding
+        // figure out the address format for geo coding
         $rules['location'] = preg_replace('/([A-Z])/',"*$1*",trim($rules['location']));
         $location_format = preg_replace('/[^a-zA-Z0-9\* ]/',' ',$rules['location']);
         $location_format = explode(' ',$location_format);
         $geo_cols = [];
+        $geo_codes = [];
         $geo_search = [];
         foreach($location_format as $col){
             if(!empty($col)){
@@ -332,8 +335,25 @@ class ReportTemplate extends Model
             }
             $location = str_replace($geo_search, $geo_replace, $rules['location']);
             foreach($columns as $key=>$label){
-                if(!isset($all[$location]['geocode']))
-                    $all[$location]['geocode'] = ['latitude'=>null,'longitude'=>null];
+                if(!isset($all[$location]['geocode'])){
+                    if(isset($geo_codes[$location]))
+                        $all[$location]['geocode'] = $geo_codes[$location];
+                    else{
+                         $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
+                         if($geocode){
+                            $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
+                            $all[$location]['geocode'] = $geo_codes[$location];
+                         }
+                         else{
+                            $geocode = self::geocode($location);
+                             if($geocode){
+                                $geo_codes[$location] =$geocode;
+                                $all[$location]['geocode'] = $geo_codes[$location];
+                                Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
+                             }
+                         }
+                    }
+                }
                 if(!isset($all[$location]['all']))
                     $all[$location]['all']=0;
                 if(!isset($all[$location]['cols']['col'.$key]))
@@ -343,10 +363,50 @@ class ReportTemplate extends Model
             }
         }
 
-        echo '<pre>'.print_r($all,true).'</pre>';
-        exit;
+        // now by sections
+        foreach($sections as $id=>$section){
+            $col = $id;
+            foreach($results as $row){
+                $geo_replace = [];
+                foreach($geo_cols as $letter=>$col){
+                    $geo_replace[]=$row->{$col};
+                }
+                $location = str_replace($geo_search, $geo_replace, $rules['location']);
+                foreach($columns as $key=>$label){
+                    if(!isset($sections[$id]['data'][$location]['all']))
+                        $sections[$id]['data'][$location]['all']=0;
+                    if(!isset($sections[$id]['data'][$location]['cols']['col'.$key]))
+                        $sections[$id]['data'][$location]['cols']['col'.$key]=0;
 
-        return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
+
+                    if(!isset($sections[$id]['data'][$location]['geocode'])){
+                        if(isset($geo_codes[$location]))
+                            $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                        else{
+                             $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
+                             if($geocode){
+                                $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
+                                $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                             }
+                             else{
+                                $geocode = self::geocode($location);
+                                 if($geocode){
+                                    $geo_codes[$location] =$geocode;
+                                    $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                                    Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
+                                 }
+                             }
+                        }
+                    }
+     
+
+                    $sections[$id]['data'][$location]['cols']['col'.$key] += $row->{'col'.$key};
+                    $sections[$id]['data'][$location]['all'] += $row->{'col'.$key};
+                }
+            }
+        }
+
+        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections];
 
     }
 
@@ -403,5 +463,34 @@ class ReportTemplate extends Model
         return ['all'=>$all,'months'=>$months,'seminars'=>$seminars];
     }
 
+    private static function curl($url,$post=NULL){
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($c, CURLOPT_URL, $url);
+        $contents = curl_exec($c);
+        curl_close($c);
+
+        if($contents) 
+            return $contents;
+        else 
+            return false;
+    }
+    private static function geocode($address){
+        
+        $url = "https://maps.google.com/maps/api/geocode/json?sensor=false&key=AIzaSyADHSrojKFkUvVCmQrh1yfkPNhC25xLIzE&address=".urlencode($address);
+        $resp_json = self::curl($url);
+        $resp = json_decode($resp_json, true);
+
+        if($resp['status']='OK'){
+            $resp['results'][0]['geometry']['location']['longitude'] = $resp['results'][0]['geometry']['location']['lng'];
+            $resp['results'][0]['geometry']['location']['latitude'] = $resp['results'][0]['geometry']['location']['lat'];
+            unset($resp['results'][0]['geometry']['location']['lat']);
+            unset($resp['results'][0]['geometry']['location']['lng']);
+            return $resp['results'][0]['geometry']['location'];
+        }else{
+            return false;
+        }
+        
+    }
 
 }
