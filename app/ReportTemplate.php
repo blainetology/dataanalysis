@@ -365,6 +365,7 @@ class ReportTemplate extends Model
 
         // now by sections
         foreach($sections as $id=>$section){
+            $color=0;
             $col = $id;
             foreach($results as $row){
                 $geo_replace = [];
@@ -372,6 +373,10 @@ class ReportTemplate extends Model
                     $geo_replace[]=$row->{$l_col};
                 }
                 $location = str_replace($geo_search, $geo_replace, $rules['location']);
+                if(!isset($sections[$id]['data'][$row->$col]['color'])){
+                    $sections[$id]['data'][$row->$col]['color']=$color;
+                    $color++;
+                }
                 foreach($columns as $key=>$label){
                     if(!isset($sections[$id]['data'][$row->$col][$location]['all']))
                         $sections[$id]['data'][$row->$col][$location]['all']=0;
