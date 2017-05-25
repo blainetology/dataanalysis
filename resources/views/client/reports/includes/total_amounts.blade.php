@@ -1,4 +1,5 @@
 <?php $content = ${$report->template->file}; ?>
+
 @if(!empty($content['sections']))
 	<span class="pull-right hidden-sm hidden-xs">
 	Jump To 

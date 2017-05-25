@@ -294,10 +294,10 @@ class ReportTemplate extends Model
         $geo_cols = [];
         $geo_codes = [];
         $geo_search = [];
-        foreach($location_format as $col){
-            if(!empty($col)){
-                $geo_cols[$col] = 'col'.array_search(strtoupper(str_replace('*','',$col)),\App\SpreadsheetColumn::$columnLetters);
-                $geo_search[]=$col;
+        foreach($location_format as $l_col){
+            if(!empty($l_col)){
+                $geo_cols[$l_col] = 'col'.array_search(strtoupper(str_replace('*','',$l_col)),\App\SpreadsheetColumn::$columnLetters);
+                $geo_search[]=$l_col;
             }
         }
 
@@ -330,8 +330,8 @@ class ReportTemplate extends Model
         $all = [];
         foreach($results as $row){
             $geo_replace = [];
-            foreach($geo_cols as $letter=>$col){
-                $geo_replace[]=$row->{$col};
+            foreach($geo_cols as $letter=>$l_col){
+                $geo_replace[]=$row->{$l_col};
             }
             $location = str_replace($geo_search, $geo_replace, $rules['location']);
             foreach($columns as $key=>$label){
@@ -368,31 +368,31 @@ class ReportTemplate extends Model
             $col = $id;
             foreach($results as $row){
                 $geo_replace = [];
-                foreach($geo_cols as $letter=>$col){
-                    $geo_replace[]=$row->{$col};
+                foreach($geo_cols as $letter=>$l_col){
+                    $geo_replace[]=$row->{$l_col};
                 }
                 $location = str_replace($geo_search, $geo_replace, $rules['location']);
                 foreach($columns as $key=>$label){
-                    if(!isset($sections[$id]['data'][$location]['all']))
-                        $sections[$id]['data'][$location]['all']=0;
-                    if(!isset($sections[$id]['data'][$location]['cols']['col'.$key]))
-                        $sections[$id]['data'][$location]['cols']['col'.$key]=0;
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['all']))
+                        $sections[$id]['data'][$row->$col][$location]['all']=0;
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]))
+                        $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]=0;
 
 
-                    if(!isset($sections[$id]['data'][$location]['geocode'])){
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['geocode'])){
                         if(isset($geo_codes[$location]))
-                            $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                            $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
                         else{
                              $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
                              if($geocode){
                                 $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
-                                $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                                $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
                              }
                              else{
                                 $geocode = self::geocode($location);
                                  if($geocode){
                                     $geo_codes[$location] =$geocode;
-                                    $sections[$id]['data'][$location]['geocode'] = $geo_codes[$location];
+                                    $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
                                     Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
                                  }
                              }
@@ -400,12 +400,11 @@ class ReportTemplate extends Model
                     }
      
 
-                    $sections[$id]['data'][$location]['cols']['col'.$key] += $row->{'col'.$key};
-                    $sections[$id]['data'][$location]['all'] += $row->{'col'.$key};
+                    $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key] += $row->{'col'.$key};
+                    $sections[$id]['data'][$row->$col][$location]['all'] += $row->{'col'.$key};
                 }
             }
         }
-
         return ['columns'=>$columns,'all'=>$all,'sections'=>$sections];
 
     }
