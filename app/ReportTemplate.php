@@ -104,7 +104,7 @@ class ReportTemplate extends Model
             $value = $rules['value'];
         }
 
-        // setup which columns to display
+        // setup which columns to display in the reports table
         $columns=[];
         $letters = explode(',',$rules['columns']);
         foreach($letters as $letter){
@@ -356,10 +356,13 @@ class ReportTemplate extends Model
                 }
                 if(!isset($all[$location]['all']))
                     $all[$location]['all']=0;
+                if(!isset($all[$location]['count']))
+                    $all[$location]['count']=0;
                 if(!isset($all[$location]['cols']['col'.$key]))
                     $all[$location]['cols']['col'.$key]=0;
                 $all[$location]['cols']['col'.$key] += $row->{'col'.$key};
                 $all[$location]['all'] += $row->{'col'.$key};
+                $all[$location]['count']++;
             }
         }
 
@@ -380,6 +383,8 @@ class ReportTemplate extends Model
                 foreach($columns as $key=>$label){
                     if(!isset($sections[$id]['data'][$row->$col][$location]['all']))
                         $sections[$id]['data'][$row->$col][$location]['all']=0;
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['count']))
+                        $sections[$id]['data'][$row->$col][$location]['count']=0;
                     if(!isset($sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]))
                         $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]=0;
 
@@ -407,6 +412,7 @@ class ReportTemplate extends Model
 
                     $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key] += $row->{'col'.$key};
                     $sections[$id]['data'][$row->$col][$location]['all'] += $row->{'col'.$key};
+                    $sections[$id]['data'][$row->$col][$location]['count']++;
                 }
             }
         }

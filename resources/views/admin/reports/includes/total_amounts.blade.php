@@ -35,14 +35,6 @@
 </div>
 <br/>
 <div class="row">
-	<div class="col-md-8">
-		If present, the report will include the total amounts, broken down by each column listed<br/>
-		<label>Section Columns</label><br/>
-		{{ Form::text('Advisor Column',(!empty($input['rules']) && isset($input['rules']['sections']) ? $input['rules']['sections'] : null),['name'=>'rules[sections]', 'class'=>'form-control'])}}
-	</div>
-</div>
-<br/>
-<div class="row">
 	<div class="col-md-6">
 		If set, the report will include the total amounts, broken down by months<br/>
 		<label>Show Months</label><br/>
@@ -54,5 +46,15 @@
 		<label>Show Weeks</label><br/>
 		{{ Form::select('Show Weeks',[0=>"don't show",'SUN'=>'yes, week begins on sunday','MON'=>'yes, week begins on monday'],(!empty($input['rules']) && isset($input['rules']['week']) ? $input['rules']['week'] : null),['name'=>'rules[week]', 'class'=>'form-control'])}}<br/>
 		{{ Form::select('Show Weeks in Sections',[0=>'hide weeks in sections',1=>"show weeks in sections"],(!empty($input['rules']) && isset($input['rules']['weeksections']) ? $input['rules']['weeksections'] : null),['name'=>'rules[weeksections]', 'class'=>'form-control'])}}
+	</div>
+</div>
+<br/>
+<div class="row">
+	<div class="col-md-12">
+		If present, the report will include the total amounts, broken down into sections by each column listed<br/>
+	</div>
+	<div class="col-md-8">
+		<label>Section Columns</label><br/>
+		{{ Form::text('Advisor Column',(!empty($input['rules']) && isset($input['rules']['sections']) ? $input['rules']['sections'] : null),['name'=>'rules[sections]', 'class'=>'form-control'])}}
 	</div>
 </div>

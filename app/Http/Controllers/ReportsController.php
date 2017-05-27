@@ -92,6 +92,21 @@ class ReportsController extends Controller
     public function update(Request $request, $id)
     {
         $input = \Request::all();
+
+        // clean up the columns input
+        $temp = [];
+        foreach(explode(',',$input['rules']['columns']) as $column){
+            $temp[] = strtoupper(trim($column));
+        }
+        $input['rules']['columns'] = implode(', ',$temp);
+        // clean up the sections input
+        $temp = [];
+        foreach(explode(',',$input['rules']['sections']) as $column){
+            $temp[] = strtoupper(trim($column));
+        }
+        $input['rules']['sections'] = implode(', ',$temp);
+
+        // clean up the rules inputs
         $temp = [];
         foreach($input['rules'] as $key=>$rule){
             $temp[$key] = strtoupper(trim($rule));
