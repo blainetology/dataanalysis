@@ -82,7 +82,7 @@ class ReportsController extends Controller
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
             'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
-            'spreadsheets' => Spreadsheet::where('client_id',$report->client_id),
+            'spreadsheets' => Spreadsheet::with('columns')->where('client_id',$report->client_id)->get(),
             'file' => $report->template->file,
             'isAdminView'   => true
         ];
@@ -92,13 +92,36 @@ class ReportsController extends Controller
     public function update(Request $request, $id)
     {
         $input = \Request::all();
+        $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$input['rules']['spreadsheet'])->pluck('label','column');
 
         // clean up the columns input
         $temp = [];
-        foreach(explode(',',$input['rules']['columns']) as $column){
-            $temp[] = strtoupper(trim($column));
+        foreach(explode("\n",$input['rules']['columns']) as $column){
+            $row = explode('||',$column);
+
+            if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
+                $index = array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
+            else
+                $index = trim($row[0]);
+
+            if(!empty($row[1]))
+                $type = trim($row[1]);
+            else
+                $type = 'numeric';
+
+            if(isset($row[2]) && !empty(trim($row[2])))
+                $label = trim($row[2]);
+            elseif(isset($availableColumns[$index]))
+                $label = $availableColumns[$index];
+            else
+                $label = $index;
+
+            $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NO')) ? 'yes' : 'no';
+
+            $temp[] = implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total)]);
         }
-        $input['rules']['columns'] = implode(', ',$temp);
+        $input['rules']['columns'] = implode("\n",$temp);
+/*
         // clean up the sections input
         $temp = [];
         foreach(explode(',',$input['rules']['sections']) as $column){
@@ -112,6 +135,8 @@ class ReportsController extends Controller
             $temp[$key] = strtoupper(trim($rule));
         }
         $input['rules'] = json_encode($temp);
+*/        
+        $input['rules'] = json_encode($input['rules']);
         #print_r($input);
         #exit;
         $report = Report::find($id);

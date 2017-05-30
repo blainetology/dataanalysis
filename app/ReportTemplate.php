@@ -105,25 +105,31 @@ class ReportTemplate extends Model
         }
 
         // setup which columns to display in the reports table
-        $columns=[];
-        $letters = explode(',',$rules['columns']);
-        foreach($letters as $letter){
-            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
-            $columns[(string)$index] = $index;
-            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$columns)->get();
-            foreach($results as $row)
-                $columns[(string)$row->column] = $row->label;
+        $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->pluck('label','column');
+
+        $temp=[];
+        $columns = explode("\n",$rules['columns']);
+        foreach($columns as $column){
+            $row = explode('||',$column);
+
+             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
+                $index = 'col'.array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
+            else
+                $index = trim($row[0]);
+
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
         }
+        $columns = $temp;
 
         // setup which sections to display
         $sections=[];
         $letters = explode(',',$rules['sections']);
         foreach($letters as $letter){
             $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
-            $sections['col'.$index] = $index;
+            $sections[$index] = $index;
             $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
             foreach($results as $row)
-                $sections['col'.$row->column] = ['label'=>$row->label,'data'=>[]];
+                $sections[$row->column] = ['label'=>$row->label,'data'=>[]];
         }
 
         // let's get the content from the database
@@ -133,14 +139,31 @@ class ReportTemplate extends Model
         $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
         
         // let's total it all together first
-        $all = ['count'=>0,'cols'=>[]];
+        $all = ['all'=>['count'=>0,'cols'=>[]]];
         foreach($columns as $key=>$label)
-            $all['cols']['col'.$key] = 0;
+            $all['all']['cols'][$key] = 0;
 
         foreach($results as $row){
             foreach($columns as $key=>$label)
-                $all['cols']['col'.$key] += $row->{'col'.$key};
-            $all['count']++;
+                $all['all']['cols'][$key] += $row->{$key};
+            $all['all']['count']++;
+        }
+
+        // now set the columns with custom equations
+        $search = ['count'];
+        $replace = [$all['all']['count']];
+        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
+            if(isset($all['all']['cols']['col'.$x]))
+                $replace[] = $all['all']['cols']['col'.$x];
+            else
+                $replace[] = "0";
+        }
+        foreach($columns as $key=>$column){
+            if(!isset($availableColumns[str_replace('col','',$key)])){
+                $value = str_replace($search,$replace,$key);
+                $all['all']['cols'][$key] = @self::calculate($value);
+            }
         }
 
         // and break it down by months
@@ -155,7 +178,7 @@ class ReportTemplate extends Model
                 if(!isset($months[$slug])){
                     $months[$slug] = ['count'=>0,'cols'=>[]];
                     foreach($columns as $key=>$label)
-                        $months[$slug]['cols']['col'.$key] = 0;
+                        $months[$slug]['cols'][$key] = 0;
                 }
             }
 
@@ -165,12 +188,30 @@ class ReportTemplate extends Model
                 if(!isset($months[$row->month])){
                     $months[$row->month] = ['count'=>0,'cols'=>[]];
                     foreach($columns as $key=>$label)
-                        $months[$row->month]['cols']['col'.$key] = 0;
+                        $months[$row->month]['cols'][$key] = 0;
                 }
                 foreach($columns as $key=>$label)
-                    $months[$row->month]['cols']['col'.$key] += $row->{'col'.$key};
+                    $months[$row->month]['cols'][$key] += $row->{$key};
                 $months[$row->month]['count']++;
             }
+
+            // now set the columns with custom equations
+            foreach($months as $month=>$data){
+                $replace = [$data['count']];
+                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                    if(isset($data['cols']['col'.$x]))
+                        $replace[] = $data['cols']['col'.$x];
+                    else
+                        $replace[] = "0";
+                }
+                foreach($columns as $key=>$column){
+                    if(!isset($availableColumns[str_replace('col','',$key)])){
+                        $value = str_replace($search,$replace,$key);
+                        $months[$month]['cols'][$key] = @self::calculate($value);
+                    }
+                }
+            }
+            $all['months'] = $months;
         }
 
         // and break it down by weeks
@@ -188,7 +229,7 @@ class ReportTemplate extends Model
                 $slug = date("Y-m-d",$starttimestamp);
                 $weeks[$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
                 foreach($columns as $key=>$label)
-                    $weeks[$slug]['cols']['col'.$key]=0;
+                    $weeks[$slug]['cols'][$key]=0;
             }
             foreach($results as $row){
                 $timestamp = strtotime($row->$date);
@@ -199,9 +240,27 @@ class ReportTemplate extends Model
                 $slug = date("Y-m-d",$timestamp);
                 #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
                 foreach($columns as $key=>$label)
-                    $weeks[$slug]['cols']['col'.$key]+=$row->{'col'.$key};
+                    $weeks[$slug]['cols'][$key]+=$row->{$key};
                 $weeks[$slug]['count']++;
             }
+
+            // now set the columns with custom equations
+            foreach($weeks as $week=>$data){
+                $replace = [$data['count']];
+                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                    if(isset($data['cols']['col'.$x]))
+                        $replace[] = $data['cols']['col'.$x];
+                    else
+                        $replace[] = "0";
+                }
+                foreach($columns as $key=>$column){
+                    if(!isset($availableColumns[str_replace('col','',$key)])){
+                        $value = str_replace($search,$replace,$key);
+                        $weeks[$week]['cols'][$key] = @self::calculate($value);
+                    }
+                }
+            }
+            $all['weeks'] = $weeks;
         }
         if($weeks)
             krsort($weeks);
@@ -209,7 +268,7 @@ class ReportTemplate extends Model
 
         // now by sections
         foreach($sections as $id=>$section){
-            $col = $id;
+            $col = 'col'.$id;
             foreach($results as $row){
                 $row->month = date('F Y',strtotime($row->$date));
                 // all
@@ -217,9 +276,9 @@ class ReportTemplate extends Model
                     $sections[$id]['data'][$row->$col]['all']['count']=0;
                 $sections[$id]['data'][$row->$col]['all']['count']++;
                 foreach($columns as $key=>$label){
-                    if(!isset($sections[$id]['data'][$row->$col]['all']['cols']['col'.$key]))
-                        $sections[$id]['data'][$row->$col]['all']['cols']['col'.$key]=0;
-                    $sections[$id]['data'][$row->$col]['all']['cols']['col'.$key] += $row->{'col'.$key};
+                    if(!isset($sections[$id]['data'][$row->$col]['all']['cols'][$key]))
+                        $sections[$id]['data'][$row->$col]['all']['cols'][$key]=0;
+                    $sections[$id]['data'][$row->$col]['all']['cols'][$key] += $row->{$key};
                 }
                 //month
                 if(!empty($rules['month']) && !empty($rules['monthsections'])){
@@ -231,17 +290,17 @@ class ReportTemplate extends Model
                         if(!isset($sections[$id]['data'][$row->$col]['months'][$slug])){
                             $sections[$id]['data'][$row->$col]['months'][$slug] = ['count'=>0,'cols'=>[]];
                             foreach($columns as $key=>$label)
-                                $sections[$id]['data'][$row->$col]['months'][$slug]['cols']['col'.$key] = 0;
+                                $sections[$id]['data'][$row->$col]['months'][$slug]['cols'][$key] = 0;
                         }
                     }
 
                     if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
                         $sections[$id]['data'][$row->$col]['months'][$row->month] = ['count'=>0,'cols'=>[]];
                         foreach($columns as $key=>$label)
-                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols']['col'.$key] = 0;
+                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key] = 0;
                     }
                     foreach($columns as $key=>$label)
-                        $sections[$id]['data'][$row->$col]['months'][$row->month]['cols']['col'.$key] += $row->{'col'.$key};
+                        $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key] += $row->{$key};
                     $sections[$id]['data'][$row->$col]['months'][$row->month]['count']++;
                 }
 
@@ -259,8 +318,8 @@ class ReportTemplate extends Model
                         if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]))
                             $sections[$id]['data'][$row->$col]['weeks'][$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
                         foreach($columns as $key=>$label){
-                            if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]))
-                                $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key]=0;
+                            if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key]))
+                                $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key]=0;
                         }
                     }
                     $timestamp = strtotime($row->$date);
@@ -270,15 +329,70 @@ class ReportTemplate extends Model
                         $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                     $slug = date("Y-m-d",$timestamp);
                     foreach($columns as $key=>$label)
-                        $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols']['col'.$key] += $row->{'col'.$key};
+                        $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key] += $row->{$key};
                     $sections[$id]['data'][$row->$col]['weeks'][$slug]['count']++;
                 }
                 if(isset($sections[$id]['data'][$row->$col]['weeks']))
                     krsort($sections[$id]['data'][$row->$col]['weeks']);
             }
         }
+        // now set the columns with custom equations
+        foreach($sections as $id=>$section){
+            foreach($section['data'] as $id2=>$section2){
+                if(isset($section2['all'])){
+                        $data = $section2['all'];
+                        $replace = [$data['count']];
+                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                            if(isset($data['cols']['col'.$x]))
+                                $replace[] = $data['cols']['col'.$x];
+                            else
+                                $replace[] = "0";
+                        }
+                        foreach($columns as $key=>$column){
+                            if(!isset($availableColumns[str_replace('col','',$key)])){
+                                $value = str_replace($search,$replace,$key);
+                                $sections[$id]['data'][$id2]['all']['cols'][$key] = @self::calculate($value);
+                            }
+                        }
+                }
+                if(isset($section2['months'])){
+                    foreach($section2['months'] as $month=>$data){
+                        $replace = [$data['count']];
+                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                            if(isset($data['cols']['col'.$x]))
+                                $replace[] = $data['cols']['col'.$x];
+                            else
+                                $replace[] = "0";
+                        }
+                        foreach($columns as $key=>$column){
+                            if(!isset($availableColumns[str_replace('col','',$key)])){
+                                $value = str_replace($search,$replace,$key);
+                                $sections[$id]['data'][$id2]['months'][$month]['cols'][$key] = @self::calculate($value);
+                            }
+                        }
+                    }
+                }
+                if(isset($section2['weeks'])){
+                    foreach($section2['weeks'] as $week=>$data){
+                        $replace = [$data['count']];
+                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                            if(isset($data['cols']['col'.$x]))
+                                $replace[] = $data['cols']['col'.$x];
+                            else
+                                $replace[] = "0";
+                        }
+                        foreach($columns as $key=>$column){
+                            if(!isset($availableColumns[str_replace('col','',$key)])){
+                                $value = str_replace($search,$replace,$key);
+                                $sections[$id]['data'][$id2]['weeks'][$week]['cols'][$key] = @self::calculate($value);
+                            }
+                        }
+                    }
+                }
+            }
 
-        return ['columns'=>$columns,'all'=>$all,'months'=>$months,'sections'=>$sections,'weeks'=>$weeks];
+        }
+        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections];
     }
 
     public static function mapped_totals($rules){
@@ -502,5 +616,59 @@ class ReportTemplate extends Model
         }
         
     }
+
+
+
+    const PATTERN = '/(?:\-?\d+(?:\.?\d+)?[\+\-\*\/])+\-?\d+(?:\.?\d+)?/';
+
+    const PARENTHESIS_DEPTH = 10;
+
+    public static function calculate($input){
+        if(strpos($input, '+') != null || strpos($input, '-') != null || strpos($input, '/') != null || strpos($input, '*') != null){
+            //  Remove white spaces and invalid math chars
+            $input = str_replace(',', '.', $input);
+            $input = preg_replace('[^0-9\.\+\-\*\/\(\)]', '', $input);
+
+            //  Calculate each of the parenthesis from the top
+            $i = 0;
+            while(strpos($input, '(') || strpos($input, ')')){
+                $input = preg_replace_callback('/\(([^\(\)]+)\)/', 'self::callback', $input);
+
+                $i++;
+                if($i > self::PARENTHESIS_DEPTH){
+                    break;
+                }
+            }
+
+            //  Calculate the result
+            if(preg_match(self::PATTERN, $input, $match)){
+                return self::compute($match[0]);
+            }
+
+            return 0;
+        }
+
+        return $input;
+    }
+
+    private static function compute($input){
+        $compute = create_function('', 'return '.$input.';');
+
+        return 0 + $compute();
+    }
+
+    private static function callback($input){
+        if(is_numeric($input[1])){
+            return $input[1];
+        }
+        elseif(preg_match(self::PATTERN, $input[1], $match)){
+            return self::compute($match[0]);
+        }
+
+        return 0;
+    }
+
+
+
 
 }

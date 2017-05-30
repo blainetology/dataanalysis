@@ -1,18 +1,15 @@
 <div class="row">
 	<div class="col-md-4">
 		<label>Spreadsheet</label><br/>
-		{{ Form::select('Spreadsheet ID',$spreadsheets->pluck('name','id'),(!empty($input['rules']) && isset($input['rules']['spreadsheet']) ? $input['rules']['spreadsheet'] : null),['name'=>'rules[spreadsheet]', 'class'=>'form-control'])}}
-	</div>
-	<div class="col-md-4">
+		{{ Form::select('Spreadsheet ID',$spreadsheets->pluck('name','id'),(!empty($input['rules']) && isset($input['rules']['spreadsheet']) ? $input['rules']['spreadsheet'] : null),['name'=>'rules[spreadsheet]', 'id'=>'spreadsheet', 'class'=>'form-control'])}}
+		<br/>
 		<label>Date Column</label><br/>
 		{{ Form::text('Date Column',(!empty($input['rules']) && isset($input['rules']['date']) ? $input['rules']['date'] : null),['name'=>'rules[date]', 'class'=>'form-control'])}}
 	</div>
-</div>
-<br/>
-<div class="row">
 	<div class="col-md-8">
-		<label>Columns to Total</label><br/>
-		{{ Form::text('Columns to Total',(!empty($input['rules']) && isset($input['rules']['columns']) ? $input['rules']['columns'] : null),['name'=>'rules[columns]', 'class'=>'form-control'])}}
+		<label>Columns to Include</label><br/>
+		Enter as "col" or operation || numeric|dollar|integer|string || label || "yes" or "no" to totalling - one per line<br/>
+		{{ Form::textarea('Columns to Include',(!empty($input['rules']) && isset($input['rules']['columns']) ? $input['rules']['columns'] : null),['name'=>'rules[columns]', 'class'=>'form-control', 'rows'=>6])}}
 	</div>
 </div>
 <br/>

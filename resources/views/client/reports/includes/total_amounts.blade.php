@@ -1,4 +1,5 @@
 <?php $content = ${$report->template->file}; ?>
+<?php $tdwidth = round(100/(count($content['all']['all']['cols'])+4)); ?>
 
 @if(!empty($content['sections']))
 	<span class="pull-right hidden-sm hidden-xs">
@@ -14,77 +15,89 @@
 	<div class="panel-heading">
 		<h3 class="panel-title">&nbsp;</h3>
 	</div>
-	<table class="table table-striped table-bordered table-condensed report-table">
+	<table class="table table-striped table-bordered table-condensed report-table small">
 		<tbody>
-			@if(!empty($content['months']))
+			@if(!empty($content['all']['months']))
 				<tr>
 					<th class="bg-info">Month</th>
+					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
-						<th class="bg-info">{{$column}}</th>
+						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
-					<th class="bg-info">Records</th>
-					<th class="bg-info">Total</th>
 				</tr>
-				@foreach($content['months'] as $month=>$total)
-					<?php $totals=0; ?> 
+				@foreach($content['all']['months'] as $month=>$total)
 					<tr>
-						<td width="20%">{{ $month }}</td>
-						@foreach($total['cols'] as $row)
-							<?php $totals+=$row; ?> 
-							<td align="right" width="{{ round((100-40)/count($total['cols'])) }}%">${{ number_format($row,2) }}</td>
+						<td>{{ $month }}</td>
+						<td align="right">{{ number_format($total['count']) }}</td>
+						@foreach($total['cols'] as $colindex=>$row)
+							<td align="right">
+								@if($content['columns'][$colindex]['type'] == 'percent')
+								{{ round($row*100,1) }}%
+								@elseif($content['columns'][$colindex]['type'] == 'dollar')
+								${{ number_format($row,2) }}
+								@else
+								{{ number_format($row,2) }}
+								@endif
+							</td>
 						@endforeach
-						<td align="right" width="8%">{{ number_format($total['count']) }}</td>
-						<td align="right" width="12%">${{ number_format($totals,2) }}</td>
 					</tr>
 				@endforeach
 			@endif
-			@if(!empty($content['weeks']))
+			@if(!empty($content['all']['weeks']))
 				<tr>
 					<th class="bg-info">Week</th>
+					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
-						<th class="bg-info">{{$column}}</th>
+						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
-					<th class="bg-info">Records</th>
-					<th class="bg-info">Total</th>
 				</tr>
-				@foreach($content['weeks'] as $week)
-					<?php $totals=0; ?> 
+				@foreach($content['all']['weeks'] as $week)
 					<tr>
-						<td width="20%">{{ $week['start'] }}-{{ $week['end'] }}</td>
-						@foreach($week['cols'] as $row)
-							<?php $totals+=$row; ?> 
-							<td align="right" width="{{ round((100-40)/count($week['cols'])) }}%">${{ number_format($row,2) }}</td>
+						<td>{{ $week['start'] }}-{{ $week['end'] }}</td>
+						<td align="right">{{ number_format($week['count']) }}</td>
+						@foreach($week['cols'] as $colindex=>$row)
+							<td align="right">
+								@if($content['columns'][$colindex]['type'] == 'percent')
+								{{ round($row*100,1) }}%
+								@elseif($content['columns'][$colindex]['type'] == 'dollar')
+								${{ number_format($row,2) }}
+								@else
+								{{ number_format($row,2) }}
+								@endif
+							</td>
 						@endforeach
-						<td align="right" width="8%">{{ number_format($week['count']) }}</td>
-						<td align="right" width="12%">${{ number_format($totals,2) }}</td>
 					</tr>
 				@endforeach
 			@endif
 			<tr>
-				@if(!empty($content['weeks']) || !empty($content['months']))
+				@if(!empty($content['all']['weeks']) || !empty($content['all']['months']))
 					<th class="bg-info"></th>
 				@endif
+				<th class="bg-info">Entries</th>
 				@foreach($content['columns'] as $column)
-					<th class="bg-info">{{$column}}</th>
+					<th class="bg-info">{{$column['label']}}</th>
 				@endforeach
-				<th class="bg-info">Records</th>
-				<th class="bg-info">Total</th>
+			</tr>
+			<tr>
+				@if(!empty($content['all']['weeks']) || !empty($content['all']['months']))
+					<td width="{{ round($tdwidth*1.25) }}%" class="bg-success"><strong>Totals</strong></td>
+				@endif
+				<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success"><strong>{{ number_format($content['all']['all']['count']) }}</strong></td>
+				@foreach($content['all']['all']['cols'] as $colindex=>$row)
+					<td align="right" width="{{ $tdwidth }}%" class="bg-success">
+					<strong>
+						@if($content['columns'][$colindex]['type'] == 'percent')
+						{{ round($row*100,1) }}%
+						@elseif($content['columns'][$colindex]['type'] == 'dollar')
+						${{ number_format($row,2) }}
+						@else
+						{{ number_format($row,2) }}
+						@endif
+					</strong>
+					</td>
+				@endforeach
 			</tr>
 		</tbody>
-		<tfoot>
-			<tr style="font-weight: 900;">
-				@if(!empty($content['weeks']) || !empty($content['months']))
-					<td class="bg-success">Totals</td>
-				@endif
-				<?php $totals=0; ?> 
-				@foreach($content['all']['cols'] as $row)
-					<?php $totals+=$row; ?> 
-					<td align="right" width="{{ round((100-40)/count($content['all']['cols'])) }}%" class="bg-success">${{ number_format($row,2) }}</td>
-				@endforeach
-				<td align="right" class="bg-success">{{ number_format($content['all']['count']) }} </td>
-				<td align="right" class="bg-success">${{ number_format($totals,2) }}</td>
-			</tr>
-		</tfoot>
 	</table>
 </div>
 
@@ -97,49 +110,57 @@
 		<div class="panel-heading">
 			<h3 class="panel-title"><strong>{{ ucwords($name) }}</strong></h3>
 		</div>
-		<table class="table table-striped table-bordered table-condensed report-table">
+		<table class="table table-striped table-bordered table-condensed report-table small">
 			<tbody>
 				@if(!empty($section['months']))
 					<tr>
 						<th class="bg-info">Month</th>
+						<th class="bg-info">Entries</th>
 						@foreach($content['columns'] as $column)
-							<th class="bg-info">{{$column}}</th>
+							<th class="bg-info">{{$column['label']}}</th>
 						@endforeach
-						<th class="bg-info">Records</th>
-						<th class="bg-info">Total</th>
 					</tr>
 					@foreach($section['months'] as $month=>$total)
-						<?php $totals=0; ?> 
 						<tr>
-							<td width="20%">{{ $month }}</td>
-							@foreach($total['cols'] as $row)
-								<?php $totals+=$row; ?> 
-								<td align="right" width="{{ round((100-40)/count($total['cols'])) }}%">${{ number_format($row,2) }}</td>
+							<td>{{ $month }}</td>
+							<td align="right">{{ number_format($total['count']) }}</td>
+							@foreach($total['cols'] as $colindex=>$row)
+								<td align="right">
+									@if($content['columns'][$colindex]['type'] == 'percent')
+									{{ round($row*100,1) }}%
+									@elseif($content['columns'][$colindex]['type'] == 'dollar')
+									${{ number_format($row,2) }}
+									@else
+									{{ number_format($row,2) }}
+									@endif
+								</td>
 							@endforeach
-							<td align="right" width="8%">{{ number_format($total['count']) }}</td>
-							<td align="right" width="12%">${{ number_format($totals,2) }}</td>
 						</tr>
 					@endforeach
 				@endif
 				@if(!empty($section['weeks']))
 					<tr>
 						<th class="bg-info">Week</th>
+						<th class="bg-info">Entries</th>
 						@foreach($content['columns'] as $column)
-							<th class="bg-info">{{$column}}</th>
+							<th class="bg-info">{{$column['label']}}</th>
 						@endforeach
-						<th class="bg-info">Records</th>
-						<th class="bg-info">Total</th>
 					</tr>
 					@foreach($section['weeks'] as $week)
-						<?php $totals=0; ?> 
 						<tr>
-							<td width="20%">{{ $week['start'] }}-{{ $week['end'] }}</td>
-							@foreach($week['cols'] as $row)
-								<?php $totals+=$row; ?> 
-								<td align="right" width="{{ round((100-40)/count($week['cols'])) }}%">${{ number_format($row,2) }}</td>
+							<td>{{ $week['start'] }}-{{ $week['end'] }}</td>
+							<td align="right">{{ number_format($week['count']) }}</td>
+							@foreach($week['cols'] as $colindex=>$row)
+								<td align="right">
+									@if($content['columns'][$colindex]['type'] == 'percent')
+									{{ round($row*100,1) }}%
+									@elseif($content['columns'][$colindex]['type'] == 'dollar')
+									${{ number_format($row,2) }}
+									@else
+									{{ number_format($row,2) }}
+									@endif
+								</td>
 							@endforeach
-							<td align="right" width="8%">{{ number_format($week['count']) }}</td>
-							<td align="right" width="12%">${{ number_format($totals,2) }}</td>
 						</tr>
 					@endforeach
 				@endif
@@ -147,62 +168,43 @@
 					@if(!empty($section['weeks']) || !empty($section['months']))
 						<th class="bg-info"></th>
 					@endif
+					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
-						<th class="bg-info">{{$column}}</th>
+						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
-					<th class="bg-info">Records</th>
-					<th class="bg-info">Total</th>
+				</tr>
+				<tr>
+					@if(!empty($section['weeks']) || !empty($section['months']))
+						<td width="{{ round($tdwidth*1.25) }}%" class="bg-success"><strong>Totals</strong></td>
+					@endif
+					<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success"><strong>{{ number_format($section['all']['count']) }}</strong></td>
+					@foreach($section['all']['cols'] as $colindex=>$row)
+						<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success">
+							<strong>
+								@if($content['columns'][$colindex]['type'] == 'percent')
+								{{ round($row*100,1) }}%
+								@elseif($content['columns'][$colindex]['type'] == 'dollar')
+								${{ number_format($row,2) }}
+								@else
+								{{ number_format($row,2) }}
+								@endif
+							</strong>
+						</td>
+					@endforeach
 				</tr>
 			</tbody>
-			<tfoot>
-				<tr style="font-weight: 900;">
-					@if(!empty($section['weeks']) || !empty($section['months']))
-						<td class="bg-success">Totals</td>
-					@endif
-					<?php $totals=0; ?> 
-					@foreach($section['all']['cols'] as $row)
-						<?php $totals+=$row; ?> 
-						<td align="right" width="{{ round((100-40)/count($section['all']['cols'])) }}%" class="bg-success">${{ number_format($row,2) }}</td>
-					@endforeach
-					<td align="right" class="bg-success">{{ number_format($section['all']['count']) }}</td>
-					<td align="right" class="bg-success">${{ number_format($totals,2) }}</td>
-				</tr>
-			</tfoot>
-
 		</table>
 	</div>
 	@endforeach
 @endforeach
 
-<hr/>
-<h3>By Location</h3>
-<div class="panel panel-primary">
-	<div class="panel-heading">
-		<h3 class="panel-title">&nbsp;</h3>
-	</div>
-	<div id="map"></div>
-</div>
-
 @section('styles')
 <style>
-      #map {
-        height: 400px;
-      }
-      .report-table th{text-align: center !important;}
+    #map{height: 400px;}
+    .report-table th{text-align: center !important;}
 </style>
 @append
 
 @section('scripts')
-
-<script type="text/javascript">
-	var map;
-    function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 2,
-          center: new google.maps.LatLng(2.8,-187.3),
-        });
-    }
-//    google.maps.event.addDomListener(window, "load", initMap);
-</script>
 
 @append
