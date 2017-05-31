@@ -51,13 +51,13 @@
     var adjust=null;
     var offset=null;
 
-    var data = {!! json_encode($content) !!};
-    console.log(data);
+    var alldata = {!! json_encode($content) !!};
+    console.log(alldata);
     
     function initMap(){
 
         $('#map-links').append('<a href="javascript:populate(null,null,xcol)" class="map-link active">OVERALL TOTALS</a>');
-        $.each(data.sections, function(col,section){
+        $.each(alldata.sections, function(col,section){
             $('#map-links').append('<br/><br/><a href="javascript:populate(\''+escape(col)+'\',null,xcol)" class="map-link">'+section.label.toUpperCase() + "</a>");
             $.each(section.data, function(key,block){
                 $('#map-links').append('<br/> &nbsp; <a href="javascript:populate(\''+escape(col)+'\',\''+escape(key)+'\',xcol)" class="map-link">&bull; ' + key + "</a>");
@@ -70,7 +70,7 @@
         });
 
         $('#columnsFilter').append('<a href="javascript:populate(xsec,xkey,\'total\')" style="color:#FFF;" class="field-link active">Totals</a> | <a href="javascript:populate(xsec,xkey,\'count\')" style="color:#FFF;" class="field-link">Entries</a>');
-        $.each(data.columns, function(id,label){
+        $.each(alldata.columns, function(id,label){
             $('#columnsFilter').append(' | <a href="javascript:populate(xsec,xkey,\'col'+id+'\')" style="color:#FFF;" class="field-link">' + label + '</a>');
         });
         $('.field-link').on('click',function(){
@@ -100,7 +100,7 @@
         circles = [];
 
         if(xsec && xkey){
-            var section = data.sections[xsec];
+            var section = alldata.sections[xsec];
             var block = section.data[xkey];
             min=null;
             max=null;
@@ -113,7 +113,7 @@
             plotCircles(key,block);
         }
         else if(xsec && !xkey){
-            var section = data.sections[xsec];
+            var section = alldata.sections[xsec];
             min=null;
             max=null;
             $.each(section.data, function(key,block){
@@ -127,7 +127,7 @@
             });
         }
         else{
-            var block = data.all;
+            var block = alldata.all;
             min=null;
             max=null;
             getMaxMin(block);
@@ -184,10 +184,16 @@
                     fillOpacity: 0.45,
                     map: map,
                     center: new google.maps.LatLng(parseFloat(data['geocode']['latitude']),parseFloat(data['geocode']['longitude'])),
-                    radius: Math.round((radius/adjust)*2000)
+                    radius: Math.round((radius-offset)/adjust*2500)
                 });
+                var infocontent = "<h4><small>"+address+"</small><br/><span class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</span></h4>";
+                infocontent += '<div style="font-size:1.2em; margin-bottom:10px;"><strong>Total:</strong> '+data.all.toLocaleString('en-US',{ style: 'currency', currency: 'USD'})+"<br/>"+'<strong>Records:</strong> '+data.count.toLocaleString()+"</div>";
+                $.each(data.cols,function(index,col){
+                    infocontent += '<strong>'+alldata.columns[index.replace('col','')]+':</strong> '+col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'})+"<br/>";
+                });
+
                 var infowindow = new google.maps.InfoWindow({
-                    content: "<h4>"+key+"</h4>"+JSON.stringify(data)
+                    content: infocontent
                 });  
                 google.maps.event.addListener(circles[index], 'click', function(ev) {
                     // alert(infowindow.content);
