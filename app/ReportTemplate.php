@@ -477,12 +477,13 @@ class ReportTemplate extends Model
                 $all[$location]['cols']['col'.$key] += $row->{'col'.$key};
                 $all[$location]['all'] += $row->{'col'.$key};
                 $all[$location]['count']++;
+                $all['color']=0;
             }
         }
 
         // now by sections
         foreach($sections as $id=>$section){
-            $color=0;
+            $color=1;
             $col = $id;
             foreach($results as $row){
                 $geo_replace = [];
