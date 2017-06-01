@@ -41,11 +41,23 @@ class HomeController extends Controller
             return view('admin.home',$data);
         }
         else{
+            $client_id = (\Auth::user()->client ? \Auth::user()->client->id : '-1');
+            $client_spreadsheets = Spreadsheet::where('client_id',$client_id)->active()->get();
+            $client_reports = Report::where('client_id',$client_id)->active()->get();
+            $users = User::where('client_id',$client_id)->where('client_id','!=',0)->where('admin',0)->where('editor',0)->get();
+            $logs = Log::where(function($query) use ($client_spreadsheets){
+                        $query->where('model', 'spreadsheet')->whereIn('model_id',$client_spreadsheets->pluck('id'));
+                    })->orWhere(function($query) use ($client_reports){
+                         $query->where('model', 'report')->whereIn('model_id',$client_reports->pluck('id'));
+                    })->orderBy('created_at','desc')->take(25)->get();
             $data = [
-                'spreadsheets'  => Spreadsheet::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->active()->get(),
-                'reports'       => Report::where('client_id',(\Auth::user()->client ? \Auth::user()->client->id : '-1'))->active()->get(),
-                'users'         => User::where('client_id',\Auth::user()->client_id)->where('client_id','!=',0)->where('admin',0)->where('editor',0)->get(),
-                'client'        => \Auth::user()->client
+                'users'         => $users,
+                'client'        => \Auth::user()->client,
+                'reports' => $client_reports,
+                'spreadsheets' => $client_spreadsheets,
+                'client_reports' => $client_reports,
+                'client_spreadsheets' => $client_spreadsheets,
+                'logs'      => $logs
             ];
             return view('client.home',$data);
         }
