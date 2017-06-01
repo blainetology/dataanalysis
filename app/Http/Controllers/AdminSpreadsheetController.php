@@ -204,7 +204,10 @@ class AdminSpreadsheetController extends Controller
         $spreadsheet = Spreadsheet::find($id);
 
         $validations = [];
+        $datefields = [];
         foreach($spreadsheet->columns as $column){
+            if($column->type == 'date')
+                $datefields[]=$column->column;
             $column->validation = json_decode($column->validation,true);
             $temp=[];
             $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
@@ -218,7 +221,9 @@ class AdminSpreadsheetController extends Controller
             }
             $validations['col'.$column->column] = implode('|',$temp);
         }
-
+        print_r($datefields);
+        exit;
+        
         $file = $request->file('csv');
         if($request->get('replace') == 1)
             SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->where('revision_id',0)->delete();
@@ -231,6 +236,8 @@ class AdminSpreadsheetController extends Controller
                     $col=1;
                     $content=['spreadsheet_id'=>$spreadsheet->id,'added_by'=>\Auth::user()->id,'revision_id'=>0,'validated'=>1];
                     foreach($data as $field){
+                        if(in_array($col, $datefields))
+                            $field = date('Y-m-d',strtotime($field));
                         $content['col'.$col]=$field;
                         $col++;
                     }
