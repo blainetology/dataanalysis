@@ -415,16 +415,23 @@ class ReportTemplate extends Model
             }
         }
 
-        // setup which columns to display
-        $columns=[];
-        $letters = explode(',',$rules['columns']);
-        foreach($letters as $letter){
-            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
-            $columns[(string)$index] = $index;
-            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$columns)->get();
-            foreach($results as $row)
-                $columns[(string)$row->column] = $row->label;
+        // setup which columns to display in the reports table
+        $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->pluck('label','column');
+
+        $temp=[];
+        $columns = explode("\n",$rules['columns']);
+        foreach($columns as $column){
+            $row = explode('||',$column);
+
+             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
+                $index = 'col'.array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
+            else
+                $index = trim($row[0]);
+
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
         }
+        $columns = $temp;
+
 
         // setup which sections to display
         $sections=[];
@@ -468,16 +475,33 @@ class ReportTemplate extends Model
                          }
                     }
                 }
-                if(!isset($all[$location]['all']))
-                    $all[$location]['all']=0;
                 if(!isset($all[$location]['count']))
                     $all[$location]['count']=0;
-                if(!isset($all[$location]['cols']['col'.$key]))
-                    $all[$location]['cols']['col'.$key]=0;
-                $all[$location]['cols']['col'.$key] += $row->{'col'.$key};
-                $all[$location]['all'] += $row->{'col'.$key};
+                if(!isset($all[$location]['cols'][$key]))
+                    $all[$location]['cols'][$key]=0;
+                $all[$location]['cols'][$key] += $row->{$key};
                 $all[$location]['count']++;
                 $all['color']=0;
+            }
+        }
+        // now set the columns with custom equations
+        foreach($all as $location=>$chunk){
+            if($location!='color'){
+                $search = ['count'];
+                $replace = [$all[$location]['count']];
+                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                    $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
+                    if(isset($all[$location]['cols']['col'.$x]))
+                        $replace[] = $all[$location]['cols']['col'.$x];
+                    else
+                        $replace[] = "0";
+                }
+                foreach($columns as $key=>$column){
+                    if(!isset($availableColumns[str_replace('col','',$key)])){
+                        $value = str_replace($search,$replace,$key);
+                        $all[$location]['cols'][$key] = @self::calculate($value);
+                    }
+                }
             }
         }
 
@@ -496,12 +520,14 @@ class ReportTemplate extends Model
                     $color++;
                 }
                 foreach($columns as $key=>$label){
-                    if(!isset($sections[$id]['data'][$row->$col][$location]['all']))
-                        $sections[$id]['data'][$row->$col][$location]['all']=0;
+                    if(!isset($sections[$id]['all'][$location]['count']))
+                        $sections[$id]['all'][$location]['count']=0;
+                    if(!isset($sections[$id]['all'][$location]['cols'][$key]))
+                        $sections[$id]['all'][$location]['cols'][$key]=0;
                     if(!isset($sections[$id]['data'][$row->$col][$location]['count']))
                         $sections[$id]['data'][$row->$col][$location]['count']=0;
-                    if(!isset($sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]))
-                        $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key]=0;
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['cols'][$key]))
+                        $sections[$id]['data'][$row->$col][$location]['cols'][$key]=0;
 
 
                     if(!isset($sections[$id]['data'][$row->$col][$location]['geocode'])){
@@ -525,9 +551,54 @@ class ReportTemplate extends Model
                     }
      
 
-                    $sections[$id]['data'][$row->$col][$location]['cols']['col'.$key] += $row->{'col'.$key};
-                    $sections[$id]['data'][$row->$col][$location]['all'] += $row->{'col'.$key};
+                    $sections[$id]['all'][$location]['cols'][$key] += $row->{$key};
+                    $sections[$id]['all'][$location]['count']++;
+                    $sections[$id]['data'][$row->$col][$location]['cols'][$key] += $row->{$key};
                     $sections[$id]['data'][$row->$col][$location]['count']++;
+                }
+            }
+        }
+
+        // now set the columns with custom equations
+        foreach($sections as $id=>$section){
+            foreach($section['all'] as $location=>$chunk){
+                if($location!='color'){
+                    $search = ['count'];
+                    $replace = [$sections[$id]['all'][$location]['count']];
+                    for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                        $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
+                        if(isset($sections[$id]['all'][$location]['cols']['col'.$x]))
+                            $replace[] = $sections[$id]['all'][$location]['cols']['col'.$x];
+                        else
+                            $replace[] = "0";
+                    }
+                    foreach($columns as $key=>$column){
+                        if(!isset($availableColumns[str_replace('col','',$key)])){
+                            $value = str_replace($search,$replace,$key);
+                            $sections[$id]['all'][$location]['cols'][$key] = @self::calculate($value);
+                        }
+                    }
+                }
+            }
+            foreach($section['data'] as $id2=>$section2){
+                foreach($section2 as $location=>$chunk){
+                    if($location!='color'){
+                        $search = ['count'];
+                        $replace = [$sections[$id]['data'][$id2][$location]['count']];
+                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+                            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
+                            if(isset($sections[$id]['data'][$id2][$location]['cols']['col'.$x]))
+                                $replace[] = $sections[$id]['data'][$id2][$location]['cols']['col'.$x];
+                            else
+                                $replace[] = "0";
+                        }
+                        foreach($columns as $key=>$column){
+                            if(!isset($availableColumns[str_replace('col','',$key)])){
+                                $value = str_replace($search,$replace,$key);
+                                $sections[$id]['data'][$id2][$location]['cols'][$key] = @self::calculate($value);
+                            }
+                        }
+                    }
                 }
             }
         }

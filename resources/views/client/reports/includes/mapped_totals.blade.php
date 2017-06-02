@@ -69,9 +69,11 @@
             $(this).addClass('active');
         });
 
-        $('#columnsFilter').append('<a href="javascript:populate(xsec,xkey,\'total\')" style="color:#FFF;" class="field-link active">Totals</a> | <a href="javascript:populate(xsec,xkey,\'count\')" style="color:#FFF;" class="field-link">Entries</a>');
-        $.each(alldata.columns, function(id,label){
-            $('#columnsFilter').append(' | <a href="javascript:populate(xsec,xkey,\'col'+id+'\')" style="color:#FFF;" class="field-link">' + label + '</a>');
+        $('#columnsFilter').append('FILTER BY ');
+        $.each(alldata.columns, function(id,column){
+            $('#columnsFilter').append(' | <a href="javascript:populate(xsec,xkey,\''+escape(id)+'\')" style="color:#FFF;" class="field-link '+(!xcol ? 'active' : '')+'">' + column.label + '</a>');
+            if(!xcol)
+                xcol=id;
         });
         $('.field-link').on('click',function(){
             $('.field-link').removeClass('active');
@@ -85,7 +87,7 @@
           zoom: 6,
           center: new google.maps.LatLng(33,-112),
         });
-        populate(null,null,'total');
+        populate(null,null,xcol);
 
     }
     function populate(sec,key,col){
@@ -186,11 +188,26 @@
                     center: new google.maps.LatLng(parseFloat(data['geocode']['latitude']),parseFloat(data['geocode']['longitude'])),
                     radius: Math.round((radius-offset)/adjust*2500)
                 });
+
                 var infocontent = "<h4><small>"+address+"</small><br/><span class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</span></h4>";
-                infocontent += '<div style="font-size:1.2em; margin-bottom:10px;"><strong>Total:</strong> '+data.all.toLocaleString('en-US',{ style: 'currency', currency: 'USD'})+"<br/>"+'<strong>Records:</strong> '+data.count.toLocaleString()+"</div>";
+                infocontent += '<div style="font-size:1.1em; margin-bottom:10px;">';
                 $.each(data.cols,function(index,col){
-                    infocontent += '<strong>'+alldata.columns[index.replace('col','')]+':</strong> '+col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'})+"<br/>";
+                    console.log('col',index,col);
+                    var value = 0;
+                    if(alldata.columns[index].type=='numeric')
+                        value = col.toLocaleString('en-US');
+                    else if(alldata.columns[index].type=='percent')
+                        value = (col*100).toLocaleString('en-US')+"%";
+                    else if(alldata.columns[index].type=='dollar')
+                        value = col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
+                    else if(alldata.columns[index].type=='integer')
+                        value = Math.round(col);
+                    else
+                        value = col;
+
+                    infocontent += '<strong>'+alldata.columns[index].label+':</strong> '+value+"<br/>";
                 });
+                infocontent += '</div>';
 
                 var infowindow = new google.maps.InfoWindow({
                     content: infocontent
