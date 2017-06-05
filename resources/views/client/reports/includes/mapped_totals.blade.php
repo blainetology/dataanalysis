@@ -45,6 +45,7 @@
     var previnfowindow=null;
 
     var index=0;
+    var lastindex=0;
     var radius = 0;
     var max=null;
     var min=null;
@@ -91,6 +92,8 @@
 
     }
     function populate(sec,key,col){
+        if(previnfowindow)
+            previnfowindow.close();
         xsec = sec;
         xkey = key;
         xcol = col;
@@ -100,6 +103,7 @@
                 circles[i].setMap(null);
         }
         circles = [];
+        index=0;
 
         if(xsec && xkey){
             var section = alldata.sections[xsec];
@@ -111,7 +115,6 @@
             });
             offset = min/2;
             adjust = max-offset;
-            console.log(min,max,offset,adjust);
             plotCircles(key,block);
         }
         else if(xsec && !xkey){
@@ -123,19 +126,17 @@
             });
             offset = min/2;
             adjust = max-offset;
-            console.log(min,max,offset,adjust);
             $.each(section.data, function(key,block){
                 plotCircles(key,block);
             });
         }
         else{
-            var block = alldata.all;
+            var block = alldata.all.data;
             min=null;
             max=null;
             getMaxMin(block);
             offset = min/2;
             adjust = max-offset;
-            console.log(min,max,offset,adjust);
             plotCircles(key,block);
         }
 
@@ -148,23 +149,12 @@
     function getMaxMin(block){
         $.each(block, function(address,data){
             if(address != 'color'){
-                radius = 0;
-                if(xcol=='total')
-                    radius = data.all;
-                else if(xcol=='count')
-                    radius = data.count;
-                else
-                    radius = data.cols[xcol];
+                //console.log('getMaxMin',xcol,address,data);
+                radius = data.cols[xcol];
+                min=alldata.min[xcol];
+                max=alldata.max[xcol];
 
-                if(!min)
-                    min=radius;
-                if(!max)
-                    max=radius;
-                if(radius<min)
-                    min=radius;
-                if(radius>max)
-                    max=radius;
-            }
+           }
         });
     }
     function plotCircles(key,block){
@@ -181,18 +171,19 @@
                     title: address,
                     strokeColor: colors[block.color],
                     strokeOpacity: 0.9,
-                    strokeWeight: 4,
+                    strokeWeight: 3,
                     fillColor: colors[block.color],
                     fillOpacity: 0.45,
                     map: map,
                     center: new google.maps.LatLng(parseFloat(data['geocode']['latitude']),parseFloat(data['geocode']['longitude'])),
-                    radius: Math.round((radius-offset)/adjust*2500)
+                    radius: Math.round((radius-offset)/adjust*3500),
+                    circleIndex: index
                 });
 
                 var infocontent = "<h4><small>"+address+"</small><br/><span class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</span></h4>";
                 infocontent += '<div style="font-size:1.1em; margin-bottom:10px;">';
                 $.each(data.cols,function(index,col){
-                    console.log('col',index,col);
+                    //console.log('col',index,col);
                     var value = 0;
                     if(alldata.columns[index].type=='numeric')
                         value = col.toLocaleString('en-US');
@@ -210,7 +201,7 @@
                 infocontent += '</div>';
 
                 var infowindow = new google.maps.InfoWindow({
-                    content: infocontent
+                    content: infocontent,
                 });  
                 google.maps.event.addListener(circles[index], 'click', function(ev) {
                     // alert(infowindow.content);
@@ -220,20 +211,25 @@
                     previnfowindow = infowindow;
                     infowindow.setPosition(this.getCenter());
                     infowindow.open(map);
+                    lastindex = this.circleIndex;
                 });
 
                 index++;
                 bounds.extend(new google.maps.LatLng(parseFloat(data['geocode']['latitude']),parseFloat(data['geocode']['longitude'])));
             }
         });
-
+        console.log(lastindex);
+        if(typeof(circles[lastindex]) === 'undefined'){
+            lastindex=0;
+            console.log('circle not found');
+        }
+        console.log(circles[lastindex]);
+        google.maps.event.trigger(circles[lastindex], 'click',{});
     }
     function resizeBounds(){
-        console.log('bounds',bounds);
         map.fitBounds(bounds);
         //var zoom = map.getZoom();
         //map.setZoom(zoom-1);
-        console.log('resizeBounds',map.getZoom());
     }
     google.maps.event.addDomListener(window, "load", initMap);
 </script>

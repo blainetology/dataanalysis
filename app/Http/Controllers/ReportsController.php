@@ -116,7 +116,7 @@ class ReportsController extends Controller
             else
                 $label = $index;
 
-            $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NO')) ? 'yes' : 'no';
+            $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NONE' && strtoupper(trim($row[3])) != 'COUNT')) ? 'total' : strtolower($row[3]);
 
             $temp[] = implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total)]);
         }
@@ -183,7 +183,7 @@ class ReportsController extends Controller
         foreach($reports as $report){
             $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
         }
-        return view('client.reports.generate',$data);
+        #return view('client.reports.generate',$data);
         $pdf = \PDF::loadView('client.reports.generate', $data);
         #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data)->setOption('javascript-delay', 2000);
         return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');

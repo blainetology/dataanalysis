@@ -20,7 +20,6 @@
 			@if(!empty($content['all']['months']))
 				<tr>
 					<th class="bg-info">Month</th>
-					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
 						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
@@ -28,13 +27,14 @@
 				@foreach($content['all']['months'] as $month=>$total)
 					<tr>
 						<td>{{ $month }}</td>
-						<td align="right">{{ number_format($total['count']) }}</td>
 						@foreach($total['cols'] as $colindex=>$row)
 							<td align="right">
 								@if($content['columns'][$colindex]['type'] == 'percent')
 								{{ round($row*100,1) }}%
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
 								${{ number_format($row,2) }}
+								@elseif($content['columns'][$colindex]['type'] == 'integer')
+								{{ (int)$row }}
 								@else
 								{{ number_format($row,2) }}
 								@endif
@@ -46,7 +46,6 @@
 			@if(!empty($content['all']['weeks']))
 				<tr>
 					<th class="bg-info">Week</th>
-					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
 						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
@@ -54,13 +53,14 @@
 				@foreach($content['all']['weeks'] as $week)
 					<tr>
 						<td>{{ $week['start'] }}-{{ $week['end'] }}</td>
-						<td align="right">{{ number_format($week['count']) }}</td>
 						@foreach($week['cols'] as $colindex=>$row)
 							<td align="right">
 								@if($content['columns'][$colindex]['type'] == 'percent')
 								{{ round($row*100,1) }}%
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
 								${{ number_format($row,2) }}
+								@elseif($content['columns'][$colindex]['type'] == 'integer')
+								{{ (int)$row }}
 								@else
 								{{ number_format($row,2) }}
 								@endif
@@ -73,7 +73,6 @@
 				@if(!empty($content['all']['weeks']) || !empty($content['all']['months']))
 					<th class="bg-info"></th>
 				@endif
-				<th class="bg-info">Entries</th>
 				@foreach($content['columns'] as $column)
 					<th class="bg-info">{{$column['label']}}</th>
 				@endforeach
@@ -82,7 +81,6 @@
 				@if(!empty($content['all']['weeks']) || !empty($content['all']['months']))
 					<td width="{{ round($tdwidth*1.25) }}%" class="bg-success"><strong>Totals</strong></td>
 				@endif
-				<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success"><strong>{{ number_format($content['all']['all']['count']) }}</strong></td>
 				@foreach($content['all']['all']['cols'] as $colindex=>$row)
 					<td align="right" width="{{ $tdwidth }}%" class="bg-success">
 					<strong>
@@ -90,6 +88,8 @@
 						{{ round($row*100,1) }}%
 						@elseif($content['columns'][$colindex]['type'] == 'dollar')
 						${{ number_format($row,2) }}
+						@elseif($content['columns'][$colindex]['type'] == 'integer')
+						{{ (int)$row }}
 						@else
 						{{ number_format($row,2) }}
 						@endif
@@ -115,7 +115,6 @@
 				@if(!empty($section['months']))
 					<tr>
 						<th class="bg-info">Month</th>
-						<th class="bg-info">Entries</th>
 						@foreach($content['columns'] as $column)
 							<th class="bg-info">{{$column['label']}}</th>
 						@endforeach
@@ -123,13 +122,14 @@
 					@foreach($section['months'] as $month=>$total)
 						<tr>
 							<td>{{ $month }}</td>
-							<td align="right">{{ number_format($total['count']) }}</td>
 							@foreach($total['cols'] as $colindex=>$row)
 								<td align="right">
 									@if($content['columns'][$colindex]['type'] == 'percent')
 									{{ round($row*100,1) }}%
 									@elseif($content['columns'][$colindex]['type'] == 'dollar')
 									${{ number_format($row,2) }}
+									@elseif($content['columns'][$colindex]['type'] == 'integer')
+									{{ (int)$row }}
 									@else
 									{{ number_format($row,2) }}
 									@endif
@@ -141,7 +141,6 @@
 				@if(!empty($section['weeks']))
 					<tr>
 						<th class="bg-info">Week</th>
-						<th class="bg-info">Entries</th>
 						@foreach($content['columns'] as $column)
 							<th class="bg-info">{{$column['label']}}</th>
 						@endforeach
@@ -149,13 +148,14 @@
 					@foreach($section['weeks'] as $week)
 						<tr>
 							<td>{{ $week['start'] }}-{{ $week['end'] }}</td>
-							<td align="right">{{ number_format($week['count']) }}</td>
 							@foreach($week['cols'] as $colindex=>$row)
 								<td align="right">
 									@if($content['columns'][$colindex]['type'] == 'percent')
 									{{ round($row*100,1) }}%
 									@elseif($content['columns'][$colindex]['type'] == 'dollar')
 									${{ number_format($row,2) }}
+									@elseif($content['columns'][$colindex]['type'] == 'integer')
+									{{ (int)$row }}
 									@else
 									{{ number_format($row,2) }}
 									@endif
@@ -168,7 +168,6 @@
 					@if(!empty($section['weeks']) || !empty($section['months']))
 						<th class="bg-info"></th>
 					@endif
-					<th class="bg-info">Entries</th>
 					@foreach($content['columns'] as $column)
 						<th class="bg-info">{{$column['label']}}</th>
 					@endforeach
@@ -177,7 +176,6 @@
 					@if(!empty($section['weeks']) || !empty($section['months']))
 						<td width="{{ round($tdwidth*1.25) }}%" class="bg-success"><strong>Totals</strong></td>
 					@endif
-					<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success"><strong>{{ number_format($section['all']['count']) }}</strong></td>
 					@foreach($section['all']['cols'] as $colindex=>$row)
 						<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success">
 							<strong>
@@ -185,6 +183,8 @@
 								{{ round($row*100,1) }}%
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
 								${{ number_format($row,2) }}
+								@elseif($content['columns'][$colindex]['type'] == 'integer')
+								{{ (int)$row }}
 								@else
 								{{ number_format($row,2) }}
 								@endif

@@ -8,7 +8,6 @@
         <h3 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->label }} Report</h3>
         </div>
         <div class="col-md-12">
-        {{ $report->rules }}
         @include('client.reports.includes.'.$report->template->file)
         </div>
     </div>
@@ -19,6 +18,9 @@
 @section('styles')
 <style>
 .pagebreak{page-break-before: always;}
+html, body {
+    font-family: Arial, sans-serif;
+}
 </style>
 @append
 
