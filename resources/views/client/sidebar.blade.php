@@ -10,8 +10,6 @@
             @foreach($client_reports as $rep)
             <a href="/reports/{{ $rep->id }}?{{ $_SERVER['QUERY_STRING'] }}">{{$rep->label}}</a><br/>
             @endforeach
-            <br/>
-            <a href="/reports/generate/{{$rep->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-info btn-sm"><i class="fa fa-download" aria-hidden="true"></i> generate pdf</a>
             <br/><br/>
         </div>
     </div>

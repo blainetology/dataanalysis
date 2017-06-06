@@ -104,32 +104,15 @@ class ReportTemplate extends Model
             $value = $rules['value'];
         }
 
-        // setup which columns to display in the reports table
+        // setup which columns and sections to display in the reports table
         $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->pluck('label','column');
+        $columns = self::setColumns($rules);
+        $sections = self::setSections($rules,$spreadsheet_id);
 
-        $temp=[];
-        $columns = explode("\n",$rules['columns']);
-        foreach($columns as $column){
-            $row = explode('||',$column);
-
-             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
-                $index = 'col'.array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
-            else
-                $index = trim($row[0]);
-
-           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]),'total'=>trim($row[3]),'check'=>$row[4]];
-        }
-        $columns = $temp;
-
-        // setup which sections to display
-        $sections=[];
-        $letters = explode(',',$rules['sections']);
-        foreach($letters as $letter){
-            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
-            $sections[$index] = $index;
-            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
-            foreach($results as $row)
-                $sections[$row->column] = ['label'=>$row->label,'data'=>[]];
+        // now set the search params for later for columns with custom equations
+        $search = ['count'];
+        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
         }
 
         // let's get the content from the database
@@ -143,45 +126,13 @@ class ReportTemplate extends Model
         foreach($columns as $key=>$label)
             $all['all']['cols'][$key] = 0;
 
+        // total all the rows together
         foreach($results as $row){
-            foreach($columns as $key=>$label){
-                if(!empty($label['check'])){
-                    #echo ' -- has check: '.strtoupper('"'.addslashes($row->{$key}).'" '.$label['check'])."\n";
-                    #echo eval(strtoupper('"'.addslashes($row->{$key}).'" '.$label['check']))."\n";
-                    if(eval(strtoupper('"'.addslashes($row->{$key}).'" '.$label['check']))){
-                        #echo 'check passed ';
-                        if($label['total'] == 'count')
-                            $all['all']['cols'][$key]++;
-                        elseif($label['total'] == 'total')
-                            $all['all']['cols'][$key] += $row->{$key};
-                    }
-                }
-                else{
-                    if($label['total'] == 'count')
-                        $all['all']['cols'][$key]++;
-                    elseif($label['total'] == 'total')
-                        $all['all']['cols'][$key] += $row->{$key};
-                }
-            }
-            $all['all']['count']++;
+            $all['all'] = self::totalColumns($all['all'],$row,$columns);
         }
 
-        // now set the columns with custom equations
-        $search = ['count'];
-        $replace = [(int)$all['all']['count']];
-        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
-            if(isset($all['all']['cols']['col'.$x]))
-                $replace[] = $all['all']['cols']['col'.$x];
-            else
-                $replace[] = 0;
-        }
-        foreach($columns as $key=>$column){
-            if(!isset($availableColumns[str_replace('col','',$key)])){
-                $value = str_replace($search,$replace,$key);
-                $all['all']['cols'][$key] = @self::calculate($value);
-            }
-        }
+        // set the values for columns with custom equations
+        $all['all'] = self::totalEquations($all['all'],$columns,$search,$availableColumns);
 
         // and break it down by months
         $months = null;
@@ -199,7 +150,6 @@ class ReportTemplate extends Model
                 }
             }
 
-
             foreach($results as $row){
                 $row->month = date('F Y',strtotime($row->$date));
                 if(!isset($months[$row->month])){
@@ -207,40 +157,12 @@ class ReportTemplate extends Model
                     foreach($columns as $key=>$label)
                         $months[$row->month]['cols'][$key] = 0;
                 }
-                foreach($columns as $key=>$label){
-                    if(!empty($label['check'])){
-                        if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
-                            if($label['total'] == 'count')
-                                $months[$row->month]['cols'][$key]++;
-                            elseif($label['total'] == 'total')
-                                $months[$row->month]['cols'][$key] += $row->{$key};
-                        }
-                    }
-                    else{
-                        if($label['total'] == 'count')
-                            $months[$row->month]['cols'][$key]++;
-                        elseif($label['total'] == 'total')
-                            $months[$row->month]['cols'][$key] += $row->{$key};
-                    }
-                }
-                $months[$row->month]['count']++;
+                $months[$row->month] = self::totalColumns($months[$row->month],$row,$columns);
             }
 
-            // now set the columns with custom equations
+            // set the values for columns with custom equations
             foreach($months as $month=>$data){
-                $replace = [$data['count']];
-                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                    if(isset($data['cols']['col'.$x]))
-                        $replace[] = $data['cols']['col'.$x];
-                    else
-                        $replace[] = 0;
-                }
-                foreach($columns as $key=>$column){
-                    if(!isset($availableColumns[str_replace('col','',$key)])){
-                        $value = str_replace($search,$replace,$key);
-                        $months[$month]['cols'][$key] = @self::calculate($value);
-                    }
-                }
+                $months[$month] = self::totalEquations($months[$month],$columns,$search,$availableColumns);
             }
             $all['months'] = $months;
         }
@@ -252,6 +174,7 @@ class ReportTemplate extends Model
 
             $timestamp = strtotime(self::$start);
             $endtimestamp = strtotime(self::$end);
+            // setup all the week rows with values of 0 to start
             for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
                 if($rules['week']=='SUN')
                     $starttimestamp = $x-(date('w',$x)*60*60*24);
@@ -262,6 +185,7 @@ class ReportTemplate extends Model
                 foreach($columns as $key=>$label)
                     $weeks[$slug]['cols'][$key]=0;
             }
+            // total each week row
             foreach($results as $row){
                 $timestamp = strtotime($row->$date);
                 if($rules['week']=='SUN')
@@ -270,45 +194,16 @@ class ReportTemplate extends Model
                     $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                 $slug = date("Y-m-d",$timestamp);
                 #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
-                foreach($columns as $key=>$label){
-                    if(!empty($label['check'])){
-                        if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
-                            if($label['total'] == 'count')
-                                $weeks[$slug]['cols'][$key]++;
-                            elseif($label['total'] == 'total')
-                                $weeks[$slug]['cols'][$key] += $row->{$key};
-                        }
-                    }
-                    else{
-                        if($label['total'] == 'count')
-                            $weeks[$slug]['cols'][$key]++;
-                        elseif($label['total'] == 'total')
-                            $weeks[$slug]['cols'][$key] += $row->{$key};
-                    }
-                }
-                $weeks[$slug]['count']++;
+                $weeks[$slug] = self::totalColumns($weeks[$slug],$row,$columns);
             }
 
-            // now set the columns with custom equations
+            // set the values for columns with custom equations
             foreach($weeks as $week=>$data){
-                $replace = [$data['count']];
-                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                    if(isset($data['cols']['col'.$x]))
-                        $replace[] = (float)$data['cols']['col'.$x];
-                    else
-                        $replace[] = 0;
-                }
-                foreach($columns as $key=>$column){
-                    if(!isset($availableColumns[str_replace('col','',$key)])){
-                        $value = str_replace($search,$replace,$key);
-                        $weeks[$week]['cols'][$key] = @self::calculate($value);
-                    }
-                }
+                $weeks[$week] = self::totalEquations($weeks[$week],$columns,$search,$availableColumns);
             }
+            krsort($weeks);
             $all['weeks'] = $weeks;
         }
-        if($weeks)
-            krsort($weeks);
 
 
         // now by sections
@@ -319,15 +214,12 @@ class ReportTemplate extends Model
                 // all
                 if(!isset($sections[$id]['data'][$row->$col]['all']['count']))
                     $sections[$id]['data'][$row->$col]['all']['count']=0;
-                $sections[$id]['data'][$row->$col]['all']['count']++;
                 foreach($columns as $key=>$label){
                     if(!isset($sections[$id]['data'][$row->$col]['all']['cols'][$key]))
                         $sections[$id]['data'][$row->$col]['all']['cols'][$key]=0;
-                    if($label['total'] == 'count')
-                        $sections[$id]['data'][$row->$col]['all']['cols'][$key]++;
-                    elseif($label['total'] == 'total')
-                        $sections[$id]['data'][$row->$col]['all']['cols'][$key] += $row->{$key};
                 }
+                $sections[$id]['data'][$row->$col]['all'] = self::totalColumns($sections[$id]['data'][$row->$col]['all'],$row,$columns);
+
                 //month
                 if(!empty($rules['month']) && !empty($rules['monthsections'])){
 
@@ -347,13 +239,7 @@ class ReportTemplate extends Model
                         foreach($columns as $key=>$label)
                             $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key] = 0;
                     }
-                    foreach($columns as $key=>$label){
-                        if($label['total'] == 'count')
-                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key]++;
-                        elseif($label['total'] == 'total')
-                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key] += $row->{$key};
-                    }
-                    $sections[$id]['data'][$row->$col]['months'][$row->month]['count']++;
+                    $sections[$id]['data'][$row->$col]['months'][$row->month] = self::totalColumns($sections[$id]['data'][$row->$col]['months'][$row->month],$row,$columns);
                 }
 
                 // weeks
@@ -380,13 +266,7 @@ class ReportTemplate extends Model
                     elseif($rules['week']=='MON')
                         $timestamp = $timestamp-( (date('N',$timestamp)-1)*60*60*24);
                     $slug = date("Y-m-d",$timestamp);
-                    foreach($columns as $key=>$label){
-                        if($label['total'] == 'count')
-                             $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key]++;
-                        elseif($label['total'] == 'total')
-                             $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key] += $row->{$key};
-                    }
-                    $sections[$id]['data'][$row->$col]['weeks'][$slug]['count']++;
+                    $sections[$id]['data'][$row->$col]['weeks'][$slug] = self::totalColumns($sections[$id]['data'][$row->$col]['weeks'][$slug],$row,$columns);
                 }
                 if(isset($sections[$id]['data'][$row->$col]['weeks']))
                     krsort($sections[$id]['data'][$row->$col]['weeks']);
@@ -396,54 +276,15 @@ class ReportTemplate extends Model
         foreach($sections as $id=>$section){
             foreach($section['data'] as $id2=>$section2){
                 if(isset($section2['all'])){
-                        $data = $section2['all'];
-                        $replace = [$data['count']];
-                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                            if(isset($data['cols']['col'.$x]))
-                                $replace[] = (float)$data['cols']['col'.$x];
-                            else
-                                $replace[] = 0;
-                        }
-                        foreach($columns as $key=>$column){
-                            if(!isset($availableColumns[str_replace('col','',$key)])){
-                                $value = str_replace($search,$replace,$key);
-                                $sections[$id]['data'][$id2]['all']['cols'][$key] = @self::calculate($value);
-                            }
-                        }
+                    $sections[$id]['data'][$id2]['all'] = self::totalEquations($sections[$id]['data'][$id2]['all'],$columns,$search,$availableColumns);
                 }
                 if(isset($section2['months'])){
-                    foreach($section2['months'] as $month=>$data){
-                        $replace = [$data['count']];
-                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                            if(isset($data['cols']['col'.$x]))
-                                $replace[] = (float)$data['cols']['col'.$x];
-                            else
-                                $replace[] = 0;
-                        }
-                        foreach($columns as $key=>$column){
-                            if(!isset($availableColumns[str_replace('col','',$key)])){
-                                $value = str_replace($search,$replace,$key);
-                                $sections[$id]['data'][$id2]['months'][$month]['cols'][$key] = @self::calculate($value);
-                            }
-                        }
-                    }
+                    foreach($section2['months'] as $month=>$data)
+                        $sections[$id]['data'][$id2]['months'][$month] = self::totalEquations($sections[$id]['data'][$id2]['months'][$month],$columns,$search,$availableColumns);
                 }
                 if(isset($section2['weeks'])){
-                    foreach($section2['weeks'] as $week=>$data){
-                        $replace = [$data['count']];
-                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                            if(isset($data['cols']['col'.$x]))
-                                $replace[] = (float)$data['cols']['col'.$x];
-                            else
-                                $replace[] = 0;
-                        }
-                        foreach($columns as $key=>$column){
-                            if(!isset($availableColumns[str_replace('col','',$key)])){
-                                $value = str_replace($search,$replace,$key);
-                                $sections[$id]['data'][$id2]['weeks'][$week]['cols'][$key] = @self::calculate($value);
-                            }
-                        }
-                    }
+                    foreach($section2['weeks'] as $week=>$data)
+                        $sections[$id]['data'][$id2]['weeks'][$week] = self::totalEquations($sections[$id]['data'][$id2]['weeks'][$week],$columns,$search,$availableColumns);
                 }
             }
 
@@ -473,34 +314,10 @@ class ReportTemplate extends Model
             }
         }
 
-        // setup which columns to display in the reports table
+        // setup which columns and spreadsheets to display in the reports table
         $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->pluck('label','column');
-
-        $temp=[];
-        $columns = explode("\n",$rules['columns']);
-        foreach($columns as $column){
-            $row = explode('||',$column);
-
-             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
-                $index = 'col'.array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
-            else
-                $index = trim($row[0]);
-
-           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
-        }
-        $columns = $temp;
-
-
-        // setup which sections to display
-        $sections=[];
-        $letters = explode(',',$rules['sections']);
-        foreach($letters as $letter){
-            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
-            $sections['col'.$index] = $index;
-            $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
-            foreach($results as $row)
-                $sections['col'.$row->column] = ['label'=>$row->label,'data'=>[]];
-        }
+        $columns = self::setColumns($rules);
+        $sections = self::setSections($rules,$spreadsheet_id);
 
         // let's get the content from the database
         $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
@@ -604,7 +421,7 @@ class ReportTemplate extends Model
         // now by sections
         foreach($sections as $id=>$section){
             $color=1;
-            $col = $id;
+            $col = 'col'.$id;
             foreach($results as $row){
                 $geo_replace = [];
                 foreach($geo_cols as $letter=>$l_col){
@@ -809,9 +626,74 @@ class ReportTemplate extends Model
     }
 
 
+    private static function setColumns($rules){
+        $temp=[];
+        $columns = explode("\n",$rules['columns']);
+        foreach($columns as $column){
+            $row = explode('||',$column);
+
+             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
+                $index = 'col'.array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
+            else
+                $index = trim($row[0]);
+
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
+        }
+        return $temp;
+    }
+
+    private static function setSections($rules,$spreadsheet_id){
+        $sections=[];
+        $letters = explode(',',$rules['sections']);
+        foreach($letters as $letter){
+            $index = array_search(strtoupper(trim($letter)),\App\SpreadsheetColumn::$columnLetters);
+            $sections[$index] = $index;
+        }
+        $results = \App\SpreadsheetColumn::where('spreadsheet_id',$spreadsheet_id)->whereIn('column',$sections)->get();
+        foreach($results as $row)
+            $sections[$row->column] = ['label'=>$row->label,'data'=>[]];
+        return $sections;        
+    }
+
+    private static function totalColumns($array,$row,$columns){
+        foreach($columns as $key=>$label){
+            if(!empty($label['check'])){
+                if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
+                    if($label['total'] == 'count')
+                        $array['cols'][$key]++;
+                    elseif($label['total'] == 'total')
+                        $array['cols'][$key] += $row->{$key};
+                }
+            }
+            else{
+                if($label['total'] == 'count')
+                    $array['cols'][$key]++;
+                elseif($label['total'] == 'total')
+                    $array['cols'][$key] += $row->{$key};
+            }
+        }
+        $array['count']++;
+        return $array;
+    }
+
+    private static function totalEquations($array,$columns,$search,$availableColumns){
+        $replace = [(int)$array['count']];
+        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+            if(isset($array['cols']['col'.$x]))
+                $replace[] = $array['cols']['col'.$x];
+            else
+                $replace[] = 0;
+        }
+        foreach($columns as $key=>$column){
+            if(!isset($availableColumns[str_replace('col','',$key)])){
+                $value = str_replace($search,$replace,$key);
+                $array['cols'][$key] = @self::calculate($value);
+            }
+        }
+        return $array;
+    }
 
     const PATTERN = '/(?:\-?\d+(?:\.?\d+)?[\+\-\*\/])+\-?\d+(?:\.?\d+)?/';
-
     const PARENTHESIS_DEPTH = 10;
 
     public static function calculate($input){
@@ -832,34 +714,24 @@ class ReportTemplate extends Model
             }
 
             //  Calculate the result
-            if(preg_match(self::PATTERN, $input, $match)){
+            if(preg_match(self::PATTERN, $input, $match))
                 return self::compute($match[0]);
-            }
-
             return 0;
         }
-
         return $input;
     }
 
     private static function compute($input){
         $compute = create_function('', 'return '.$input.';');
-
         return 0 + $compute();
     }
 
     private static function callback($input){
-        if(is_numeric($input[1])){
+        if(is_numeric($input[1]))
             return $input[1];
-        }
-        elseif(preg_match(self::PATTERN, $input[1], $match)){
+        elseif(preg_match(self::PATTERN, $input[1], $match))
             return self::compute($match[0]);
-        }
-
         return 0;
     }
-
-
-
 
 }

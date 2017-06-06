@@ -187,7 +187,7 @@
 						<td width="{{ round($tdwidth*1.25) }}%" class="bg-success"><strong>Totals</strong></td>
 					@endif
 					@foreach($section['all']['cols'] as $colindex=>$row)
-						<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success">
+						<td align="right" width="{{ $tdwidth }}%" class="bg-success">
 							<strong>
 								@if($content['columns'][$colindex]['type'] == 'percent')
 								{{ $row ? round($row*100,1).'%' : '---' }}

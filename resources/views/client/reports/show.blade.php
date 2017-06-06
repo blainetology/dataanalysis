@@ -11,17 +11,20 @@
             </div>
             <div class="col-md-4">
                 <form method="GET" style="margin:0; padding:0;">
-                        <div class="col-md-4" style="padding:2px;">
+                        <div class="col-md-3" style="padding:2px;">
                             {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control input-sm','id'=>'start_date'])}}
                         </div>
-                        <div class="col-md-2 text-center" style="padding:2px; padding-top:6px;">
-                        <strong>through</strong>
+                        <div class="col-md-1 text-center" style="padding:2px; padding-top:6px;">
+                        <strong>thru</strong>
                         </div>
-                        <div class="col-md-4" style="padding:2px;">
+                        <div class="col-md-3" style="padding:2px;">
                             {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control input-sm','id'=>'end_date'])}}
                         </div>
                         <div class="col-md-2" style="padding:2px;">
-                            <input type="submit" value="Filter" class="btn btn-info btn-sm" style="width:100%;">
+                            <input type="submit" value="Filter" class="btn btn-info btn-sm">
+                        </div>
+                        <div class="col-md-2" style="padding:2px;">
+                            <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-success btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  generate pdf</a>
                         </div>
                 </form>
             </div>
