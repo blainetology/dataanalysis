@@ -117,7 +117,7 @@ class ReportTemplate extends Model
             else
                 $index = trim($row[0]);
 
-           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]),'total'=>trim($row[3]),'check'=>$row[4]];
         }
         $columns = $temp;
 
@@ -145,23 +145,36 @@ class ReportTemplate extends Model
 
         foreach($results as $row){
             foreach($columns as $key=>$label){
-                if($label['total'] == 'count')
-                    $all['all']['cols'][$key]++;
-                elseif($label['total'] == 'total')
-                    $all['all']['cols'][$key] += $row->{$key};
+                if(!empty($label['check'])){
+                    #echo ' -- has check: '.strtoupper('"'.addslashes($row->{$key}).'" '.$label['check'])."\n";
+                    #echo eval(strtoupper('"'.addslashes($row->{$key}).'" '.$label['check']))."\n";
+                    if(eval(strtoupper('"'.addslashes($row->{$key}).'" '.$label['check']))){
+                        #echo 'check passed ';
+                        if($label['total'] == 'count')
+                            $all['all']['cols'][$key]++;
+                        elseif($label['total'] == 'total')
+                            $all['all']['cols'][$key] += $row->{$key};
+                    }
+                }
+                else{
+                    if($label['total'] == 'count')
+                        $all['all']['cols'][$key]++;
+                    elseif($label['total'] == 'total')
+                        $all['all']['cols'][$key] += $row->{$key};
+                }
             }
             $all['all']['count']++;
         }
 
         // now set the columns with custom equations
         $search = ['count'];
-        $replace = [$all['all']['count']];
+        $replace = [(int)$all['all']['count']];
         for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
             $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
             if(isset($all['all']['cols']['col'.$x]))
                 $replace[] = $all['all']['cols']['col'.$x];
             else
-                $replace[] = "0";
+                $replace[] = 0;
         }
         foreach($columns as $key=>$column){
             if(!isset($availableColumns[str_replace('col','',$key)])){
@@ -195,10 +208,20 @@ class ReportTemplate extends Model
                         $months[$row->month]['cols'][$key] = 0;
                 }
                 foreach($columns as $key=>$label){
-                    if($label['total'] == 'count')
-                        $months[$row->month]['cols'][$key]++;
-                    elseif($label['total'] == 'total')
-                        $months[$row->month]['cols'][$key] += $row->{$key};
+                    if(!empty($label['check'])){
+                        if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
+                            if($label['total'] == 'count')
+                                $months[$row->month]['cols'][$key]++;
+                            elseif($label['total'] == 'total')
+                                $months[$row->month]['cols'][$key] += $row->{$key};
+                        }
+                    }
+                    else{
+                        if($label['total'] == 'count')
+                            $months[$row->month]['cols'][$key]++;
+                        elseif($label['total'] == 'total')
+                            $months[$row->month]['cols'][$key] += $row->{$key};
+                    }
                 }
                 $months[$row->month]['count']++;
             }
@@ -210,7 +233,7 @@ class ReportTemplate extends Model
                     if(isset($data['cols']['col'.$x]))
                         $replace[] = $data['cols']['col'.$x];
                     else
-                        $replace[] = "0";
+                        $replace[] = 0;
                 }
                 foreach($columns as $key=>$column){
                     if(!isset($availableColumns[str_replace('col','',$key)])){
@@ -248,10 +271,20 @@ class ReportTemplate extends Model
                 $slug = date("Y-m-d",$timestamp);
                 #$slug = date("Y",$timestamp).'-'.date('W',$timestamp);
                 foreach($columns as $key=>$label){
-                    if($label['total'] == 'count')
-                        $weeks[$slug]['cols'][$key]++;
-                    elseif($label['total'] == 'total')
-                        $weeks[$slug]['cols'][$key] += $row->{$key};
+                    if(!empty($label['check'])){
+                        if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
+                            if($label['total'] == 'count')
+                                $weeks[$slug]['cols'][$key]++;
+                            elseif($label['total'] == 'total')
+                                $weeks[$slug]['cols'][$key] += $row->{$key};
+                        }
+                    }
+                    else{
+                        if($label['total'] == 'count')
+                            $weeks[$slug]['cols'][$key]++;
+                        elseif($label['total'] == 'total')
+                            $weeks[$slug]['cols'][$key] += $row->{$key};
+                    }
                 }
                 $weeks[$slug]['count']++;
             }
@@ -261,9 +294,9 @@ class ReportTemplate extends Model
                 $replace = [$data['count']];
                 for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
                     if(isset($data['cols']['col'.$x]))
-                        $replace[] = $data['cols']['col'.$x];
+                        $replace[] = (float)$data['cols']['col'.$x];
                     else
-                        $replace[] = "0";
+                        $replace[] = 0;
                 }
                 foreach($columns as $key=>$column){
                     if(!isset($availableColumns[str_replace('col','',$key)])){
@@ -367,9 +400,9 @@ class ReportTemplate extends Model
                         $replace = [$data['count']];
                         for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
                             if(isset($data['cols']['col'.$x]))
-                                $replace[] = $data['cols']['col'.$x];
+                                $replace[] = (float)$data['cols']['col'.$x];
                             else
-                                $replace[] = "0";
+                                $replace[] = 0;
                         }
                         foreach($columns as $key=>$column){
                             if(!isset($availableColumns[str_replace('col','',$key)])){
@@ -383,9 +416,9 @@ class ReportTemplate extends Model
                         $replace = [$data['count']];
                         for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
                             if(isset($data['cols']['col'.$x]))
-                                $replace[] = $data['cols']['col'.$x];
+                                $replace[] = (float)$data['cols']['col'.$x];
                             else
-                                $replace[] = "0";
+                                $replace[] = 0;
                         }
                         foreach($columns as $key=>$column){
                             if(!isset($availableColumns[str_replace('col','',$key)])){
@@ -400,9 +433,9 @@ class ReportTemplate extends Model
                         $replace = [$data['count']];
                         for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
                             if(isset($data['cols']['col'.$x]))
-                                $replace[] = $data['cols']['col'.$x];
+                                $replace[] = (float)$data['cols']['col'.$x];
                             else
-                                $replace[] = "0";
+                                $replace[] = 0;
                         }
                         foreach($columns as $key=>$column){
                             if(!isset($availableColumns[str_replace('col','',$key)])){
