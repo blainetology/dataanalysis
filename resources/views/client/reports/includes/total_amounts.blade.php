@@ -30,13 +30,15 @@
 						@foreach($total['cols'] as $colindex=>$row)
 							<td align="right">
 								@if($content['columns'][$colindex]['type'] == 'percent')
-								{{ round($row*100,1) }}%
+								{{ $row ? round($row*100,1).'%' : '---' }}
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
-								${{ number_format($row,2) }}
+								${{ number_format((float)$row,2) }}
 								@elseif($content['columns'][$colindex]['type'] == 'integer')
 								{{ (int)$row }}
+								@elseif($content['columns'][$colindex]['type'] == 'numeric')
+								{{ number_format((float)$row,2) }}
 								@else
-								{{ number_format($row,2) }}
+								{{ $row ? $row : '---' }}
 								@endif
 							</td>
 						@endforeach
@@ -56,13 +58,15 @@
 						@foreach($week['cols'] as $colindex=>$row)
 							<td align="right">
 								@if($content['columns'][$colindex]['type'] == 'percent')
-								{{ round($row*100,1) }}%
+								{{ $row ? round($row*100,1).'%' : '---' }}
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
-								${{ number_format($row,2) }}
+								${{ number_format((float)$row,2) }}
 								@elseif($content['columns'][$colindex]['type'] == 'integer')
 								{{ (int)$row }}
+								@elseif($content['columns'][$colindex]['type'] == 'numeric')
+								{{ number_format((float)$row,2) }}
 								@else
-								{{ number_format($row,2) }}
+								{{ $row ? $row : '---' }}
 								@endif
 							</td>
 						@endforeach
@@ -85,13 +89,15 @@
 					<td align="right" width="{{ $tdwidth }}%" class="bg-success">
 					<strong>
 						@if($content['columns'][$colindex]['type'] == 'percent')
-						{{ round($row*100,1) }}%
+						{{ $row ? round($row*100,1).'%' : '---' }}
 						@elseif($content['columns'][$colindex]['type'] == 'dollar')
-						${{ number_format($row,2) }}
+						${{ number_format((float)$row,2) }}
 						@elseif($content['columns'][$colindex]['type'] == 'integer')
 						{{ (int)$row }}
+						@elseif($content['columns'][$colindex]['type'] == 'numeric')
+						{{ number_format((float)$row,2) }}
 						@else
-						{{ number_format($row,2) }}
+						{{ $row ? $row : '---' }}
 						@endif
 					</strong>
 					</td>
@@ -125,13 +131,15 @@
 							@foreach($total['cols'] as $colindex=>$row)
 								<td align="right">
 									@if($content['columns'][$colindex]['type'] == 'percent')
-									{{ round($row*100,1) }}%
+									{{ $row ? round($row*100,1).'%' : '---' }}
 									@elseif($content['columns'][$colindex]['type'] == 'dollar')
-									${{ number_format($row,2) }}
+									${{ number_format((float)$row,2) }}
 									@elseif($content['columns'][$colindex]['type'] == 'integer')
 									{{ (int)$row }}
+									@elseif($content['columns'][$colindex]['type'] == 'numeric')
+									{{ number_format((float)$row,2) }}
 									@else
-									{{ number_format($row,2) }}
+									{{ $row ? $row : '---' }}
 									@endif
 								</td>
 							@endforeach
@@ -151,13 +159,15 @@
 							@foreach($week['cols'] as $colindex=>$row)
 								<td align="right">
 									@if($content['columns'][$colindex]['type'] == 'percent')
-									{{ round($row*100,1) }}%
+									{{ $row ? round($row*100,1).'%' : '---' }}
 									@elseif($content['columns'][$colindex]['type'] == 'dollar')
-									${{ number_format($row,2) }}
+									${{ number_format((float)$row,2) }}
 									@elseif($content['columns'][$colindex]['type'] == 'integer')
 									{{ (int)$row }}
+									@elseif($content['columns'][$colindex]['type'] == 'numeric')
+									{{ number_format((float)$row,2) }}
 									@else
-									{{ number_format($row,2) }}
+									{{ $row ? $row : '---' }}
 									@endif
 								</td>
 							@endforeach
@@ -180,13 +190,15 @@
 						<td align="right" width="{{ round($tdwidth*.75) }}%" class="bg-success">
 							<strong>
 								@if($content['columns'][$colindex]['type'] == 'percent')
-								{{ round($row*100,1) }}%
+								{{ $row ? round($row*100,1).'%' : '---' }}
 								@elseif($content['columns'][$colindex]['type'] == 'dollar')
-								${{ number_format($row,2) }}
+								${{ number_format((float)$row,2) }}
 								@elseif($content['columns'][$colindex]['type'] == 'integer')
 								{{ (int)$row }}
+								@elseif($content['columns'][$colindex]['type'] == 'numeric')
+								{{ number_format((float)$row,2) }}
 								@else
-								{{ number_format($row,2) }}
+								{{ $row ? $row : '---' }}
 								@endif
 							</strong>
 						</td>

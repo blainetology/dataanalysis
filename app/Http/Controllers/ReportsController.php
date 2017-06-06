@@ -96,7 +96,7 @@ class ReportsController extends Controller
 
         // clean up the columns input
         $temp = [];
-        foreach(explode("\n",$input['rules']['columns']) as $column){
+        foreach(explode("\n",trim($input['rules']['columns'])) as $column){
             $row = explode('||',$column);
 
             if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
@@ -118,8 +118,30 @@ class ReportsController extends Controller
 
             $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NONE' && strtoupper(trim($row[3])) != 'COUNT')) ? 'total' : strtolower($row[3]);
 
-            $temp[] = implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total)]);
+            $if = '';
+            if(!empty($row[4])){
+                $ifs = explode(' ',trim($row[4]));
+                if(isset($ifs[0]) && isset($ifs[1])){
+                    $ifs[0] = trim($ifs[0]);
+                    $ifs[1] = trim($ifs[1]);
+                    $ifs[1] = trim($ifs[1],'"');
+                    echo $ifs[1]." ".(float)$ifs[1]."<br/>";
+                    if($ifs[1] === (string)(float)$ifs[1]){
+                        echo 'matched'."<br/>";
+                        $ifs[1] = (float)$ifs[1];
+                    }
+                    else{
+                        echo 'no match'."<br/>";
+                        $ifs[1] = '"'.$ifs[1].'"';
+                    }
+                    $if = $ifs[0]." ".$ifs[1];
+                    echo $if."<br/>";                   
+                }
+            }
+
+            $temp[] = trim(implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total),$if]));
         }
+        #exit;
         $input['rules']['columns'] = implode("\n",$temp);
 /*
         // clean up the sections input
