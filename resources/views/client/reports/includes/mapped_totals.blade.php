@@ -3,11 +3,11 @@
 <pre style="display:none;">
 {{ print_r($content,true) }}
 </pre>
-<hr/>
+<br/>
 <div class="row">
 	<div class="col-md-2 bg-success" id="linkscontainer" style="overflow:auto;">
-		<br/>
 		<div class="col-lg-12">
+            <br/>
 			<div id="map-links"></div>
 			<br/><br/>
 		</div>
@@ -180,25 +180,37 @@
                     circleIndex: index
                 });
 
-                var infocontent = "<h4><small>"+address+"</small><br/><span class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</span></h4>";
-                infocontent += '<div style="font-size:1.1em; margin-bottom:10px;">';
+                var infocontent = "<h4 class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</h4>";
+                infocontent += '<div style="font-size:1.1em; margin-bottom:10px;"><table class="table table-condensed table-striped"><thead><tr><th colspan="2" class="text-right small">'+address+'</th><th class="text-right small">ALL</th></tr></thead><tbody>';
                 $.each(data.cols,function(index,col){
                     //console.log('col',index,col);
-                    var value = 0;
-                    if(alldata.columns[index].type=='numeric')
-                        value = col.toLocaleString('en-US');
-                    else if(alldata.columns[index].type=='percent')
-                        value = (col*100).toLocaleString('en-US')+"%";
-                    else if(alldata.columns[index].type=='dollar')
-                        value = col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
-                    else if(alldata.columns[index].type=='integer')
-                        value = Math.round(col);
-                    else
-                        value = col;
+                    var svalue = 0;
+                    var avalue = 0;
+                    var acol = alldata.all.all.cols[index];
+                    if(alldata.columns[index].type=='numeric'){
+                        svalue = col.toLocaleString('en-US');
+                        avalue = acol.toLocaleString('en-US');
+                    }
+                    else if(alldata.columns[index].type=='percent'){
+                        svalue = (col*100).toLocaleString('en-US')+"%";
+                        avalue = (acol*100).toLocaleString('en-US')+"%";
+                    }
+                    else if(alldata.columns[index].type=='dollar'){
+                        svalue = col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
+                        avalue = acol.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
+                    }
+                    else if(alldata.columns[index].type=='integer'){
+                        svalue = Math.round(col);
+                        avalue = Math.round(acol);
+                    }
+                    else{
+                        svalue = col;
+                        avalue = acol;
+                    }
 
-                    infocontent += '<strong>'+alldata.columns[index].label+':</strong> '+value+"<br/>";
+                    infocontent += '<tr><td><strong>'+alldata.columns[index].label+'</strong></td><td align="right" style="padding-left:25px;">'+svalue+'</td><td align="right" style="padding-left:25px;">'+avalue+'</td></tr>';
                 });
-                infocontent += '</div>';
+                infocontent += '</tbody></table></div>';
 
                 var infowindow = new google.maps.InfoWindow({
                     content: infocontent,

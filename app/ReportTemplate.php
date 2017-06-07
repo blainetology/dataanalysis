@@ -97,7 +97,6 @@ class ReportTemplate extends Model
         $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
 
         $conditional = $operator = $value = null;
-
         if(!empty($rules['conditional']) && !empty($rules['operator']) && $rules['value'] != ""){
             $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
             $operator = $rules['operator'];
@@ -139,9 +138,10 @@ class ReportTemplate extends Model
         if(!empty($rules['month'])){
             $months = [];
 
+            // setup all the month rows with values of 0 to start
             $starttimestamp = strtotime(self::$start);
             $endtimestamp = strtotime(self::$end);
-            for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24)){
+            for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24*28)){
                 $slug = date("F Y",$x);
                 if(!isset($months[$slug])){
                     $months[$slug] = ['count'=>0,'cols'=>[]];
@@ -150,6 +150,7 @@ class ReportTemplate extends Model
                 }
             }
 
+            // total each month row
             foreach($results as $row){
                 $row->month = date('F Y',strtotime($row->$date));
                 if(!isset($months[$row->month])){
@@ -172,10 +173,10 @@ class ReportTemplate extends Model
         if(!empty($rules['week'])){
             $weeks = [];
 
+            // setup all the week rows with values of 0 to start
             $timestamp = strtotime(self::$start);
             $endtimestamp = strtotime(self::$end);
-            // setup all the week rows with values of 0 to start
-            for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+            for($x=$endtimestamp;$x>=$timestamp;$x-=(60*60*24*7)){
                 if($rules['week']=='SUN')
                     $starttimestamp = $x-(date('w',$x)*60*60*24);
                 elseif($rules['week']=='MON')
@@ -201,16 +202,13 @@ class ReportTemplate extends Model
             foreach($weeks as $week=>$data){
                 $weeks[$week] = self::totalEquations($weeks[$week],$columns,$search,$availableColumns);
             }
-            krsort($weeks);
             $all['weeks'] = $weeks;
         }
-
 
         // now by sections
         foreach($sections as $id=>$section){
             $col = 'col'.$id;
             foreach($results as $row){
-                $row->month = date('F Y',strtotime($row->$date));
                 // all
                 if(!isset($sections[$id]['data'][$row->$col]['all']['count']))
                     $sections[$id]['data'][$row->$col]['all']['count']=0;
@@ -222,10 +220,10 @@ class ReportTemplate extends Model
 
                 //month
                 if(!empty($rules['month']) && !empty($rules['monthsections'])){
-
+                    // setup all the month rows with values of 0 to start
                     $starttimestamp = strtotime(self::$start);
                     $endtimestamp = strtotime(self::$end);
-                    for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24)){
+                    for($x=$endtimestamp;$x>=$starttimestamp;$x-=(60*60*24*28)){
                         $slug = date("F Y",$x);
                         if(!isset($sections[$id]['data'][$row->$col]['months'][$slug])){
                             $sections[$id]['data'][$row->$col]['months'][$slug] = ['count'=>0,'cols'=>[]];
@@ -233,30 +231,24 @@ class ReportTemplate extends Model
                                 $sections[$id]['data'][$row->$col]['months'][$slug]['cols'][$key] = 0;
                         }
                     }
-
-                    if(!isset($sections[$id]['data'][$row->$col]['months'][$row->month])){
-                        $sections[$id]['data'][$row->$col]['months'][$row->month] = ['count'=>0,'cols'=>[]];
-                        foreach($columns as $key=>$label)
-                            $sections[$id]['data'][$row->$col]['months'][$row->month]['cols'][$key] = 0;
-                    }
-                    $sections[$id]['data'][$row->$col]['months'][$row->month] = self::totalColumns($sections[$id]['data'][$row->$col]['months'][$row->month],$row,$columns);
+                    $slug = date('F Y',strtotime($row->$date));
+                    $sections[$id]['data'][$row->$col]['months'][$slug] = self::totalColumns($sections[$id]['data'][$row->$col]['months'][$row->month],$row,$columns);
                 }
 
                 // weeks
                 if(!empty($rules['week']) && !empty($rules['weeksections'])){
-
+                    // setup all the week rows with values of 0 to start
                     $timestamp = strtotime(self::$start);
                     $endtimestamp = strtotime(self::$end);
-                    for($x=$timestamp;$x<=$endtimestamp;$x+=(60*60*24*7)){
+                    for($x=$endtimestamp;$x>=$timestamp;$x-=(60*60*24*7)){
                         if($rules['week']=='SUN')
                             $starttimestamp = $x-(date('w',$x)*60*60*24);
                         elseif($rules['week']=='MON')
                             $starttimestamp = $x-( (date('N',$x)-1)*60*60*24);
                         $slug = date("Y-m-d",$starttimestamp);
-                        if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]))
+                        if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug])){
                             $sections[$id]['data'][$row->$col]['weeks'][$slug] = ['start'=>date('m/d/Y',$starttimestamp),'end'=>date('m/d/Y',$starttimestamp+(60*60*24*6)),'count'=>0,'cols'=>[]];
-                        foreach($columns as $key=>$label){
-                            if(!isset($sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key]))
+                            foreach($columns as $key=>$label)
                                 $sections[$id]['data'][$row->$col]['weeks'][$slug]['cols'][$key]=0;
                         }
                     }
@@ -268,8 +260,6 @@ class ReportTemplate extends Model
                     $slug = date("Y-m-d",$timestamp);
                     $sections[$id]['data'][$row->$col]['weeks'][$slug] = self::totalColumns($sections[$id]['data'][$row->$col]['weeks'][$slug],$row,$columns);
                 }
-                if(isset($sections[$id]['data'][$row->$col]['weeks']))
-                    krsort($sections[$id]['data'][$row->$col]['weeks']);
             }
         }
         // now set the columns with custom equations
@@ -300,6 +290,13 @@ class ReportTemplate extends Model
         $min=[];
         $max=[];
 
+        $conditional = $operator = $value = null;
+        if(!empty($rules['conditional']) && !empty($rules['operator']) && $rules['value'] != ""){
+            $conditional = 'col'.array_search(strtoupper($rules['conditional']),\App\SpreadsheetColumn::$columnLetters);
+            $operator = $rules['operator'];
+            $value = $rules['value'];
+        }
+
         // figure out the address format for geo coding
         $rules['location'] = preg_replace('/([A-Z])/',"*$1*",trim($rules['location']));
         $location_format = preg_replace('/[^a-zA-Z0-9\* ]/',' ',$rules['location']);
@@ -319,93 +316,51 @@ class ReportTemplate extends Model
         $columns = self::setColumns($rules);
         $sections = self::setSections($rules,$spreadsheet_id);
 
+        // now set the search params for later for columns with custom equations
+        $search = ['count'];
+        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
+            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
+        }
+
         // let's get the content from the database
         $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
+        if($conditional && $operator && $value)
+            $query = $query->where($conditional,$operator,$value);
         $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
 
         $all = [];
         foreach($results as $row){
             $geo_replace = [];
-            foreach($geo_cols as $letter=>$l_col){
+            foreach($geo_cols as $letter=>$l_col)
                 $geo_replace[]=$row->{$l_col};
-            }
             $location = str_replace($geo_search, $geo_replace, $rules['location']);
-            foreach($columns as $key=>$label){
-                if(!isset($all['data'][$location]['geocode'])){
-                    if(isset($geo_codes[$location]))
-                        $all['data'][$location]['geocode'] = $geo_codes[$location];
-                    else{
-                         $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
-                         if($geocode){
-                            $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
-                            $all['data'][$location]['geocode'] = $geo_codes[$location];
-                         }
-                         else{
-                            $geocode = self::geocode($location);
-                             if($geocode){
-                                $geo_codes[$location] =$geocode;
-                                $all['data'][$location]['geocode'] = $geo_codes[$location];
-                                Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
-                             }
-                         }
-                    }
-                }
-                if(!isset($all['data'][$location]['cols'][$key]))
-                    $all['data'][$location]['cols'][$key]=0;
-                $all['data'][$location]['cols'][$key] += $row->{$key};
-                $all['data']['color']=0;
-                if(!isset($all['all']['cols'][$key]))
-                    $all['all']['cols'][$key]=0;
-                $all['all']['cols'][$key] += $row->{$key};
-            }
+            $all['data']['color']=0;
             if(!isset($all['data'][$location]['count']))
                 $all['data'][$location]['count']=0;
-            $all['data'][$location]['count']++;
             if(!isset($all['all']['count']))
                 $all['all']['count']=0;
+            foreach($columns as $key=>$label){
+                if(!isset($all['data'][$location]['geocode']))
+                    $all['data'][$location]['geocode'] = $geo_codes[$location] = self::getGeocodeValue($location,$geo_codes);
+                if(!isset($all['all']['cols'][$key]))
+                    $all['all']['cols'][$key]=0;
+                if(!isset($all['data'][$location]['cols'][$key]))
+                    $all['data'][$location]['cols'][$key]=0;
+
+                $all['all']['cols'][$key] += $row->{$key};
+                $all['data'][$location]['cols'][$key] += $row->{$key};
+            }
+            $all['data'][$location]['count']++;
             $all['all']['count']++;
         }
         // now set the columns with custom equations
+        foreach($all['all'] as $chunk)
+            $all['all'] = self::totalEquations($all['all'],$columns,$search,$availableColumns);
         foreach($all['data'] as $location=>$chunk){
             if($location!='color'){
-                $search = ['count'];
-                $replace = [$all['data'][$location]['count']];
-                for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                    $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
-                    if(isset($all['data'][$location]['cols']['col'.$x]))
-                        $replace[] = $all['data'][$location]['cols']['col'.$x];
-                    else
-                        $replace[] = "0";
-                }
-                foreach($columns as $key=>$column){
-                    if(!isset($availableColumns[str_replace('col','',$key)])){
-                        $value = str_replace($search,$replace,$key);
-                        $all['data'][$location]['cols'][$key] = @self::calculate($value);
-                    }
-                }
-            }
-        }
-        foreach($all['all'] as $chunk){
-            $search = ['count'];
-            $replace = [$all['all']['count']];
-            for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
-                if(isset($all['all']['cols']['col'.$x]))
-                    $replace[] = $all['all']['cols']['col'.$x];
-                else
-                    $replace[] = "0";
-            }
-            foreach($columns as $key=>$column){
-                if(!isset($availableColumns[str_replace('col','',$key)])){
-                    $value = str_replace($search,$replace,$key);
-                    $all['all']['cols'][$key] = @self::calculate($value);
-                }
-            }
-        }
-        // now set the max/min
-        foreach($all['data'] as $location=>$chunk){
-            if($location!='color'){
-                foreach($chunk['cols'] as $key=>$col){
+                $all['data'][$location] = self::totalEquations($all['data'][$location],$columns,$search,$availableColumns);
+                // now set the max/min for the all total values
+                foreach($all['data'][$location]['cols'] as $key=>$col){
                     if(!isset($min[$key]))
                         $min[$key]=$col;
                     if(!isset($max[$key]))
@@ -424,9 +379,8 @@ class ReportTemplate extends Model
             $col = 'col'.$id;
             foreach($results as $row){
                 $geo_replace = [];
-                foreach($geo_cols as $letter=>$l_col){
+                foreach($geo_cols as $letter=>$l_col)
                     $geo_replace[]=$row->{$l_col};
-                }
                 $location = str_replace($geo_search, $geo_replace, $rules['location']);
                 if(!isset($sections[$id]['data'][$row->$col]['color'])){
                     $sections[$id]['data'][$row->$col]['color']=$color;
@@ -437,32 +391,12 @@ class ReportTemplate extends Model
                 if(!isset($sections[$id]['data'][$row->$col][$location]['count']))
                     $sections[$id]['data'][$row->$col][$location]['count']=0;
                 foreach($columns as $key=>$label){
+                    if(!isset($sections[$id]['data'][$row->$col][$location]['geocode']))
+                        $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location] = self::getGeocodeValue($location,$geo_codes);
                     if(!isset($sections[$id]['all'][$row->$col]['cols'][$key]))
                         $sections[$id]['all'][$row->$col]['cols'][$key]=0;
                     if(!isset($sections[$id]['data'][$row->$col][$location]['cols'][$key]))
                         $sections[$id]['data'][$row->$col][$location]['cols'][$key]=0;
-
-
-                    if(!isset($sections[$id]['data'][$row->$col][$location]['geocode'])){
-                        if(isset($geo_codes[$location]))
-                            $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
-                        else{
-                             $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
-                             if($geocode){
-                                $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
-                                $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
-                             }
-                             else{
-                                $geocode = self::geocode($location);
-                                 if($geocode){
-                                    $geo_codes[$location] =$geocode;
-                                    $sections[$id]['data'][$row->$col][$location]['geocode'] = $geo_codes[$location];
-                                    Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
-                                 }
-                             }
-                        }
-                    }
-     
 
                     $sections[$id]['all'][$row->$col]['cols'][$key] += $row->{$key};
                     $sections[$id]['data'][$row->$col][$location]['cols'][$key] += $row->{$key};
@@ -477,53 +411,9 @@ class ReportTemplate extends Model
             foreach($section['data'] as $id2=>$section2){
                 foreach($section2 as $location=>$chunk){
                     if($location!='color'){
-                        $search = ['count'];
-                        $replace = [$sections[$id]['data'][$id2][$location]['count']];
-                        for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                            $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
-                            if(isset($sections[$id]['data'][$id2][$location]['cols']['col'.$x]))
-                                $replace[] = $sections[$id]['data'][$id2][$location]['cols']['col'.$x];
-                            else
-                                $replace[] = "0";
-                        }
-                        foreach($columns as $key=>$column){
-                            if(!isset($availableColumns[str_replace('col','',$key)])){
-                                $value = str_replace($search,$replace,$key);
-                                $sections[$id]['data'][$id2][$location]['cols'][$key] = @self::calculate($value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        foreach($sections as $id=>$section){
-            foreach($section['data'] as $id2=>$section2){
-                foreach($section2 as $chunk){
-                    $search = ['count'];
-                    $replace = [$sections[$id]['all'][$id2]['count']];
-                    for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
-                        $search[] = \App\SpreadsheetColumn::$columnLetters[$x];
-                        if(isset($sections[$id]['all'][$id2]['cols']['col'.$x]))
-                            $replace[] = $sections[$id]['all'][$id2]['cols']['col'.$x];
-                        else
-                            $replace[] = "0";
-                    }
-                    foreach($columns as $key=>$column){
-                        if(!isset($availableColumns[str_replace('col','',$key)])){
-                            $value = str_replace($search,$replace,$key);
-                            $sections[$id]['all'][$id2]['cols'][$key] = @self::calculate($value);
-                        }
-                    }
-                }
-            }
-        }
-
-        // now set the max/min
-        foreach($sections as $id=>$section){
-            foreach($section['data'] as $id2=>$section2){
-                foreach($section2 as $location=>$chunk){
-                    if($location!='color'){
-                        foreach($chunk['cols'] as $key=>$col){
+                        $sections[$id]['data'][$id2][$location] = self::totalEquations($sections[$id]['data'][$id2][$location],$columns,$search,$availableColumns);
+                        // now set the max/min for the section values
+                        foreach($sections[$id]['data'][$id2][$location]['cols'] as $key=>$col){
                             if(!isset($min[$key]))
                                 $min[$key]=$col;
                             if(!isset($max[$key]))
@@ -534,65 +424,11 @@ class ReportTemplate extends Model
                                 $max[$key] = $col;
                         }
                     }
+                    $sections[$id]['all'][$id2] = self::totalEquations($sections[$id]['all'][$id2],$columns,$search,$availableColumns);
                 }
             }
         }
-
         return ['columns'=>$columns,'all'=>$all,'sections'=>$sections,'min'=>$min,'max'=>$max];
-
-    }
-
-    public static function seminar_business_attained($rules){
-        $rules = json_decode($rules,true);
-        $spreadsheet_id = $rules['spreadsheet'];
-        $date = 'col'.array_search(strtoupper($rules['date']),\App\SpreadsheetColumn::$columnLetters);
-        if(!empty($rules['location']))
-            $location = 'col'.array_search(strtoupper($rules['location']),\App\SpreadsheetColumn::$columnLetters);
-        else
-            $location = null;
-        $month = 'col'.array_search(strtoupper($rules['month']),\App\SpreadsheetColumn::$columnLetters);
-        $fia = 'col'.array_search(strtoupper($rules['fia']),\App\SpreadsheetColumn::$columnLetters);
-        $aum = 'col'.array_search(strtoupper($rules['aum']),\App\SpreadsheetColumn::$columnLetters);
-        $life = 'col'.array_search(strtoupper($rules['life']),\App\SpreadsheetColumn::$columnLetters);
-        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'asc')->get();
-        $all = ['fia'=>0,'aum'=>0,'life'=>0];
-        $months = [];
-        foreach($results as $row){
-            $all['fia']+=$row->$fia;
-            $all['aum']+=$row->$aum;
-            $all['life']+=$row->$life;
-            if(!isset($months[$row->$month])){
-                $months[$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
-            }
-            else{
-                $months[$row->$month]['fia']+=$row->$fia;
-                $months[$row->$month]['aum']+=$row->$aum;
-                $months[$row->$month]['life']+=$row->$life;
-            }
-        }
-
-        $seminars = null;
-        if(!empty($rules['seminar'])){
-            $seminar = 'col'.array_search(strtoupper($rules['seminar']),\App\SpreadsheetColumn::$columnLetters);
-            $seminars = [];
-            foreach($results as $row){
-                $index = $row->$seminar.($location ? ' - '.$row->$location : '').' - '.date('m/d/Y', strtotime($row->$date));
-                if(!isset($seminars[$index]))
-                    $seminars[$index] = ['months'=>[],'all'=>['fia'=>0,'aum'=>0,'life'=>0]];
-                $seminars[$index]['all']['fia']+=$row->$fia;
-                $seminars[$index]['all']['aum']+=$row->$aum;
-                $seminars[$index]['all']['life']+=$row->$life;
-                if(!isset($seminars[$index]['months'][$row->$month])){
-                    $seminars[$index]['months'][$row->$month] = ['fia'=>$row->$fia,'aum'=>$row->$aum,'life'=>$row->$life];
-                }
-                else{
-                    $seminars[$index]['months'][$row->$month]['fia']+=$row->$fia;
-                    $seminars[$index]['months'][$row->$month]['aum']+=$row->$aum;
-                    $seminars[$index]['months'][$row->$month]['life']+=$row->$life;
-                }
-            }
-        }
-        return ['all'=>$all,'months'=>$months,'seminars'=>$seminars];
     }
 
     private static function curl($url,$post=NULL){
@@ -604,27 +440,40 @@ class ReportTemplate extends Model
 
         if($contents) 
             return $contents;
-        else 
-            return false;
+        return false;
     }
     private static function geocode($address){
-        
         $url = "https://maps.google.com/maps/api/geocode/json?sensor=false&key=AIzaSyADHSrojKFkUvVCmQrh1yfkPNhC25xLIzE&address=".urlencode($address);
         $resp_json = self::curl($url);
         $resp = json_decode($resp_json, true);
-
         if($resp['status']='OK'){
             $resp['results'][0]['geometry']['location']['longitude'] = $resp['results'][0]['geometry']['location']['lng'];
             $resp['results'][0]['geometry']['location']['latitude'] = $resp['results'][0]['geometry']['location']['lat'];
             unset($resp['results'][0]['geometry']['location']['lat']);
             unset($resp['results'][0]['geometry']['location']['lng']);
             return $resp['results'][0]['geometry']['location'];
-        }else{
-            return false;
         }
-        
+        return false;
     }
-
+    private static function getGeocodeValue($location,$geo_codes){
+        if(isset($geo_codes[$location]))
+            return $geo_codes[$location];
+        else{
+             $geocode = Geocode::where('address',$location)->whereNotNull('latitude')->whereNotNull('longitude')->first();
+             if($geocode){
+                $geo_codes[$location] = ['latitude'=>$geocode->latitude,'longitude'=>$geocode->longitude];
+             }
+             else{
+                $geocode = self::geocode($location);
+                 if($geocode){
+                    $geo_codes[$location] = $geocode;
+                    Geocode::create(['address'=>$location,'latitude'=>$geocode['latitude'],'longitude'=>$geocode['longitude']]);
+                 }
+             }
+            return $geo_codes[$location];
+        }
+        return false;
+    }
 
     private static function setColumns($rules){
         $temp=[];
@@ -641,7 +490,6 @@ class ReportTemplate extends Model
         }
         return $temp;
     }
-
     private static function setSections($rules,$spreadsheet_id){
         $sections=[];
         $letters = explode(',',$rules['sections']);
@@ -654,7 +502,6 @@ class ReportTemplate extends Model
             $sections[$row->column] = ['label'=>$row->label,'data'=>[]];
         return $sections;        
     }
-
     private static function totalColumns($array,$row,$columns){
         foreach($columns as $key=>$label){
             if(!empty($label['check'])){
@@ -675,7 +522,6 @@ class ReportTemplate extends Model
         $array['count']++;
         return $array;
     }
-
     private static function totalEquations($array,$columns,$search,$availableColumns){
         $replace = [(int)$array['count']];
         for($x=count(\App\SpreadsheetColumn::$columnLetters)-1;$x>0;$x--){
@@ -695,24 +541,19 @@ class ReportTemplate extends Model
 
     const PATTERN = '/(?:\-?\d+(?:\.?\d+)?[\+\-\*\/])+\-?\d+(?:\.?\d+)?/';
     const PARENTHESIS_DEPTH = 10;
-
     public static function calculate($input){
         if(strpos($input, '+') != null || strpos($input, '-') != null || strpos($input, '/') != null || strpos($input, '*') != null){
             //  Remove white spaces and invalid math chars
             $input = str_replace(',', '.', $input);
             $input = preg_replace('[^0-9\.\+\-\*\/\(\)]', '', $input);
-
             //  Calculate each of the parenthesis from the top
             $i = 0;
             while(strpos($input, '(') || strpos($input, ')')){
                 $input = preg_replace_callback('/\(([^\(\)]+)\)/', 'self::callback', $input);
-
                 $i++;
-                if($i > self::PARENTHESIS_DEPTH){
+                if($i > self::PARENTHESIS_DEPTH)
                     break;
-                }
             }
-
             //  Calculate the result
             if(preg_match(self::PATTERN, $input, $match))
                 return self::compute($match[0]);
@@ -720,12 +561,10 @@ class ReportTemplate extends Model
         }
         return $input;
     }
-
     private static function compute($input){
         $compute = create_function('', 'return '.$input.';');
         return 0 + $compute();
     }
-
     private static function callback($input){
         if(is_numeric($input[1]))
             return $input[1];
@@ -733,5 +572,4 @@ class ReportTemplate extends Model
             return self::compute($match[0]);
         return 0;
     }
-
 }
