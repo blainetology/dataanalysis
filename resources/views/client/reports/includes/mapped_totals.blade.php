@@ -180,35 +180,56 @@
                     circleIndex: index
                 });
 
-                var infocontent = "<h4 class=\"text-danger\">"+(key ? key : 'All Data').toUpperCase()+"</h4>";
-                infocontent += '<div style="font-size:1.1em; margin-bottom:10px;"><table class="table table-condensed table-striped"><thead><tr><th colspan="2" class="text-right small">'+address+'</th><th class="text-right small">ALL</th></tr></thead><tbody>';
+                var infocontent = "<h4 class=\"text-danger\">"+(xsec ? '<small>'+alldata.sections[xsec].label+'</small><br/>' : '')+(key ? key : 'All Data').toUpperCase()+"</h4>";
+                infocontent += '<div style="font-size:1.1em; margin-bottom:10px;">';
+                infocontent += '<table class="table table-condensed table-striped"><thead><tr><th colspan="2" class="text-right small">'+address+'</th>';
+                if(xsec)
+                    infocontent += '<th class="text-right small" style="padding-left:25px;">Subsection Total</th>';
+                infocontent += '<th class="text-right small" style="padding-left:25px;">OVERALL</th></tr></thead><tbody>';
                 $.each(data.cols,function(index,col){
                     //console.log('col',index,col);
                     var svalue = 0;
+                    var tvalue = 0;
                     var avalue = 0;
+                    if(xsec)
+                        var tcol = alldata.sections[xsec].all[key].cols[index];
                     var acol = alldata.all.all.cols[index];
                     if(alldata.columns[index].type=='numeric'){
                         svalue = col.toLocaleString('en-US');
+                        if(xsec)
+                            tvalue = tcol.toLocaleString('en-US');
                         avalue = acol.toLocaleString('en-US');
                     }
                     else if(alldata.columns[index].type=='percent'){
                         svalue = (col*100).toLocaleString('en-US')+"%";
+                        if(xsec)
+                            tvalue = (tcol*100).toLocaleString('en-US')+"%";
                         avalue = (acol*100).toLocaleString('en-US')+"%";
                     }
                     else if(alldata.columns[index].type=='dollar'){
                         svalue = col.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
+                        if(xsec)
+                            tvalue = tcol.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
                         avalue = acol.toLocaleString('en-US',{ style: 'currency', currency: 'USD'});
                     }
                     else if(alldata.columns[index].type=='integer'){
                         svalue = Math.round(col);
+                        if(xsec)
+                            tvalue = Math.round(tcol);
                         avalue = Math.round(acol);
                     }
                     else{
                         svalue = col;
+                        if(xsec)
+                            tvalue = tcol;
                         avalue = acol;
                     }
 
-                    infocontent += '<tr><td><strong>'+alldata.columns[index].label+'</strong></td><td align="right" style="padding-left:25px;">'+svalue+'</td><td align="right" style="padding-left:25px;">'+avalue+'</td></tr>';
+                    infocontent += '<tr><td class="small" style="font-weight:900;">'+alldata.columns[index].label+'</td>'
+                    infocontent += '<td align="right" class="small" style="padding-left:25px;">'+svalue+'</td>';
+                    if(xsec)
+                        infocontent += '<td align="right" class="small" style="padding-left:25px;">'+tvalue+'</td>';
+                    infocontent += '<td align="right" class="small" style="padding-left:25px;">'+avalue+'</td></tr>';
                 });
                 infocontent += '</tbody></table></div>';
 

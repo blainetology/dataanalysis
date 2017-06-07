@@ -486,7 +486,7 @@ class ReportTemplate extends Model
             else
                 $index = trim($row[0]);
 
-           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3])];
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3]), 'check'=>trim($row[4])];
         }
         return $temp;
     }
@@ -503,19 +503,22 @@ class ReportTemplate extends Model
         return $sections;        
     }
     private static function totalColumns($array,$row,$columns){
-        foreach($columns as $key=>$label){
-            if(!empty($label['check'])){
-                if(eval(strtoupper($row->{$key}." ".$label['check']))){                    
-                    if($label['total'] == 'count')
+        foreach($columns as $key=>$column){
+            if(!empty($column['check'])){
+                $check = explode(' ',trim($column['check']),2);
+                if(!isset($check[1]))
+                    $check[1]="";
+                if(self::compareStrings($row->{$key},$check[1],$check[0])){                    
+                    if($column['total'] == 'count')
                         $array['cols'][$key]++;
-                    elseif($label['total'] == 'total')
+                    elseif($column['total'] == 'total')
                         $array['cols'][$key] += $row->{$key};
                 }
             }
             else{
-                if($label['total'] == 'count')
+                if($column['total'] == 'count')
                     $array['cols'][$key]++;
-                elseif($label['total'] == 'total')
+                elseif($column['total'] == 'total')
                     $array['cols'][$key] += $row->{$key};
             }
         }
@@ -537,6 +540,33 @@ class ReportTemplate extends Model
             }
         }
         return $array;
+    }
+
+    private static function compareStrings($var1,$var2,$operator){
+        $var2 = trim($var2);
+        $var2 = trim($var2,'"\'');
+        if(is_numeric($var2)){
+            $var1 = (float)$var1;
+            $var2 = (float)$var2;
+        }
+        else{
+            $var1 = strtoupper($var1);
+            $var2 = strtoupper($var2);
+        }
+        $operator = trim($operator);
+        if($operator == '==' || $operator == '=')
+            return ($var1 == $var2);
+        if($operator == '>')
+            return ($var1 > $var2);
+        if($operator == '>=')
+            return ($var1 >= $var2);
+        if($operator == '<')
+            return ($var1 < $var2);
+        if($operator == '<=')
+            return ($var1 <= $var2);
+        if($operator == '!=')
+            return ($var1 != $var2);
+        return false;
     }
 
     const PATTERN = '/(?:\-?\d+(?:\.?\d+)?[\+\-\*\/])+\-?\d+(?:\.?\d+)?/';

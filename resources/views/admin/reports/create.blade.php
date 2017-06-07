@@ -50,16 +50,22 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="form-group">
                                 <label>Client</label>
                                 {{ Form::select('client',$clients,(!empty($input['client_id']) ? $input['client_id'] : null),['id'=>'client_id', 'name'=>'client_id', 'class'=>'form-control'])}}
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="form-group">
                                 <label>Template</label>
                                 {{ Form::select('template',$templates,(!empty($input['template_id']) ? $input['template_id'] : null),['id'=>'template', 'name'=>'template_id', 'class'=>'form-control'])}}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>List Order</label>
+                                {{ Form::text('template',(!empty($input['list_order']) ? $input['list_order'] : null),['id'=>'list_order', 'name'=>'list_order', 'class'=>'form-control'])}}
                             </div>
                         </div>
                     </div>

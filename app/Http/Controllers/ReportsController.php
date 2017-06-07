@@ -61,8 +61,8 @@ class ReportsController extends Controller
             'client' => Client::find($report->client_id),
             'report' => $report,
             $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
-            'client_reports' => Report::active()->where('client_id',$report->client_id)->get(),
-            'client_spreadsheets' => Spreadsheet::active()->where('client_id',$report->client_id)->get()
+            'client_reports' => Report::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get(),
+            'client_spreadsheets' => Spreadsheet::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get()
         ];
         if(!\Auth::user()->isAdmin() && !\Auth::user()->isEditor()){
             $report->opened_at = \DB::raw('NOW()');
