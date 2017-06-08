@@ -92,75 +92,60 @@ class ReportsController extends Controller
     public function update(Request $request, $id)
     {
         $input = \Request::all();
-        $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$input['rules']['spreadsheet'])->pluck('label','column');
 
-        // clean up the columns input
-        $temp = [];
-        foreach(explode("\n",trim($input['rules']['columns'])) as $column){
-            $row = explode('||',$column);
+        if(!empty($input['rules'])){
+            $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$input['rules']['spreadsheet'])->pluck('label','column');
+            // clean up the columns input
+            $temp = [];
+            foreach(explode("\n",trim($input['rules']['columns'])) as $column){
+                $row = explode('||',$column);
 
-            if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
-                $index = array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
-            else
-                $index = trim($row[0]);
+                if(in_array(strtoupper(trim($row[0])), \App\SpreadsheetColumn::$columnLetters))
+                    $index = array_search(strtoupper(trim($row[0])),\App\SpreadsheetColumn::$columnLetters);
+                else
+                    $index = trim($row[0]);
 
-            if(!empty($row[1]))
-                $type = trim($row[1]);
-            else
-                $type = 'numeric';
+                if(!empty($row[1]))
+                    $type = trim($row[1]);
+                else
+                    $type = 'numeric';
 
-            if(isset($row[2]) && !empty(trim($row[2])))
-                $label = trim($row[2]);
-            elseif(isset($availableColumns[$index]))
-                $label = $availableColumns[$index];
-            else
-                $label = $index;
+                if(isset($row[2]) && !empty(trim($row[2])))
+                    $label = trim($row[2]);
+                elseif(isset($availableColumns[$index]))
+                    $label = $availableColumns[$index];
+                else
+                    $label = $index;
 
-            $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NONE' && strtoupper(trim($row[3])) != 'COUNT')) ? 'total' : strtolower($row[3]);
+                $total = (!isset($row[3]) || (isset($row[3]) && strtoupper(trim($row[3])) != 'NONE' && strtoupper(trim($row[3])) != 'COUNT')) ? 'total' : strtolower($row[3]);
 
-            $if = '';
-            if(!empty($row[4])){
-                $ifs = explode(' ',trim($row[4]));
-                if(isset($ifs[0]) && isset($ifs[1])){
-                    $ifs[0] = trim($ifs[0]);
-                    $ifs[1] = trim($ifs[1]);
-                    $ifs[1] = trim($ifs[1],'"');
-                    echo $ifs[1]." ".(float)$ifs[1]."<br/>";
-                    if($ifs[1] === (string)(float)$ifs[1]){
-                        echo 'matched'."<br/>";
-                        $ifs[1] = (float)$ifs[1];
+                $if = '';
+                if(!empty($row[4])){
+                    $ifs = explode(' ',trim($row[4]));
+                    if(isset($ifs[0]) && isset($ifs[1])){
+                        $ifs[0] = trim($ifs[0]);
+                        $ifs[1] = trim($ifs[1]);
+                        $ifs[1] = trim($ifs[1],'"');
+                        echo $ifs[1]." ".(float)$ifs[1]."<br/>";
+                        if($ifs[1] === (string)(float)$ifs[1]){
+                            echo 'matched'."<br/>";
+                            $ifs[1] = (float)$ifs[1];
+                        }
+                        else{
+                            echo 'no match'."<br/>";
+                            $ifs[1] = '"'.$ifs[1].'"';
+                        }
+                        $if = $ifs[0]." ".$ifs[1];
+                        echo $if."<br/>";                   
                     }
-                    else{
-                        echo 'no match'."<br/>";
-                        $ifs[1] = '"'.$ifs[1].'"';
-                    }
-                    $if = $ifs[0]." ".$ifs[1];
-                    echo $if."<br/>";                   
                 }
+
+                $temp[] = trim(implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total),$if]));
             }
+            $input['rules']['columns'] = implode("\n",$temp);
+            $input['rules'] = json_encode($input['rules']);
+        }
 
-            $temp[] = trim(implode(' || ',[trim($row[0]),trim($type),trim($label),trim($total),$if]));
-        }
-        #exit;
-        $input['rules']['columns'] = implode("\n",$temp);
-/*
-        // clean up the sections input
-        $temp = [];
-        foreach(explode(',',$input['rules']['sections']) as $column){
-            $temp[] = strtoupper(trim($column));
-        }
-        $input['rules']['sections'] = implode(', ',$temp);
-
-        // clean up the rules inputs
-        $temp = [];
-        foreach($input['rules'] as $key=>$rule){
-            $temp[$key] = strtoupper(trim($rule));
-        }
-        $input['rules'] = json_encode($temp);
-*/        
-        $input['rules'] = json_encode($input['rules']);
-        #print_r($input);
-        #exit;
         $report = Report::find($id);
         $report->update($input);
         Log::logreport($report->id,'updated');
@@ -185,6 +170,7 @@ class ReportsController extends Controller
             'input' => $input,
             'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
             'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
+            'spreadsheets' => Spreadsheet::with('columns')->where('client_id',$report->client_id)->get(),
             'file' => $report->template->file,
             'isAdminView'   => true,
             'duplicate' => true
@@ -194,7 +180,7 @@ class ReportsController extends Controller
 
     public function generate($id)
     {
-        $reports = Report::where('client_id',$id)->get();
+        $reports = Report::where('client_id',$id)->where('active',1)->orderBy('list_order','asc')->take(2)->get();
         $client = Client::find($id);
         $data = [
             'client' => $client,
@@ -203,18 +189,21 @@ class ReportsController extends Controller
             'end' => \Request::get('end_date',date('Y-m-d'))
         ];
         foreach($reports as $report){
-            $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+            if($report->template->pdf == 1){
+                if(!isset($data[$report->template->file]))
+                    $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+            }
         }
         #return view('client.reports.generate',$data);
         $pdf = \PDF::loadView('client.reports.generate', $data);
-        #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data)->setOption('javascript-delay', 2000);
+        #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data);
         return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
         return view('client.reports.generate',$data);
     }
 
     public function generatepreview($id)
     {
-        $reports = Report::where('client_id',$id)->get();
+        $reports = Report::where('client_id',$id)->where('active',1)->orderBy('list_order','asc')->take(2)->get();
         $client = Client::find($id);
         $data = [
             'client' => $client,
@@ -223,7 +212,10 @@ class ReportsController extends Controller
             'end' => \Request::get('end_date',date('Y-m-d'))
         ];
         foreach($reports as $report){
-            $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+            if($report->template->pdf == 1){
+                if(!isset($data[$report->template->file]))
+                    $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+            }
         }
         return view('client.reports.generate',$data);
     }

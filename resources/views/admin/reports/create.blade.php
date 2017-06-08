@@ -53,13 +53,13 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <label>Client</label>
-                                {{ Form::select('client',$clients,(!empty($input['client_id']) ? $input['client_id'] : null),['id'=>'client_id', 'name'=>'client_id', 'class'=>'form-control'])}}
+                                {{ Form::select('client',$clients,(!empty($input['client_id']) ? $input['client_id'] : null),['id'=>'client_id', 'name'=>'client_id', 'class'=>'form-control', 'onchange'=>"$('#data_fields').hide(0)"])}}
                             </div>
                         </div>
                         <div class="col-md-5">
                             <div class="form-group">
                                 <label>Template</label>
-                                {{ Form::select('template',$templates,(!empty($input['template_id']) ? $input['template_id'] : null),['id'=>'template', 'name'=>'template_id', 'class'=>'form-control'])}}
+                                {{ Form::select('template',$templates,(!empty($input['template_id']) ? $input['template_id'] : null),['id'=>'template', 'name'=>'template_id', 'class'=>'form-control', 'onchange'=>"$('#data_fields').hide(0)"])}}
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -70,14 +70,16 @@
                         </div>
                     </div>
                     @if(!empty($input['id']))
-                    <br/>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4>Template Data Fields</h4>
+                        <div id="data_fields">    
+                            <br/>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h4>Template Data Fields</h4>
+                                </div>
+                            </div> 
+                            @include('admin.reports.includes.'.$file)
                         </div>
-                    </div> 
-                    @include('admin.reports.includes.'.$file)
-                    @endif
+                        @endif
                     <br/>
                     {{ Form::submit('Save Report',['class'=>'btn btn-primary']) }}
                     {{ Form::close() }}

@@ -40,6 +40,7 @@
                                             </td>
                                             <td class="no-stretch">
                                                 <a href="{{ route('reports.show',$report->id) }}" title="view report" class="btn btn-xs btn-success">view</a>
+                                                <a href="{{ route('reports.duplicate',$report->id) }}" title="duplicate report" class="btn btn-xs btn-info"><i class="fa fa-clone" aria-hidden="true"></i></a>
                                                 <a href="{{ route('reports.edit',$report->id) }}" title="edit report settings" class="btn btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                                                 {{ Form::open(['route'=>['reports.destroy',$report->id],'method'=>'DELETE','style'=>'display:inline-block', 'onsubmit'=>"return confirm('Delete \"".addslashes($report->name)."\" report?');" ]) }}
                                                 <button title="delete report" class="btn btn-xs btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
