@@ -115,11 +115,16 @@ class ReportTemplate extends Model
         }
 
         // let's get the content from the database
-        $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
-        if($conditional && $operator && $value)
-            $query = $query->where($conditional,$operator,$value);
-        $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
-        
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        // purge records if conditional check is setup
+        if($conditional && $operator && $value){
+            foreach($results as $index=>$row){
+                if(!self::compareStrings($row->$conditional,$value,$operator)){
+                    $results->forget($index);
+                }                
+            }
+        }
+
         // let's total it all together first
         $all = ['all'=>['count'=>0,'cols'=>[]]];
         foreach($columns as $key=>$label)
@@ -279,7 +284,7 @@ class ReportTemplate extends Model
             }
 
         }
-        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections];
+        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections,'rules'=>$rules];
     }
 
     public static function mapped_totals($rules){
@@ -323,10 +328,15 @@ class ReportTemplate extends Model
         }
 
         // let's get the content from the database
-        $query = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id);
-        if($conditional && $operator && $value)
-            $query = $query->where($conditional,$operator,$value);
-        $results = $query->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        $results = \App\SpreadsheetContent::where('spreadsheet_id',$spreadsheet_id)->whereBetween($date,[self::$start,self::$end])->orderBy($date,'desc')->get();
+        // purge records if conditional check is setup
+        if($conditional && $operator && $value){
+            foreach($results as $index=>$row){
+                if(!self::compareStrings($row->$conditional,$value,$operator)){
+                    $results->forget($index);
+                }                
+            }
+        }
 
         $all = [];
         foreach($results as $row){
@@ -428,7 +438,7 @@ class ReportTemplate extends Model
                 }
             }
         }
-        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections,'min'=>$min,'max'=>$max];
+        return ['columns'=>$columns,'all'=>$all,'sections'=>$sections,'min'=>$min,'max'=>$max,'rules'=>$rules];
     }
 
     private static function curl($url,$post=NULL){
@@ -486,7 +496,7 @@ class ReportTemplate extends Model
             else
                 $index = trim($row[0]);
 
-           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3]), 'check'=>trim($row[4])];
+           $temp[(string)$index] = ['equation'=>trim($row[0]),'type'=>trim($row[1]),'label'=>trim($row[2]), 'total'=>trim($row[3]), 'check'=>(!empty($row[4]) ? trim($row[4]) : '')];
         }
         return $temp;
     }
