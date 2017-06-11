@@ -1,4 +1,4 @@
-@extends('layouts.pdf')
+@extends('layouts.excel')
 
 @section('content')
 <div class="container">

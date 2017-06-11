@@ -181,10 +181,12 @@ class ReportsController extends Controller
     public function generate($id)
     {
         $reports = Report::where('client_id',$id)->where('active',1)->orderBy('list_order','asc')->take(2)->get();
+        $report = Report::where('client_id',$id)->where('active',1)->where('id',4006)->orderBy('list_order','asc')->first();
         $client = Client::find($id);
         $data = [
             'client' => $client,
             'reports' => $reports,
+            'report' => $report,
             'start' => \Request::get('start_date',date('Y').'-01-01'),
             'end' => \Request::get('end_date',date('Y-m-d'))
         ];
@@ -194,6 +196,13 @@ class ReportsController extends Controller
                     $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
             }
         }
+        #return view('client.reports.includes.total_amounts_excel',$data);
+        \Excel::create('New file', function($excel) use ($data) {
+            $excel->sheet('Sheet 1', function($sheet) use ($data) {
+                $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 12, 'bold' => false]]);
+                $sheet->loadView('client.reports.includes.total_amounts_excel',$data);
+            });
+        })->export('xls');
         #return view('client.reports.generate',$data);
         $pdf = \PDF::loadView('client.reports.generate', $data);
         #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data);
