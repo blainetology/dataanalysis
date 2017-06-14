@@ -33,5 +33,6 @@ Route::group(['middleware'=>['auth']],function(){
 	Route::get('reports/{id}/duplicate',['as'=>'reports.duplicate', 'uses'=>'ReportsController@duplicate']);	
 	Route::resource('reports', 'ReportsController');	
 	Route::resource('settings', 'SettingsController');
+	Route::get('reports/excel/{id?}',['as'=>'reports.generate', 'uses'=>'ReportsController@excel']);	
 	Route::get('reports/generate/{id?}',['as'=>'reports.generate', 'uses'=>'ReportsController@generate']);	
 });

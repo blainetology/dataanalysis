@@ -1,4 +1,4 @@
-<?php $content = ${$report->template->file}; ?>
+<?php $content = ${'report_'.$report->id}; ?>
 <?php $tdwidth = round(100/(count($content['all']['all']['cols'])+4)); ?>
 
 @if(!empty($content['sections']))

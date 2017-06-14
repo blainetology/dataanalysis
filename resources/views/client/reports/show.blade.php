@@ -6,10 +6,10 @@
     <div id="page-header" style="height:52px; position: fixed; left:200px; top:50px; padding-top:10px; border-bottom:1px solid #EEE; background: #F9F9F9; z-index: 100; width: 100%; box-sizing: border-box;">
         <div class="container-fluid">
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <h3 class="text-info" style="margin-bottom:0; padding-bottom:0; margin-top:4px; font-size: 1.5em;">{{ $report->name }} Report</h3>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <form method="GET" style="margin:0; padding:0;">
                         <div class="col-md-3" style="padding:2px;">
                             {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control input-sm','id'=>'start_date'])}}
@@ -20,11 +20,12 @@
                         <div class="col-md-3" style="padding:2px;">
                             {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control input-sm','id'=>'end_date'])}}
                         </div>
-                        <div class="col-md-2" style="padding:2px;">
+                        <div class="col-md-1" style="padding:2px;">
                             <input type="submit" value="Filter" class="btn btn-info btn-sm">
                         </div>
-                        <div class="col-md-2" style="padding:2px;">
-                            <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-success btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  generate pdf</a>
+                        <div class="col-md-4" style="padding:2px;">
+                            <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-danger btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  generate pdf</a>
+                            <a href="/reports/excel/{{$report->id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-success btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  excel export</a>
                         </div>
                 </form>
             </div>

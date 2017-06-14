@@ -60,7 +60,7 @@ class ReportsController extends Controller
         $data = [
             'client' => Client::find($report->client_id),
             'report' => $report,
-            $report->template->file => ReportTemplate::getContent($report->template->file,$report->rules),
+            'report_'.$report->id => ReportTemplate::getContent($report->template->file,$report->rules),
             'client_reports' => Report::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get(),
             'client_spreadsheets' => Spreadsheet::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get()
         ];
@@ -178,6 +178,40 @@ class ReportsController extends Controller
         return view('admin.reports.create',$data);
     }
 
+    public function excel($id)
+    {
+        $report = Report::where('active',1)->where('id',$id)->orderBy('list_order','asc')->first();
+        $client = Client::find($report->client_id);
+        $data = [
+            'client' => $client,
+            'report' => $report,
+            'start' => \Request::get('start_date',date('Y').'-01-01'),
+            'end' => \Request::get('end_date',date('Y-m-d'))
+        ];
+        $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
+
+        \Excel::create(str_slug($report->name.' '.$data['start'].' thru '.$data['end'],'_'), function($excel) use ($data) {
+            $content = $data['report_'.$data['report']->id];
+            $content['template'] = $data['report']->template->file;
+            $content['report_name'] = $data['report']->name;
+
+            $excel->sheet('All Together', function($sheet) use ($content) {
+                $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
+                $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'data'=>$content['all'],'columns'=>$content['columns'],'header'=>'All Together','subheader'=>'']);
+            });
+
+            foreach($content['sections'] as $sections){
+                foreach($sections['data'] as $name=>$section){
+                    $excel->sheet(substr($sections['label'].' - '.$name,0,30), function($sheet) use ($content,$section,$name,$sections) {
+                        $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
+                        $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'data'=>$section,'columns'=>$content['columns'],'header'=>'By '.$sections['label'],'subheader'=>$name]);
+                    });
+                }
+            }
+            $excel->setActiveSheetIndex(0);
+        })->export('xls');
+    }
+
     public function generate($id)
     {
         $reports = Report::where('client_id',$id)->where('active',1)->orderBy('list_order','asc')->take(2)->get();
@@ -193,19 +227,10 @@ class ReportsController extends Controller
         foreach($reports as $report){
             if($report->template->pdf == 1){
                 if(!isset($data[$report->template->file]))
-                    $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+                    $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
             }
         }
-        #return view('client.reports.includes.total_amounts_excel',$data);
-        \Excel::create('New file', function($excel) use ($data) {
-            $excel->sheet('Sheet 1', function($sheet) use ($data) {
-                $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
-                $sheet->loadView('client.reports.includes.total_amounts_excel',$data);
-            });
-        })->export('xls');
-        #return view('client.reports.generate',$data);
         $pdf = \PDF::loadView('client.reports.generate', $data);
-        #$pdf = \PDF::loadFile('http://data.app/reports/generatepreview/'.$id.'/?'.$_SERVER['QUERY_STRING'], $data);
         return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
         return view('client.reports.generate',$data);
     }
@@ -223,7 +248,7 @@ class ReportsController extends Controller
         foreach($reports as $report){
             if($report->template->pdf == 1){
                 if(!isset($data[$report->template->file]))
-                    $data[$report->template->file] = ReportTemplate::getContent($report->template->file,$report->rules);
+                    $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
             }
         }
         return view('client.reports.generate',$data);
