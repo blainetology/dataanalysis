@@ -199,7 +199,7 @@ class ReportsController extends Controller
         #return view('client.reports.includes.total_amounts_excel',$data);
         \Excel::create('New file', function($excel) use ($data) {
             $excel->sheet('Sheet 1', function($sheet) use ($data) {
-                $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 12, 'bold' => false]]);
+                $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
                 $sheet->loadView('client.reports.includes.total_amounts_excel',$data);
             });
         })->export('xls');
