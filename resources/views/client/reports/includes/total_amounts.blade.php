@@ -11,6 +11,7 @@
 @endif
 
 <h3 style="font-size:1.6em;">All Together</h3>
+<div class="report-panel">
 <div class="panel panel-primary">
 	<div class="panel-heading">
 		<h3 class="panel-title">&nbsp;</h3>
@@ -106,12 +107,14 @@
 		</tbody>
 	</table>
 </div>
+</div>
 
 @foreach($content['sections'] as $sections)
 	<a name="section_{{ str_slug($sections['label'],'_') }}"></a>
-	<hr/>
-	<h3 style="font-size:1.6em;">By {{$sections['label']}}</h3>
+	<hr class="hidden-print" />
+	<h3 class="pagebreak" style="font-size:1.6em;">By {{$sections['label']}}</h3>
 	@foreach($sections['data'] as $name=>$section)
+	<div class="report-panel">
 	<div class="panel panel-primary">
 		<div class="panel-heading">
 			<h3 class="panel-title"><strong>{{ ucwords($name) }}</strong></h3>
@@ -207,13 +210,16 @@
 			</tbody>
 		</table>
 	</div>
+	</div>
 	@endforeach
 @endforeach
 
 @section('styles')
 <style>
     #map{height: 400px;}
-    .report-table th{text-align: center !important;}
+    .report-panel{page-break-inside: avoid;}
+    .report-table th{text-align: center !important; font-size:9pt !important;}
+    .report-table td{font-size:8pt !important;}
 </style>
 @append
 

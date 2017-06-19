@@ -1,19 +1,14 @@
-@extends('layouts.excel')
+@extends('layouts.pdf')
 
 @section('content')
 <div class="container">
-    @foreach($reports as $report)
-        @if($report->template->pdf == 1)
-            <div class="row pagebreak">
-                <div class="col-md-12">
-                <h3 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->label }} Report</h3>
-                </div>
-                <div class="col-md-12">
-                @include('client.reports.includes.'.$report->template->file)
-                </div>
+    @if($report->template->pdf == 1)
+        <div class="row pagebreak">
+            <div class="col-md-12">
+            @include('client.reports.includes.'.$report->template->file)
             </div>
-        @endif
-    @endforeach
+        </div>
+    @endif
 </div>
 @endsection
 
@@ -22,7 +17,7 @@
 .pagebreak{page-break-before: always;}
 html, body {
     font-family: 'Arial', Arial, sans-serif !important;
-    font-size:10pt;
+    font-size:9pt;
 }
 tbody td, tbody th{white-space: nowrap;}
 </style>

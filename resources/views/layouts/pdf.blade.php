@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ config('app.name') }}</title>
+    <title>{{ $report->name }} - {{ $report->client->business_name }}</title>
 
     <link href="http:/data.app/images/favicon.png" rel="shortcut icon">
 
@@ -31,7 +31,8 @@
                         <br/><br/><br/>
                         <p>custom report prepared for</p>
                         <h2>{{ $report->client->business_name }}</h2>
-                        <p>Represents data {{ date('m/d/Y',strtotime($start) ) }} through {{ date('m/d/Y',strtotime($end)) }}</p>
+                        <h2 class="text-info" style="margin-bottom:0; padding-bottom:0;">{{ $report->name }}</h2>
+                        <h3>{{ date('m/d/Y',strtotime($start) ) }} through {{ date('m/d/Y',strtotime($end)) }}</h3>
                     </div>
                 </div>
             </div>

@@ -9,23 +9,21 @@
             <div class="col-md-6">
                 <h3 class="text-info" style="margin-bottom:0; padding-bottom:0; margin-top:4px; font-size: 1.5em;">{{ $report->name }} Report</h3>
             </div>
-            <div class="col-md-6">
-                <form method="GET" style="margin:0; padding:0;">
-                        <div class="col-md-3" style="padding:2px;">
-                            {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control input-sm','id'=>'start_date'])}}
-                        </div>
-                        <div class="col-md-1 text-center" style="padding:2px; padding-top:6px;">
-                        <strong>thru</strong>
-                        </div>
-                        <div class="col-md-3" style="padding:2px;">
-                            {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control input-sm','id'=>'end_date'])}}
-                        </div>
-                        <div class="col-md-1" style="padding:2px;">
+            <div class="col-md-6 text-right">
+                <form method="GET" style="margin:0; padding:0;" class="text-right">
+                        <div style="padding:2px;">
+                            {{ Form::text('start_date',\Request::get('start_date',date('Y').'-01-01'),['name'=>'start_date','class'=>'form-control input-sm','id'=>'start_date', 'style'=>"width:100px; display:inline"])}}
+
+                        <strong> &nbsp; thru &nbsp; </strong>
+
+                            {{ Form::text('end_date',\Request::get('end_date',date('Y-m-d')),['name'=>'end_date','class'=>'form-control input-sm','id'=>'end_date', 'style'=>"width:100px; display:inline"])}}
+
                             <input type="submit" value="Filter" class="btn btn-info btn-sm">
-                        </div>
-                        <div class="col-md-4" style="padding:2px;">
-                            <a href="/reports/generate/{{$report->client_id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-danger btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  generate pdf</a>
+                        @if($report->template->pdf == 1)
+                            &nbsp; &nbsp; &nbsp; &nbsp; 
+                            <a href="/reports/pdf/{{$report->id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-danger btn-sm"><i class="fa fa-download" aria-hidden="true"></i> pdf export</a>
                             <a href="/reports/excel/{{$report->id}}?{{ $_SERVER['QUERY_STRING'] }}" class="btn btn-success btn-sm"><i class="fa fa-download" aria-hidden="true"></i>  excel export</a>
+                        @endif
                         </div>
                 </form>
             </div>

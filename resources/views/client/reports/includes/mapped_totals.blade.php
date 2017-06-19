@@ -1,4 +1,4 @@
-<?php $content = ${$report->template->file}; ?>
+<?php $content = ${'report_'.$report->id}; ?>
 
 <pre style="display:none;">
 {{ print_r($content,true) }}

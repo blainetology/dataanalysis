@@ -1,92 +1,53 @@
-	<h2 height="24" colspan="{{count($columns)+1}}">{{$report_name}} Report</h2>
-	<h3 height="24" colspan="{{count($columns)+1}}">{{$header}}</h3>
+	<h3 height="24" colspan="{{count($columns)+(!empty($data['months']) || !empty($data['weeks']) ? 1 : 0)}}">{{$report_name}} -- {{$report_dates}}</h3>
 
 		<table border="thin">
-			<tr><td valign="middle" style="height:22; font-size:14px; font-weight:900;" colspan="{{count($columns)+1}}">{{ ucwords($subheader) }}</td></tr>
+			<tr><td valign="middle" style="height:20; font-size:14px; font-weight:900; background-color:#CCC; color:#000;" colspan="{{count($columns)+(!empty($data['months']) || !empty($data['weeks']) ? 1 : 0)}}">{{ ucwords($header) . (!empty($subheader) ? ' - '.ucwords($subheader) : '') }}</td></tr>
 			@if(!empty($data['months']))
 				<tr>
-					<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info">Month</td>
+					<td valign="middle" style="background-color:#d9edf7; font-size:11px; font-weight:900;">Month</td>
 					@foreach($columns as $column)
-						<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info">{{$column['label']}}</td>
+						<td valign="middle" style="background-color:#d9edf7; height:17; font-size:11px; font-weight:900;">{{$column['label']}}</td>
 					@endforeach
 				</tr>
 				@foreach($data['months'] as $month=>$total)
 					<tr>
-						<td valign="middle" height="12">{{ $month }}</td>
+						<td valign="middle" height="14">{{ $month }}</td>
 						@foreach($total['cols'] as $colindex=>$row)
-							<td valign="middle" align="right">
-								@if($columns[$colindex]['type'] == 'percent')
-								{{ $row ? round($row*100,1).'%' : '---' }}
-								@elseif($columns[$colindex]['type'] == 'dollar')
-								${{ number_format((float)$row,2) }}
-								@elseif($columns[$colindex]['type'] == 'integer')
-								{{ (int)$row }}
-								@elseif($columns[$colindex]['type'] == 'numeric')
-								{{ number_format((float)$row,2) }}
-								@else
-								{{ $row ? $row : '---' }}
-								@endif
-							</td>
+							<td valign="middle" align="right">{{ $row === null && $row !== '' ? '---' : $row }}</td>
 						@endforeach
 					</tr>
 				@endforeach
 			@endif
 			@if(!empty($data['weeks']))
 				<tr>
-					<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info">Week</td>
+					<td valign="middle" style="background-color:#d9edf7; font-size:11px; font-weight:900;">Week</td>
 					@foreach($columns as $column)
-						<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info">{{$column['label']}}</td>
+						<td valign="middle" style="background-color:#d9edf7; height:17; font-size:11px; font-weight:900;">{{$column['label']}}</td>
 					@endforeach
 				</tr>
 				@foreach($data['weeks'] as $week)
 					<tr>
-						<td valign="middle" height="12">{{ $week['start'] }}-{{ $week['end'] }}</td>
+						<td valign="middle" height="14">{{ $week['start'] }}-{{ $week['end'] }}</td>
 						@foreach($week['cols'] as $colindex=>$row)
-							<td valign="middle" align="right">
-								@if($columns[$colindex]['type'] == 'percent')
-								{{ $row ? round($row*100,1).'%' : '---' }}
-								@elseif($columns[$colindex]['type'] == 'dollar')
-								${{ number_format((float)$row,2) }}
-								@elseif($columns[$colindex]['type'] == 'integer')
-								{{ (int)$row }}
-								@elseif($columns[$colindex]['type'] == 'numeric')
-								{{ number_format((float)$row,2) }}
-								@else
-								{{ $row ? $row : '---' }}
-								@endif
-							</td>
+							<td valign="middle" align="right">{{ $row === null && $row !== '' ? '---' : $row }}</td>
 						@endforeach
 					</tr>
 				@endforeach
 			@endif
 			<tr>
 				@if(!empty($data['weeks']) || !empty($data['months']))
-					<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info"></td>
+					<td valign="middle" style="background-color:#d9edf7; font-size:11px; font-weight:900;"></td>
 				@endif
 				@foreach($columns as $column)
-					<td valign="middle" style="background-color:#d9edf7; height:16; font-weight:900;" class="bg-info">{{$column['label']}}</td>
+					<td valign="middle" style="background-color:#d9edf7; height:17; font-size:11px; font-weight:900;">{{$column['label']}}</td>
 				@endforeach
 			</tr>
 			<tr>
 				@if(!empty($data['weeks']) || !empty($data['months']))
-					<td valign="middle" style="background-color:#dff0d8; height:16; font-weight:900;" class="bg-success"><strong>Totals</strong></td>
+					<td valign="middle" style="background-color:#dff0d8; font-size:11px; font-weight:900;">Totals</td>
 				@endif
 				@foreach($data['all']['cols'] as $colindex=>$row)
-					<td valign="middle" style="background-color:#dff0d8; height:16; font-weight:900;" align="right" class="bg-success">
-						<strong>
-							@if($columns[$colindex]['type'] == 'percent')
-							{{ $row ? round($row*100,1).'%' : '---' }}
-							@elseif($columns[$colindex]['type'] == 'dollar')
-							${{ number_format((float)$row,2) }}
-							@elseif($columns[$colindex]['type'] == 'integer')
-							{{ (int)$row }}
-							@elseif($columns[$colindex]['type'] == 'numeric')
-							{{ number_format((float)$row,2) }}
-							@else
-							{{ $row ? $row : '---' }}
-							@endif
-						</strong>
-					</td>
+					<td valign="middle" style="background-color:#dff0d8; height:17; font-weight:900;" align="right">{{ $row === null && $row !== '' ? '---' : $row }}</td>
 				@endforeach
 			</tr>
 		</table>

@@ -190,21 +190,41 @@ class ReportsController extends Controller
         ];
         $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
 
-        \Excel::create(str_slug($report->name.' '.$data['start'].' thru '.$data['end'],'_'), function($excel) use ($data) {
+        \Excel::create(str_slug($report->name.'  '.$data['start'].' thru '.$data['end'],'_'), function($excel) use ($data) {
             $content = $data['report_'.$data['report']->id];
             $content['template'] = $data['report']->template->file;
             $content['report_name'] = $data['report']->name;
+            $content['report_dates'] = $data['start'].' thru '.$data['end'];
+            $content['col_format'] = $this->setColumnFormats($content['columns']);
 
             $excel->sheet('All Together', function($sheet) use ($content) {
+                $sheet->setColumnFormat($content['col_format']);
                 $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
-                $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'data'=>$content['all'],'columns'=>$content['columns'],'header'=>'All Together','subheader'=>'']);
+                $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'report_dates'=>$content['report_dates'],'data'=>$content['all'],'columns'=>$content['columns'],'header'=>'All Together','subheader'=>'']);
+                for($x=1; $x<=count( $content['columns'] )+(!empty($content['all']['months']) || !empty($content['all']['weeks']) ? 1 : 0); $x++){
+                    for($y=3; $y<=( (!empty($content['all']['months']) ? count($content['all']['months'])+1 : 0) + (!empty($content['all']['weeks']) ? count($content['all']['weeks']) + 1 : 0) + 5 ); $y++){
+                        $sheet->cells(\App\SpreadsheetColumn::$columnLetters[$x].$y, function($cells) {
+                            $cells->setBorder('thin', 'thin', 'thin', 'thin');
+                        });
+                    }
+                }
+                #print_r($content['col_format']);
+                #exit;
             });
 
             foreach($content['sections'] as $sections){
                 foreach($sections['data'] as $name=>$section){
-                    $excel->sheet(substr($sections['label'].' - '.$name,0,30), function($sheet) use ($content,$section,$name,$sections) {
+                    $excel->sheet(substr(substr($sections['label'],0,14).'... '.ucwords($name),0,31), function($sheet) use ($content,$section,$name,$sections) {
+                        $sheet->setColumnFormat($content['col_format']);
                         $sheet->setStyle(['font' => ['name' => 'Arial', 'size' => 10, 'bold' => false]]);
-                        $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'data'=>$section,'columns'=>$content['columns'],'header'=>'By '.$sections['label'],'subheader'=>$name]);
+                        $sheet->loadView('client.reports.includes.'.$content['template'].'_excel_partial',['report_name'=>$content['report_name'],'report_dates'=>$content['report_dates'],'data'=>$section,'columns'=>$content['columns'],'header'=>$sections['label'],'subheader'=>$name]);
+                        for($x=1; $x<=count( $content['columns'] )+(!empty($section['months']) || !empty($section['weeks']) ? 1 : 0); $x++){
+                            for($y=3; $y<=( (!empty($section['months']) ? count($section['months'])+1 : 0) + (!empty($section['weeks']) ? count($section['weeks']) + 1 : 0) + 5 ); $y++){
+                                $sheet->cells(\App\SpreadsheetColumn::$columnLetters[$x].$y, function($cells) {
+                                    $cells->setBorder('thin', 'thin', 'thin', 'thin');
+                                });
+                            }
+                        }
                     });
                 }
             }
@@ -212,11 +232,11 @@ class ReportsController extends Controller
         })->export('xls');
     }
 
-    public function generate($id)
+    public function pdf($id)
     {
         $reports = Report::where('client_id',$id)->where('active',1)->orderBy('list_order','asc')->take(2)->get();
-        $report = Report::where('client_id',$id)->where('active',1)->where('id',4006)->orderBy('list_order','asc')->first();
-        $client = Client::find($id);
+        $report = Report::where('active',1)->where('id',$id)->first();
+        $client = Client::find($report->client_id);
         $data = [
             'client' => $client,
             'reports' => $reports,
@@ -224,14 +244,11 @@ class ReportsController extends Controller
             'start' => \Request::get('start_date',date('Y').'-01-01'),
             'end' => \Request::get('end_date',date('Y-m-d'))
         ];
-        foreach($reports as $report){
-            if($report->template->pdf == 1){
-                if(!isset($data[$report->template->file]))
-                    $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
-            }
-        }
+        $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
+
         $pdf = \PDF::loadView('client.reports.generate', $data);
-        return $pdf->download('track_that_'.str_slug($client->business_name).'_report.pdf');
+        $pdf->setPaper('letter', 'landscape');
+        return $pdf->download(str_slug($report->name.'  '.$data['start'].' thru '.$data['end'],'_').'.pdf');
         return view('client.reports.generate',$data);
     }
 
@@ -252,6 +269,28 @@ class ReportsController extends Controller
             }
         }
         return view('client.reports.generate',$data);
+    }
+
+    private function setColumnFormats($columns){
+        $x=2;
+        $cols = [];
+        foreach($columns as $index=>$column){
+            $letter = \App\SpreadsheetColumn::$columnLetters[$x];
+            if($column['type']=='integer')
+                $cols[$letter] = '0';
+            else if($column['type']=='dollar')
+                $cols[$letter] = '$#,##0.00';
+            else if($column['type']=='numeric')
+                $cols[$letter] = '#,##0.00';
+            else if($column['type']=='percent')
+                $cols[$letter] = '0.0%';
+            else
+                $cols[$letter] = 'General';
+
+            $x++;
+        }
+        return $cols;
+
     }
 
 }
