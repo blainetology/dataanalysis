@@ -2,17 +2,34 @@
 	<div class="col-md-4">
 		<label>Spreadsheet</label><br/>
 		{{ Form::select('Spreadsheet ID',$spreadsheets->pluck('name','id'),(!empty($input['rules']) && isset($input['rules']['spreadsheet']) ? $input['rules']['spreadsheet'] : null),['name'=>'rules[spreadsheet]', 'id'=>'spreadsheet', 'class'=>'form-control'])}}
-		<br/>
+	</div>
+	<div class="col-md-4">
 		<label>Date Column</label><br/>
 		{{ Form::text('Date Column',(!empty($input['rules']) && isset($input['rules']['date']) ? $input['rules']['date'] : null),['name'=>'rules[date]', 'class'=>'form-control'])}}
 	</div>
-	<div class="col-md-8">
+</div>
+<br/><br/>
+<div class="row">
+	<div class="col-md-7">
 		<label>Columns to Include</label><br/>
-		Enter as "col" or operation || numeric|dollar|integer|string || label || "yes" or "no" to totalling - one per line<br/>
-		{{ Form::textarea('Columns to Include',(!empty($input['rules']) && isset($input['rules']['columns']) ? $input['rules']['columns'] : null),['name'=>'rules[columns]', 'class'=>'form-control', 'rows'=>6])}}
+		<div class="small">
+		uses a || (double pipe) delimiter<br/>
+		<strong>letter or operation || format || label || totalling method || optional conditional</strong><br/>
+		{{ Form::textarea('Columns to Include',(!empty($input['rules']) && isset($input['rules']['columns']) ? $input['rules']['columns'] : null),['name'=>'rules[columns]', 'class'=>'form-control', 'rows'=>12])}}
+		</div>
+	</div>
+	<div class="col-md-5">
+		<br/>
+		<small>
+		<strong>letter or operation:</strong> the column letter or a math operation for achievinng the value (e.g. A or A+B or A/D) - you may also use 'count' to use the total number of records in the dataset (e.g. A/count, or just 'count' if you want a column showing the total records count in the report)<br/>
+		<strong>column format:</strong> numeric|dollar|integer|percent|string<br/>
+		<strong>column label:</strong> the column header in the report table - defaults to the spreadsheet column label if no label is provided and just a column letter is provided<br/>
+		<strong>totalling method:</strong> total|count|none - should the values for that column be a sum, an incrementing count of the number of records, or 'none' (as-is)<br/>
+		<strong>optional conditional clause:</strong> only total or count if the column matches the conditional check (e.g. <em>= 0</em> or <em>&gt; 1000</em>)
+		</small>
 	</div>
 </div>
-<br/>
+<br/><br/>
 <div class="row">
 	<div class="col-md-12">
 		If present, only the spreadsheet content that meets the following conditional check will be included in the totaled report
