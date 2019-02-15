@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     //
-    protected $fillable = ['user_id','model','model_id','action'];
+    public $timestamps = false;
+
+    protected $fillable = ['user_id','model','model_id','action','created_at'];
 
 
 
@@ -26,19 +28,25 @@ class Log extends Model
     public function report(){
         return $this->belongsToMany('\App\Report','logs','id','model_id')->wherePivot('model','report');
     }
+    public function tracker(){
+        return $this->belongsToMany('\App\Tracker','logs','id','model_id')->wherePivot('model','tracker');
+    }
 
 
     public static function loguser($id,$action){
-    	self::create(['user_id'=>\Auth::user()->id,'model'=>'user','model_id'=>$id,'action'=>$action]);
+    	self::create(['user_id'=>\Auth::user()->id,'model'=>'user','model_id'=>$id,'action'=>$action, 'created_at'=>\DB::raw('CURRENT_TIMESTAMP')]);
     }
     public static function logreport($id,$action){
-    	self::create(['user_id'=>\Auth::user()->id,'model'=>'report','model_id'=>$id,'action'=>$action]);
+    	self::create(['user_id'=>\Auth::user()->id,'model'=>'report','model_id'=>$id,'action'=>$action, 'created_at'=>\DB::raw('CURRENT_TIMESTAMP')]);
+    }
+    public static function logtracker($id,$action){
+        self::create(['user_id'=>\Auth::user()->id,'model'=>'tracker','model_id'=>$id,'action'=>$action, 'created_at'=>\DB::raw('CURRENT_TIMESTAMP')]);
     }
     public static function logspreadsheet($id,$action){
-    	self::create(['user_id'=>\Auth::user()->id,'model'=>'spreadsheet','model_id'=>$id,'action'=>$action]);
+    	self::create(['user_id'=>\Auth::user()->id,'model'=>'spreadsheet','model_id'=>$id,'action'=>$action, 'created_at'=>\DB::raw('CURRENT_TIMESTAMP')]);
     }
     public static function logclient($id,$action){
-    	self::create(['user_id'=>\Auth::user()->id,'model'=>'client','model_id'=>$id,'action'=>$action]);
+    	self::create(['user_id'=>\Auth::user()->id,'model'=>'client','model_id'=>$id,'action'=>$action, 'created_at'=>\DB::raw('CURRENT_TIMESTAMP')]);
     }
 
 }

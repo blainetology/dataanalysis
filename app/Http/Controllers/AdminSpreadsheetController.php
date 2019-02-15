@@ -31,7 +31,7 @@ class AdminSpreadsheetController extends Controller
     {
         //
         $data = [
-            'clients' => [0=>'--choose client--']+Client::withTrashed()->get()->pluck('business_name','id')->toArray(),
+            'clients' => [0=>'--choose client--']+Client::withTrashed()->orderBy('business_name')->get()->pluck('business_name','id')->toArray(),
             'letters' => SpreadsheetColumn::$columnLetters,
             'input'   => ['column'=>[]],
             'isAdminView'   => true
@@ -42,17 +42,86 @@ class AdminSpreadsheetController extends Controller
     public function store(Request $request)
     {
         $input = \Request::all();
+        if(empty($input['sorting_col']))
+            $input['sorting_col']=1;
         $spreadsheet = Spreadsheet::create($input);
+
+        if($file = $request->file('csv')){
+            if($request->get('replace') == 1)
+                SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->where('revision_id',0)->delete();
+
+            $columns = [];
+            if (($handle = fopen($file->path(), "r")) !== FALSE) {
+                $data = fgetcsv($handle, 1000, ",");
+                foreach($data as $index=>$col_name){
+                    $columns[$index+1]=['name'=>$col_name,'values'=>[]];
+                }
+                while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                    foreach($data as $index=>$col_val){
+                        $col_val = trim($col_val);
+                        if(!empty($col_val))
+                            $columns[$index+1]['values'][$col_val] = $col_val;
+                    }
+                }
+                foreach($columns as $column_id=>$column){
+                    if(!empty($column['name'])){
+                        $validation = ['required'=>1];
+                        if(count($column['values']) < 50)
+                            $validation['in'] = implode(",", $column['values']);
+                        $data = [
+                            'spreadsheet_id'    => $spreadsheet->id,
+                            'column_id'         => $column_id,
+                            'label'             => $column['name'],
+                            'type'              => 'string',
+                            'validation'        => json_encode($validation),
+                            'conditional'       => '[]',
+                            'normalize'         => '{"case":"as-is"}'
+                        ];
+                        SpreadsheetColumn::create($data);
+                    }
+                }
+                fclose($handle);
+            }
+            Log::logspreadsheet($spreadsheet->id,'created');
+            return redirect()->route('adminspreadsheets.edit',$spreadsheet->id);
+        }
+
+
+
         foreach($input['column'] as $key => $column){
             $column['spreadsheet_id'] = $spreadsheet->id;
-            $column['column'] = $key;
+            $column['column_id'] = $key;
             $validation = [];
-            foreach($column['validation'] as $key=>$value){
-                if(trim($value) != "")
-                    $validation[$key]=trim($value);
+            foreach($column['validation'] as $key2=>$value){
+                $value = trim($value);
+                if($key2=='in'){
+                    if($value != ""){
+                        $values = explode(',',$value);
+                        $temp = [];
+                        foreach($values as $val){
+                            $temp[] = trim($val);
+                        }
+                        $validation[$key2]=implode(',',$temp);
+                    }
+                }
+                else{
+                    if($value != "" || $value===0)
+                        $validation[$key2]=trim($value);
+                }
             }
             $column['validation'] = json_encode($validation);
-            $column['conditional'] = json_encode($column['conditional']);
+            $conditional = [];
+            foreach($column['conditional'] as $key=>$value){
+                if(trim($value) != "")
+                    $conditional[$key]=trim($value);
+            }
+            $column['conditional'] = json_encode($conditional);
+            $normalize = [];
+            foreach($column['normalize'] as $key=>$value){
+                if(trim($value) != "")
+                    $normalize[$key]=trim($value);
+            }
+            $column['normalize'] = json_encode($normalize);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
@@ -66,12 +135,12 @@ class AdminSpreadsheetController extends Controller
         $spreadsheet = Spreadsheet::find($id);
         $columns = [];
         foreach($spreadsheet->columns as $column)
-            $columns[$column->column] = $column;
+            $columns[$column->column_id] = $column;
         $data = [
             'client' => Client::find($spreadsheet->client_id),
             'spreadsheet' => $spreadsheet,
             'columns' => $columns,
-            'max' => $spreadsheet->columns->max()->column,
+            'max' => $spreadsheet->columns->max()->column_id,
             'letters' => SpreadsheetColumn::$columnLetters,
             'client_spreadsheets' => Spreadsheet::where('client_id',$spreadsheet->client_id)->get()
         ];
@@ -84,10 +153,12 @@ class AdminSpreadsheetController extends Controller
         //
         $spreadsheet = Spreadsheet::find($id);
         $input = $spreadsheet->toArray();
+        $input['column']=[];
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation);
             $column->conditional = json_decode($column->conditional);
-            $input['column'][$column->column] = $column->toArray();
+            $column->normalize = json_decode($column->normalize);
+            $input['column'][$column->column_id] = $column->toArray();
         }
         $data = [
             'input' => $input,
@@ -102,6 +173,8 @@ class AdminSpreadsheetController extends Controller
     {
         //
         $input = \Request::all();
+        if(empty($input['sorting_col']))
+            $input['sorting_col']=1;
         #print_r($input);
         #exit;
         $spreadsheet = Spreadsheet::find($id);
@@ -111,11 +184,11 @@ class AdminSpreadsheetController extends Controller
         foreach($input['column'] as $key => $column){
             $mapping[$key] = $column['col_val'];
             $column['spreadsheet_id'] = $spreadsheet->id;
-            $column['column'] = $column['col_val'];
+            $column['column_id'] = $column['col_val'];
             $validation = [];
             foreach($column['validation'] as $key2=>$value){
+                $value = trim($value);
                 if($key2=='in'){
-                    $value = trim($value);
                     if($value != ""){
                         $values = explode(',',$value);
                         $temp = [];
@@ -126,7 +199,7 @@ class AdminSpreadsheetController extends Controller
                     }
                 }
                 else{
-                    if(trim($value) != "" || $value=0)
+                    if($value != "" || $value===0)
                         $validation[$key2]=trim($value);
                 }
             }
@@ -137,6 +210,12 @@ class AdminSpreadsheetController extends Controller
                     $conditional[$key]=trim($value);
             }
             $column['conditional'] = json_encode($conditional);
+            $normalize = [];
+            foreach($column['normalize'] as $key=>$value){
+                if(trim($value) != "")
+                    $normalize[$key]=trim($value);
+            }
+            $column['normalize'] = json_encode($normalize);
             if(!empty($column['label']))
                 SpreadsheetColumn::create($column);
         }
@@ -173,7 +252,7 @@ class AdminSpreadsheetController extends Controller
         $input = $spreadsheet->toArray();
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation);
-            $input['column'][$column->column] = $column->toArray();
+            $input['column'][$column->column_id] = $column->toArray();
         }
         $data = [
             'input' => $input,
@@ -190,7 +269,7 @@ class AdminSpreadsheetController extends Controller
         $input = $spreadsheet->toArray();
         foreach($spreadsheet->columns as $column){
             $column->validation = json_decode($column->validation);
-            $input['column'][$column->column] = $column->toArray();
+            $input['column'][$column->column_id] = $column->toArray();
         }
         $data = [
             'spreadsheet' => $spreadsheet,
@@ -204,10 +283,15 @@ class AdminSpreadsheetController extends Controller
         $spreadsheet = Spreadsheet::find($id);
 
         $validations = [];
+        $case = [];
+        $defaults = [];
         $datefields = [];
+        $numericfields = [];
         foreach($spreadsheet->columns as $column){
             if($column->type == 'date')
-                $datefields[]=$column->column;
+                $datefields[]=$column->column_id;
+            if($column->type == 'currency' || $column->type == 'numeric')
+                $numericfields[]=$column->column_id;
             $column->validation = json_decode($column->validation,true);
             $temp=[];
             $temp[] = str_replace(['currency','notes'], ['numeric','string'], $column->type);
@@ -219,11 +303,14 @@ class AdminSpreadsheetController extends Controller
                 else
                     $temp[]=$key.":".$value;
             }
-            $validations['col'.$column->column] = implode('|',$temp);
+            $validations['col'.$column->column_id] = implode('|',$temp);
+
+            $column->normalize = json_decode($column->normalize,true);
+            if(isset($column->normalize['case']))
+                $case['col'.$column->column_id] = trim($column->normalize['case']);
+            if(isset($column->normalize['default']))
+                $defaults['col'.$column->column_id] = trim($column->normalize['default']);
         }
-        print_r($datefields);
-        exit;
-        
         $file = $request->file('csv');
         if($request->get('replace') == 1)
             SpreadsheetContent::where('spreadsheet_id',$spreadsheet->id)->where('revision_id',0)->delete();
@@ -236,24 +323,43 @@ class AdminSpreadsheetController extends Controller
                     $col=1;
                     $content=['spreadsheet_id'=>$spreadsheet->id,'added_by'=>\Auth::user()->id,'revision_id'=>0,'validated'=>1];
                     foreach($data as $field){
-                        if(in_array($col, $datefields))
-                            $field = date('Y-m-d',strtotime($field));
+                        if($field !== ""){
+                            if(in_array($col, $datefields))
+                                $field = !empty($field) ? date('Y-m-d',strtotime($field)) : null;
+                            if(in_array($col, $numericfields))
+                                $field = preg_replace("/[^0-9.]/", "", $field );
+                        }
                         $content['col'.$col]=$field;
                         $col++;
                     }
+                    foreach($content as $col_id=>$col_value){
+                        if(empty($col_value) && $col_value !== 0 && isset($defaults[$col_id]) && $defaults[$col_id] !== "")
+                            $col_value=$defaults[$col_id];
+                        if(isset($case[$col_id]) && $case[$col_id] !== ""){
+                            if($case[$col_id] == 'lower')
+                                $col_value=strtolower($col_value);
+                            elseif($case[$col_id] == 'upper')
+                                $col_value=strtoupper($col_value);
+                        }
+                        $content[$col_id] = trim($col_value);
+                    }
+                    $content['errors'] = null;
                     $validator = \Validator::make($content, $validations);
-                    if ($validator->fails())
+                    if ($validator->fails()){
                         $content['validated']=0;
+                        $content['errors'] = json_encode($validator->errors()->toArray());
+                    }
                     else
                         $content['validated']=1;
-                    SpreadsheetContent::create($content);
+                     if(!empty($content['col1']) || !empty($content['col2']) || !empty($content['col3']) || !empty($content['col4']))
+                        SpreadsheetContent::create($content);
                 }
                 $row++;
             }
             fclose($handle);
         }
         Log::logspreadsheet($spreadsheet->id,'imported');
-        return redirect('/');
+        return redirect()->route('adminspreadsheets.index');
     }
 
 }

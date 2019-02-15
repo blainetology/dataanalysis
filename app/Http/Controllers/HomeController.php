@@ -7,6 +7,7 @@ use App\Client;
 use App\User;
 use App\Spreadsheet;
 use App\Report;
+use App\Tracker;
 use App\Log;
 
 class HomeController extends Controller
@@ -34,6 +35,7 @@ class HomeController extends Controller
                 'clients'   => Client::withTrashed()->get(),
                 'users'     => User::withTrashed()->orderBy('last_login','desc')->take(10)->get(),
                 'reports'     => Report::orderBy('opened_at','desc')->take(10)->get(),
+                'trackers'     => Tracker::orderBy('opened_at','desc')->take(10)->get(),
                 'spreadsheets'  => Spreadsheet::orderBy('updated_at','desc')->take(10)->get(),
                 'logs'      => Log::orderBy('created_at','desc')->take(25)->get(),
                 'isAdminView'   => true

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Client;
 use App\User;   
 use App\Log;   
+use App\Tracker;   
 use App\Report;   
 use App\ReportTemplate;
 use App\Spreadsheet;   
@@ -45,7 +46,7 @@ class ReportsController extends Controller
     {
         $input = \Request::all();
         $input['rules'] = '[]';
-        $input['opened_at'] = \DB::raw('NOW()');
+        $input['opened_at'] = \DB::raw('CURRENT_TIMESTAMP');
         #print_r($input);
         #exit;
         $report = Report::create($input);
@@ -61,13 +62,14 @@ class ReportsController extends Controller
             'client' => Client::find($report->client_id),
             'report' => $report,
             'report_'.$report->id => ReportTemplate::getContent($report->template->file,$report->rules),
+            'client_trackers' => Tracker::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get(),
             'client_reports' => Report::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get(),
             'client_spreadsheets' => Spreadsheet::where('client_id',$report->client_id)->active()->orderBy('list_order','asc')->get()
         ];
-        if(!\Auth::user()->isAdmin() && !\Auth::user()->isEditor()){
-            $report->opened_at = \DB::raw('NOW()');
-            $report->save();
-        }
+        $report->update(['data'=>json_encode($data['report_'.$report->id])]);
+
+        $report->opened_at = \DB::raw('CURRENT_TIMESTAMP');
+        $report->save();
         Log::logreport($report->id,'viewed');
         return view('client.reports.show',$data);
     }
@@ -94,7 +96,7 @@ class ReportsController extends Controller
         $input = \Request::all();
 
         if(!empty($input['rules'])){
-            $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$input['rules']['spreadsheet'])->pluck('label','column');
+            $availableColumns = \App\SpreadsheetColumn::where('spreadsheet_id',$input['rules']['spreadsheet'])->pluck('label','column_id');
             // clean up the columns input
             $temp = [];
             foreach(explode("\n",trim($input['rules']['columns'])) as $column){
@@ -126,17 +128,17 @@ class ReportsController extends Controller
                         $ifs[0] = trim($ifs[0]);
                         $ifs[1] = trim($ifs[1]);
                         $ifs[1] = trim($ifs[1],'"');
-                        echo $ifs[1]." ".(float)$ifs[1]."<br/>";
+                        #echo $ifs[1]." ".(float)$ifs[1]."<br/>";
                         if($ifs[1] === (string)(float)$ifs[1]){
-                            echo 'matched'."<br/>";
+                            #echo 'matched'."<br/>";
                             $ifs[1] = (float)$ifs[1];
                         }
                         else{
-                            echo 'no match'."<br/>";
+                            #echo 'no match'."<br/>";
                             $ifs[1] = '"'.$ifs[1].'"';
                         }
                         $if = $ifs[0]." ".$ifs[1];
-                        echo $if."<br/>";                   
+                        #echo $if."<br/>";                   
                     }
                 }
 
@@ -164,22 +166,19 @@ class ReportsController extends Controller
     public function duplicate($id)
     {
         $report = Report::find($id);
-        $input = $report->toArray();
-        $input['rules'] = json_decode($report->rules,true);
-        $data = [
-            'input' => $input,
-            'clients' => [0=>'--choose client--']+Client::all()->pluck('business_name','id')->toArray(),
-            'templates' => [0=>'--choose template--']+ReportTemplate::all()->pluck('name','id')->toArray(),
-            'spreadsheets' => Spreadsheet::with('columns')->where('client_id',$report->client_id)->get(),
-            'file' => $report->template->file,
-            'isAdminView'   => true,
-            'duplicate' => true
-        ];
-        return view('admin.reports.create',$data);
+        if($report){
+            $input = $report->toArray();
+            $input['name'] .= ' (copy)';
+            $newreport = Report::create($input);
+            Log::logreport($newreport->id,'created');
+            return redirect()->route('reports.edit',$newreport->id);
+        }
+        return redirect()->route('reports.index');
     }
 
     public function excel($id)
     {
+        set_time_limit(180);
         $report = Report::where('active',1)->where('id',$id)->orderBy('list_order','asc')->first();
         $client = Client::find($report->client_id);
         $data = [
@@ -188,10 +187,10 @@ class ReportsController extends Controller
             'start' => \Request::get('start_date',date('Y').'-01-01'),
             'end' => \Request::get('end_date',date('Y-m-d'))
         ];
-        $data['report_'.$report->id] = ReportTemplate::getContent($report->template->file,$report->rules);
+        $data['report_template_data'] = json_decode($report->data,true);
 
         \Excel::create(str_slug($report->name.'  '.$data['start'].' thru '.$data['end'],'_'), function($excel) use ($data) {
-            $content = $data['report_'.$data['report']->id];
+            $content = $data['report_template_data'];
             $content['template'] = $data['report']->template->file;
             $content['report_name'] = $data['report']->name;
             $content['report_dates'] = $data['start'].' thru '.$data['end'];
